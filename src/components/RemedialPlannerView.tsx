@@ -1,0 +1,365 @@
+import React, { useState } from 'react';
+import { useTranslation } from 'react-i18next';
+import { Printer, Share2, CheckCircle, Clock, FileText } from 'lucide-react';
+import { Student, Competency, RemedialActivity, RemedialPlan, StudentGroup } from '../types';
+import { PrintablePlan } from './PrintablePlan';
+import {
+  getCompetencyTitle,
+  getActivityTitle,
+  getActivityReasoning
+} from '../data/curriculumData';
+
+interface RemedialPlannerViewProps {
+  students: Student[];
+  competencies: Competency[];
+  activities: RemedialActivity[];
+  plans: RemedialPlan[];
+  activeGroupForPlan: StudentGroup | null;
+  onSavePlan: (plan: RemedialPlan) => Promise<void>;
+  onClearActiveGroup: () => void;
+}
+
+export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
+  students,
+  competencies,
+  activities,
+  plans,
+  activeGroupForPlan,
+  onSavePlan,
+}) => {
+  const { t, i18n } = useTranslation();
+  const currentLang = i18n.language || 'en';
+
+  // Selected Competency
+  const [selectedCompId, setSelectedCompId] = useState<string>(
+    activeGroupForPlan?.competency.id || competencies[0]?.id || ''
+  );
+
+  // Selected Activity
+  const matchedActivities = activities.filter(a => a.competency_id === selectedCompId);
+  const [selectedActivityId, setSelectedActivityId] = useState<string>(
+    activeGroupForPlan?.suggestedActivity.id || matchedActivities[0]?.id || ''
+  );
+
+  // Selected Students
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(
+    activeGroupForPlan ? activeGroupForPlan.students.map(s => s.student.id) : []
+  );
+
+  // Schedule & Notes
+  const [scheduledDay, setScheduledDay] = useState<string>(t('planner.schedulePlaceholder'));
+  const [teacherNotes, setTeacherNotes] = useState<string>(t('planner.teacherNotesPlaceholder'));
+  const [isApproved, setIsApproved] = useState<boolean>(true);
+  const [activePlanId, setActivePlanId] = useState<string | null>(plans[0]?.id || null);
+
+  const handleSelectSavedPlan = (planId: string) => {
+    setActivePlanId(planId);
+    const saved = plans.find(p => p.id === planId);
+    if (saved) {
+      setSelectedCompId(saved.competency_id);
+      setSelectedActivityId(saved.activity_id);
+      setSelectedStudentIds(saved.student_ids);
+      setTeacherNotes(saved.teacher_notes);
+      if (saved.scheduled_day) setScheduledDay(saved.scheduled_day);
+      setIsApproved(saved.status === 'approved' || saved.status === 'completed');
+    }
+  };
+
+  const toggleStudent = (id: string) => {
+    setSelectedStudentIds(prev =>
+      prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]
+    );
+  };
+
+  const currentComp = competencies.find(c => c.id === selectedCompId) || competencies[0];
+  const currentActivity = activities.find(a => a.id === selectedActivityId) || matchedActivities[0] || activities[0];
+
+  // Current draft plan representation
+  const draftPlan: RemedialPlan = {
+    id: activePlanId || `plan-${Date.now()}`,
+    school_id: 'ZP-KPG-01',
+    grade: 3,
+    competency_id: currentComp.id,
+    activity_id: currentActivity.id,
+    plan_date: new Date().toISOString().split('T')[0],
+    student_ids: selectedStudentIds.length > 0 ? selectedStudentIds : students.slice(0, 5).map(s => s.id),
+    status: isApproved ? 'approved' : 'draft',
+    teacher_notes: teacherNotes,
+    scheduled_day: scheduledDay,
+    created_at: new Date().toISOString(),
+    synced: false
+  };
+
+  const handleApproveAndSave = async () => {
+    setIsApproved(true);
+    await onSavePlan({
+      ...draftPlan,
+      status: 'approved'
+    });
+    alert(t('planner.planApprovedSuccess'));
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
+  const handleWhatsAppShare = () => {
+    const compTitle = getCompetencyTitle(currentComp, currentLang);
+    const actTitle = getActivityTitle(currentActivity, currentLang);
+    const studentCount = draftPlan.student_ids.length;
+
+    const message = encodeURIComponent(
+      `*${t('appName')} - ${t('planner.title')}*\n` +
+      `${t('printable.officialHeading')}\n` +
+      `${t('printable.gradeSectionLabel')} ${t('printable.gradeSectionVal')} | ${t('printable.subjectLabel')} ${currentComp.subject}\n` +
+      `${t('printable.targetCompHeading')}: ${compTitle} (${currentComp.code})\n` +
+      `${t('planner.targetStudentsLabel')}: ${studentCount}\n` +
+      `${t('planner.selectActivityLabel')}: ${actTitle}\n` +
+      `${t('planner.activityDuration')}: ${currentActivity.estimated_minutes} ${t('planner.minutes')}\n` +
+      `${t('printable.scheduleLabel')} ${scheduledDay}\n` +
+      `${t('printable.statusLabel')} ${t('printable.statusApproved')}\n\n` +
+      `_${t('appSubtitle')}_`
+    );
+
+    if (navigator.share) {
+      navigator.share({
+        title: `${t('appName')} - Remedial Plan`,
+        text: `Remedial Plan for ${compTitle}`,
+        url: window.location.href,
+      }).catch(() => {
+        window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
+      });
+    } else {
+      window.open(`https://api.whatsapp.com/send?text=${message}`, '_blank');
+    }
+  };
+
+  return (
+    <div className="space-y-6">
+      
+      {/* Title Banner */}
+      <div className="no-print bg-white p-5 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <div className="flex items-center gap-2">
+            <div className="p-2 rounded-lg bg-emerald-100 text-emerald-800">
+              <FileText className="w-5 h-5" />
+            </div>
+            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              {t('planner.title')}
+            </h2>
+          </div>
+          <p className="text-sm text-slate-600 mt-1">
+            {t('planner.subtitle')}
+          </p>
+        </div>
+
+        {/* Action Buttons: Print & WhatsApp */}
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <button
+            onClick={handlePrint}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold transition shadow-sm"
+          >
+            <Printer className="w-4 h-4" />
+            <span>{t('planner.exportPdf')}</span>
+          </button>
+
+          <button
+            onClick={handleWhatsAppShare}
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-semibold transition shadow-sm"
+          >
+            <Share2 className="w-4 h-4" />
+            <span>{t('planner.shareWhatsApp')}</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Plan Customizer Form (Hidden on Print) */}
+      <div className="no-print grid grid-cols-1 lg:grid-cols-3 gap-6">
+        
+        {/* Step 1: Select Competency & Activity */}
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+          <h3 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+            <span className="w-5 h-5 rounded-full bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">1</span>
+            <span>{t('planner.step1Title')}</span>
+          </h3>
+
+          {plans.length > 0 && (
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">
+                {t('planner.loadSavedPlan')}
+              </label>
+              <select
+                value={activePlanId || ''}
+                onChange={(e) => handleSelectSavedPlan(e.target.value)}
+                className="w-full text-xs font-medium rounded-lg border border-slate-300 py-1.5 px-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                <option value="">{t('planner.createNewPlan')}</option>
+                {plans.map((p, idx) => {
+                  const comp = competencies.find(c => c.id === p.competency_id);
+                  return (
+                    <option key={p.id} value={p.id}>
+                      Plan #{idx + 1} - [{comp?.code}] ({p.status})
+                    </option>
+                  );
+                })}
+              </select>
+            </div>
+          )}
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t('planner.selectCompLabel')}
+            </label>
+            <select
+              value={selectedCompId}
+              onChange={(e) => {
+                setSelectedCompId(e.target.value);
+                const firstAct = activities.find(a => a.competency_id === e.target.value);
+                if (firstAct) setSelectedActivityId(firstAct.id);
+              }}
+              className="w-full text-xs font-medium rounded-lg border border-slate-300 py-2 px-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            >
+              {competencies.map(comp => (
+                <option key={comp.id} value={comp.id}>
+                  [{comp.code}] {getCompetencyTitle(comp, currentLang)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t('planner.selectActivityLabel')}
+            </label>
+            <select
+              value={selectedActivityId}
+              onChange={(e) => setSelectedActivityId(e.target.value)}
+              className="w-full text-xs font-medium rounded-lg border border-slate-300 py-2 px-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            >
+              {matchedActivities.map(act => (
+                <option key={act.id} value={act.id}>
+                  {getActivityTitle(act, currentLang)} ({act.estimated_minutes} {t('planner.minutes')})
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-900">
+            <div className="flex items-center gap-1 font-semibold mb-1">
+              <Clock className="w-3.5 h-3.5" />
+              <span>{currentActivity.estimated_minutes} {t('planner.minutes')} {t('planner.activityDuration')}</span>
+            </div>
+            <p className="text-[11px] text-emerald-800 leading-snug">
+              {getActivityReasoning(currentActivity, currentLang)}
+            </p>
+          </div>
+        </div>
+
+        {/* Step 2: Schedule & Teacher Notes */}
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+          <h3 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+            <span className="w-5 h-5 rounded-full bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">2</span>
+            <span>{t('planner.step2Title')}</span>
+          </h3>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t('planner.scheduleForWeek')}
+            </label>
+            <input
+              type="text"
+              value={scheduledDay}
+              onChange={(e) => setScheduledDay(e.target.value)}
+              placeholder={t('planner.schedulePlaceholder')}
+              className="w-full text-xs rounded-lg border border-slate-300 py-2 px-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t('planner.targetStudentsLabel')} ({selectedStudentIds.length})
+            </label>
+            <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1 border border-slate-200 rounded-lg bg-slate-50">
+              {students.slice(0, 12).map(st => {
+                const isSelected = selectedStudentIds.includes(st.id);
+                return (
+                  <button
+                    key={st.id}
+                    type="button"
+                    onClick={() => toggleStudent(st.id)}
+                    className={`text-[10px] px-1.5 py-0.5 rounded border transition ${
+                      isSelected
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold'
+                        : 'bg-white text-slate-500 border-slate-200'
+                    }`}
+                  >
+                    #{st.roll_number}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div>
+            <label className="block text-xs font-semibold text-slate-700 mb-1">
+              {t('planner.teacherNotesLabel')}
+            </label>
+            <textarea
+              rows={3}
+              value={teacherNotes}
+              onChange={(e) => setTeacherNotes(e.target.value)}
+              placeholder={t('planner.teacherNotesPlaceholder')}
+              className="w-full text-xs rounded-lg border border-slate-300 p-2.5 bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+        </div>
+
+        {/* Step 3: Teacher-in-the-Loop Sign-off */}
+        <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4 flex flex-col justify-between">
+          <div>
+            <h3 className="font-bold text-sm text-slate-900 border-b border-slate-100 pb-2 flex items-center gap-2">
+              <span className="w-5 h-5 rounded-full bg-brand-100 text-brand-800 text-xs flex items-center justify-center font-bold">3</span>
+              <span>{t('planner.step3Title')}</span>
+            </h3>
+
+            <p className="text-xs text-slate-600 mt-2 leading-relaxed">
+              {t('planner.approveNotice')}
+            </p>
+
+            <div className="mt-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-xs text-amber-900">
+              <span className="font-semibold block mb-0.5">{t('planner.ethicsNoticeTitle')}</span>
+              {t('planner.ethicsNoticeBody')}
+            </div>
+          </div>
+
+          <button
+            onClick={handleApproveAndSave}
+            className="w-full py-2.5 px-4 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition shadow-sm"
+          >
+            <CheckCircle className="w-4 h-4" />
+            <span>{t('planner.approvePlanBtn')}</span>
+          </button>
+        </div>
+
+      </div>
+
+      {/* The Printable / Exportable 1-Page Plan Canvas */}
+      <div className="bg-slate-200/60 p-2 sm:p-6 rounded-2xl border border-slate-300">
+        <div className="no-print flex items-center justify-between mb-2 px-2 text-xs text-slate-600">
+          <span className="font-semibold">
+            {t('planner.previewBanner')}
+          </span>
+          <span>{t('planner.previewSub')}</span>
+        </div>
+
+        <PrintablePlan
+          plan={draftPlan}
+          competency={currentComp}
+          activity={currentActivity}
+          students={students}
+        />
+      </div>
+
+    </div>
+  );
+};

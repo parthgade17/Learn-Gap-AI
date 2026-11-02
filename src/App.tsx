@@ -15,6 +15,7 @@ import { UserRole, StudentGroup, AssessmentRecord, RemedialPlan } from './types'
 import { diagnoseGaps } from './engine/gapEngine';
 import {
   syncAssessmentInsert,
+  syncAssessmentUpsert,
   syncAssessmentUpdate,
   syncAssessmentDelete,
   syncRemedialPlan,
@@ -133,18 +134,23 @@ export const App: React.FC = () => {
   const handleUpdateAssessment = async (id: string, updates: Partial<AssessmentRecord>) => {
     // 1. Update local IndexedDB
     await db.assessments.update(id, updates);
+    const fullRecord = await db.assessments.get(id);
 
     // 2. Queue for sync
     await db.syncQueue.put({
       id: `sync-update-${Date.now()}`,
       action: 'update',
       table: 'assessments',
-      payload: { id, ...updates },
+      payload: fullRecord || { id, ...updates },
       created_at: new Date().toISOString()
     });
 
-    // 3. Live Supabase sync
-    await syncAssessmentUpdate(id, updates);
+    // 3. Live Supabase sync (always upsert full record so row is guaranteed to exist in DB)
+    if (fullRecord) {
+      await syncAssessmentUpsert(fullRecord);
+    } else {
+      await syncAssessmentUpdate(id, updates);
+    }
   };
 
   const handleDeleteAssessment = async (id: string) => {

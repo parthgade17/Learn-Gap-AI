@@ -11,12 +11,15 @@ import {
   Database,
   HelpCircle,
   X,
-  Save
+  Save,
+  CloudUpload,
+  Copy,
+  Check
 } from 'lucide-react';
 import { Student, Competency, AssessmentRecord, AssessmentType } from '../types';
 import { validateAssessmentRecord } from '../engine/gapEngine';
 import { getCompetencyTitle, formatStudentDisplay, ALL_SUBJECTS } from '../data/curriculumData';
-import { isSupabaseConfigured, checkSupabaseConnection } from '../lib/supabaseClient';
+import { isSupabaseConfigured, checkSupabaseConnection, syncAllAssessmentsToSupabase } from '../lib/supabaseClient';
 
 interface AssessmentManagerProps {
   students: Student[];
@@ -60,8 +63,14 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
   // Database Setup Instructions Modal State
   const [isDbGuideOpen, setIsDbGuideOpen] = useState<boolean>(false);
-  const [dbStatus, setDbStatus] = useState<{ connected: boolean; message: string } | null>(null);
+  const [dbStatus, setDbStatus] = useState<{ connected: boolean; message: string; rowCount?: number; isRlsIssue?: boolean } | null>(null);
   const [testingDb, setTestingDb] = useState<boolean>(false);
+
+  // Batch DB Sync & Notification State
+  const [isSyncingAll, setIsSyncingAll] = useState<boolean>(false);
+  const [syncProgress, setSyncProgress] = useState<{ synced: number; total: number } | null>(null);
+  const [syncNotice, setSyncNotice] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [copiedSql, setCopiedSql] = useState<boolean>(false);
 
   // CSV Import State
   const [csvStatus, setCsvStatus] = useState<{ message: string; type: 'success' | 'error' | 'idle' }>({
@@ -168,8 +177,46 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         assessment_type: editType
       });
       setEditingRecord(null);
+      setSyncNotice({
+        message: isSupabaseConfigured
+          ? 'Marks updated locally and dynamically synchronized to Supabase table (assessments)!'
+          : 'Marks updated locally in IndexedDB.',
+        type: 'success'
+      });
+      setTimeout(() => setSyncNotice(null), 4500);
     } catch (err) {
       console.error('Error updating assessment score:', err);
+      setSyncNotice({
+        message: 'Failed to update marks. Please check database permissions.',
+        type: 'error'
+      });
+    }
+  };
+
+  const handleSyncAllToSupabase = async () => {
+    if (assessments.length === 0) return;
+    setIsSyncingAll(true);
+    setSyncProgress({ synced: 0, total: assessments.length });
+
+    const result = await syncAllAssessmentsToSupabase(assessments, (synced, total) => {
+      setSyncProgress({ synced, total });
+    });
+
+    setIsSyncingAll(false);
+    if (result.success) {
+      setSyncNotice({
+        message: `Successfully synchronized all ${result.count} student marks into Supabase DB!`,
+        type: 'success'
+      });
+      // Refresh DB test status
+      const updatedStatus = await checkSupabaseConnection();
+      setDbStatus(updatedStatus);
+      setTimeout(() => setSyncNotice(null), 5000);
+    } else {
+      setSyncNotice({
+        message: `Database sync issue: ${result.error || 'Check Supabase RLS policies'}. Ensure RLS is disabled in Supabase.`,
+        type: 'error'
+      });
     }
   };
 
@@ -332,13 +379,29 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         </div>
 
         {/* Database Quick Info Pill */}
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border bg-slate-50 text-slate-700">
             <Database className="w-4 h-4 text-brand-600" />
             <span>
               {isSupabaseConfigured ? 'Supabase Configured' : 'Offline IndexedDB Active'}
             </span>
           </div>
+
+          {isSupabaseConfigured && (
+            <button
+              onClick={handleSyncAllToSupabase}
+              disabled={isSyncingAll}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
+              title="Push all student marks (all classes) to Supabase assessments table"
+            >
+              <CloudUpload className={`w-3.5 h-3.5 ${isSyncingAll ? 'animate-bounce' : ''}`} />
+              <span>
+                {isSyncingAll
+                  ? `Syncing (${syncProgress?.synced || 0}/${syncProgress?.total || assessments.length})...`
+                  : 'Sync All to DB'}
+              </span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsDbGuideOpen(true)}
@@ -349,6 +412,32 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Sync Status Toast Alert */}
+      {syncNotice && (
+        <div
+          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-sm transition animate-in fade-in ${
+            syncNotice.type === 'success'
+              ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
+              : 'bg-rose-50 text-rose-900 border border-rose-200'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {syncNotice.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+            )}
+            <span>{syncNotice.message}</span>
+          </div>
+          <button
+            onClick={() => setSyncNotice(null)}
+            className="p-1 rounded hover:bg-slate-200/50 text-slate-500"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
@@ -912,26 +1001,80 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
             </div>
 
             {/* Connection Test Box */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-800">Connection Status:</span>
-                <button
-                  onClick={handleTestDatabase}
-                  disabled={testingDb}
-                  className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px]"
-                >
-                  {testingDb ? 'Testing...' : 'Test Connection'}
-                </button>
+                <div className="flex items-center gap-2">
+                  {isSupabaseConfigured && (
+                    <button
+                      onClick={handleSyncAllToSupabase}
+                      disabled={isSyncingAll}
+                      className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
+                    >
+                      <CloudUpload className="w-3 h-3" />
+                      <span>{isSyncingAll ? 'Syncing...' : 'Sync All Data Now'}</span>
+                    </button>
+                  )}
+                  <button
+                    onClick={handleTestDatabase}
+                    disabled={testingDb}
+                    className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] cursor-pointer"
+                  >
+                    {testingDb ? 'Testing...' : 'Test Connection'}
+                  </button>
+                </div>
               </div>
               {dbStatus ? (
-                <p className={`font-semibold ${dbStatus.connected ? 'text-emerald-700' : 'text-amber-700'}`}>
-                  {dbStatus.message}
-                </p>
+                <div className={`p-2.5 rounded-lg border text-xs ${
+                  dbStatus.connected
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
+                    : 'bg-amber-50 border-amber-200 text-amber-900'
+                }`}>
+                  <p className="font-bold">{dbStatus.message}</p>
+                  {dbStatus.rowCount !== undefined && (
+                    <p className="text-[11px] mt-0.5 opacity-90">
+                      Current rows in Supabase <code>assessments</code> table: <strong>{dbStatus.rowCount}</strong>.
+                      {dbStatus.rowCount === 0 && ' (Click "Sync All Data Now" above to populate all classroom marks).'}
+                    </p>
+                  )}
+                </div>
               ) : (
                 <p className="text-slate-500">
                   Click 'Test Connection' to test connectivity to your Supabase project.
                 </p>
               )}
+            </div>
+
+            {/* RLS Troubleshooting Box */}
+            <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200 text-xs space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-amber-950 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                  Marks edited but not showing in Supabase? (गुणांची नोंद न दिसल्यास):
+                </span>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const sql = `ALTER TABLE public.assessments DISABLE ROW LEVEL SECURITY;\nALTER TABLE public.remedial_plans DISABLE ROW LEVEL SECURITY;\nGRANT ALL ON TABLE public.assessments TO anon, authenticated, service_role;\nGRANT ALL ON TABLE public.remedial_plans TO anon, authenticated, service_role;`;
+                    navigator.clipboard.writeText(sql);
+                    setCopiedSql(true);
+                    setTimeout(() => setCopiedSql(false), 2500);
+                  }}
+                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold text-[10px] transition cursor-pointer"
+                >
+                  {copiedSql ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3" />}
+                  <span>{copiedSql ? 'Copied!' : 'Copy SQL Fix'}</span>
+                </button>
+              </div>
+              <p className="text-amber-900 text-[11px] leading-relaxed">
+                Supabase <strong>Row Level Security (RLS)</strong> may block anonymous writes, or the table was initially empty. Run this in your Supabase <strong>SQL Editor</strong>:
+              </p>
+              <pre className="bg-slate-900 text-amber-300 p-2 rounded-lg text-[10px] font-mono overflow-x-auto select-all">
+{`ALTER TABLE public.assessments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.remedial_plans DISABLE ROW LEVEL SECURITY;
+GRANT ALL ON TABLE public.assessments TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.remedial_plans TO anon, authenticated, service_role;`}
+              </pre>
             </div>
 
             {/* Step-by-Step Instructions */}

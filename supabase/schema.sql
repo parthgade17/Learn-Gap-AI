@@ -113,6 +113,23 @@ CREATE TABLE IF NOT EXISTS public.remedial_plans (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- Disable Row Level Security (RLS) & Grant full public read/write permissions for teacher offline-online sync:
+ALTER TABLE public.schools DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.profiles DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.students DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.competencies DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.remedial_activities DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.assessments DISABLE ROW LEVEL SECURITY;
+ALTER TABLE public.remedial_plans DISABLE ROW LEVEL SECURITY;
+
+GRANT ALL ON TABLE public.schools TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.profiles TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.students TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.competencies TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.remedial_activities TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.assessments TO anon, authenticated, service_role;
+GRANT ALL ON TABLE public.remedial_plans TO anon, authenticated, service_role;
+
 -- Enable Realtime publication so website updates dynamically when data changes
 ALTER PUBLICATION supabase_realtime ADD TABLE assessments, remedial_plans;
 

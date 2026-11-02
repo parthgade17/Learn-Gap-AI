@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Printer, Share2, CheckCircle, Clock, FileText } from 'lucide-react';
+import { Printer, Share2, CheckCircle, Clock, FileText, Filter } from 'lucide-react';
 import { Student, Competency, RemedialActivity, RemedialPlan, StudentGroup } from '../types';
 import { PrintablePlan } from './PrintablePlan';
 import {
@@ -30,6 +30,20 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
 
+  // Selected Class Grade (5th A, 6th A, 7th A, 8th A, or All)
+  const initialGrade = activeGroupForPlan?.students[0]?.student.grade?.toString() || '6';
+  const [selectedClassGrade, setSelectedClassGrade] = useState<string>(initialGrade);
+
+  // Sync class grade if activeGroupForPlan changes
+  useEffect(() => {
+    if (activeGroupForPlan?.students[0]?.student.grade) {
+      setSelectedClassGrade(activeGroupForPlan.students[0].student.grade.toString());
+      setSelectedCompId(activeGroupForPlan.competency.id);
+      setSelectedActivityId(activeGroupForPlan.suggestedActivity.id);
+      setSelectedStudentIds(activeGroupForPlan.students.map(s => s.student.id));
+    }
+  }, [activeGroupForPlan]);
+
   // Selected Competency
   const [selectedCompId, setSelectedCompId] = useState<string>(
     activeGroupForPlan?.competency.id || competencies[0]?.id || ''
@@ -41,10 +55,35 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
     activeGroupForPlan?.suggestedActivity.id || matchedActivities[0]?.id || ''
   );
 
+  // Filter students and plans by selected class
+  const classStudents = selectedClassGrade === 'ALL'
+    ? students
+    : students.filter(s => s.grade === parseInt(selectedClassGrade, 10));
+
+  const classPlans = selectedClassGrade === 'ALL'
+    ? plans
+    : plans.filter(p => p.grade === parseInt(selectedClassGrade, 10));
+
   // Selected Students
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>(
-    activeGroupForPlan ? activeGroupForPlan.students.map(s => s.student.id) : []
+    activeGroupForPlan
+      ? activeGroupForPlan.students.map(s => s.student.id)
+      : classStudents.slice(0, 3).map(s => s.id)
   );
+
+  // Handle class grade change
+  const handleClassChange = (grade: string) => {
+    setSelectedClassGrade(grade);
+    const stdsInClass = grade === 'ALL'
+      ? students
+      : students.filter(s => s.grade === parseInt(grade, 10));
+    const inClassIds = selectedStudentIds.filter(id => stdsInClass.some(s => s.id === id));
+    if (inClassIds.length > 0) {
+      setSelectedStudentIds(inClassIds);
+    } else {
+      setSelectedStudentIds(stdsInClass.slice(0, 3).map(s => s.id));
+    }
+  };
 
   // Schedule & Notes
   const [scheduledDay, setScheduledDay] = useState<string>(t('planner.schedulePlaceholder'));
@@ -56,6 +95,9 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
     setActivePlanId(planId);
     const saved = plans.find(p => p.id === planId);
     if (saved) {
+      if (saved.grade) {
+        setSelectedClassGrade(saved.grade.toString());
+      }
       setSelectedCompId(saved.competency_id);
       setSelectedActivityId(saved.activity_id);
       setSelectedStudentIds(saved.student_ids);
@@ -74,15 +116,19 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
   const currentComp = competencies.find(c => c.id === selectedCompId) || competencies[0];
   const currentActivity = activities.find(a => a.id === selectedActivityId) || matchedActivities[0] || activities[0];
 
+  const currentGradeNum = selectedClassGrade !== 'ALL'
+    ? parseInt(selectedClassGrade, 10)
+    : (classStudents[0]?.grade || 6);
+
   // Current draft plan representation
   const draftPlan: RemedialPlan = {
     id: activePlanId || `plan-${Date.now()}`,
     school_id: 'ZP-KPG-01',
-    grade: 3,
+    grade: currentGradeNum,
     competency_id: currentComp.id,
     activity_id: currentActivity.id,
     plan_date: new Date().toISOString().split('T')[0],
-    student_ids: selectedStudentIds.length > 0 ? selectedStudentIds : students.slice(0, 5).map(s => s.id),
+    student_ids: selectedStudentIds.length > 0 ? selectedStudentIds : classStudents.slice(0, 4).map(s => s.id),
     status: isApproved ? 'approved' : 'draft',
     teacher_notes: teacherNotes,
     scheduled_day: scheduledDay,
@@ -111,7 +157,7 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
     const message = encodeURIComponent(
       `*${t('appName')} - ${t('planner.title')}*\n` +
       `${t('printable.officialHeading')}\n` +
-      `${t('printable.gradeSectionLabel')} ${t('printable.gradeSectionVal')} | ${t('printable.subjectLabel')} ${currentComp.subject}\n` +
+      `${t('printable.gradeSectionLabel')} Class ${draftPlan.grade}th - Section A | ${t('printable.subjectLabel')} ${currentComp.subject}\n` +
       `${t('printable.targetCompHeading')}: ${compTitle} (${currentComp.code})\n` +
       `${t('planner.targetStudentsLabel')}: ${studentCount}\n` +
       `${t('planner.selectActivityLabel')}: ${actTitle}\n` +
@@ -153,8 +199,28 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
           </p>
         </div>
 
-        {/* Action Buttons: Print & WhatsApp */}
-        <div className="flex items-center gap-2 self-start md:self-auto">
+        {/* Class Selection & Action Buttons */}
+        <div className="flex flex-wrap items-center gap-2.5 self-start md:self-auto">
+          {/* Class Drag-down Selector */}
+          <div className="flex items-center gap-1.5 bg-slate-100 px-3 py-1.5 rounded-xl border border-slate-200">
+            <Filter className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+            <label htmlFor="planner-class-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
+              Class:
+            </label>
+            <select
+              id="planner-class-select"
+              value={selectedClassGrade}
+              onChange={(e) => handleClassChange(e.target.value)}
+              className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs"
+            >
+              <option value="5">Class 5th - A (इयत्ता ५ वी)</option>
+              <option value="6">Class 6th - A (इयत्ता ६ वी)</option>
+              <option value="7">Class 7th - A (इयत्ता ७ वी)</option>
+              <option value="8">Class 8th - A (इयत्ता ८ वी)</option>
+              <option value="ALL">All Classes (सर्व वर्ग)</option>
+            </select>
+          </div>
+
           <button
             onClick={handlePrint}
             className="flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-slate-800 hover:bg-slate-900 text-white text-xs sm:text-sm font-semibold transition shadow-sm"
@@ -194,11 +260,11 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
                 className="w-full text-xs font-medium rounded-lg border border-slate-300 py-1.5 px-2 bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
                 <option value="">{t('planner.createNewPlan')}</option>
-                {plans.map((p, idx) => {
+                {classPlans.map((p, idx) => {
                   const comp = competencies.find(c => c.id === p.competency_id);
                   return (
                     <option key={p.id} value={p.id}>
-                      Plan #{idx + 1} - [{comp?.code}] ({p.status})
+                      [Class {p.grade}th-A] Plan #{idx + 1} - [{comp?.code}] ({p.status})
                     </option>
                   );
                 })}
@@ -276,24 +342,31 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-semibold text-slate-700 mb-1">
-              {t('planner.targetStudentsLabel')} ({selectedStudentIds.length})
-            </label>
-            <div className="flex flex-wrap gap-1 max-h-24 overflow-y-auto p-1 border border-slate-200 rounded-lg bg-slate-50">
-              {students.slice(0, 12).map(st => {
+            <div className="flex items-center justify-between mb-1">
+              <label className="block text-xs font-semibold text-slate-700">
+                {t('planner.targetStudentsLabel')} ({selectedStudentIds.length} Selected)
+              </label>
+              <span className="text-[11px] font-bold text-slate-500">
+                Class {selectedClassGrade !== 'ALL' ? `${selectedClassGrade}th-A` : 'All School'}
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-1.5 max-h-32 overflow-y-auto p-1.5 border border-slate-200 rounded-xl bg-slate-50">
+              {classStudents.map(st => {
                 const isSelected = selectedStudentIds.includes(st.id);
                 return (
                   <button
                     key={st.id}
                     type="button"
                     onClick={() => toggleStudent(st.id)}
-                    className={`text-[10px] px-1.5 py-0.5 rounded border transition ${
+                    className={`text-xs px-2.5 py-1 rounded-lg border transition font-medium flex items-center gap-1 ${
                       isSelected
-                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300 font-bold'
-                        : 'bg-white text-slate-500 border-slate-200'
+                        ? 'bg-emerald-600 text-white border-emerald-700 shadow-2xs font-bold'
+                        : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-100'
                     }`}
                   >
-                    #{st.roll_number}
+                    <span className="text-[10px] opacity-75">#{st.roll_number}</span>
+                    <span>{st.student_alias.split(' ')[0]}</span>
+                    {isSelected && <span className="text-white text-[10px] font-black">&#10003;</span>}
                   </button>
                 );
               })}

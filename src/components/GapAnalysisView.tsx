@@ -25,10 +25,19 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
   const isEnglish = currentLang === 'en';
 
   const [selectedSubject, setSelectedSubject] = useState<'ALL' | SubjectType>('ALL');
+  const [selectedClassGrade, setSelectedClassGrade] = useState<string>('ALL');
+
+  // Filter learners and assessments by selected class
+  const filteredStudents = selectedClassGrade === 'ALL'
+    ? students
+    : students.filter(s => s.grade === parseInt(selectedClassGrade, 10));
+
+  const filteredStudentIds = new Set(filteredStudents.map(s => s.id));
+  const filteredAssessments = assessments.filter(a => filteredStudentIds.has(a.student_id));
 
   // Run on-device deterministic gap engine
-  const diagnoses = diagnoseGaps(students, competencies, assessments);
-  const groups = groupLearnersForRemediation(diagnoses, students, competencies, activities);
+  const diagnoses = diagnoseGaps(filteredStudents, competencies, filteredAssessments);
+  const groups = groupLearnersForRemediation(diagnoses, filteredStudents, competencies, activities);
 
   const urgentCount = diagnoses.filter(d => d.severity === 'high').length;
   const moderateCount = diagnoses.filter(d => d.severity === 'moderate').length;
@@ -57,32 +66,54 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
           </p>
         </div>
 
-        {/* Subject Filter Dropdown / Pills */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 self-start md:self-auto overflow-x-auto max-w-full">
-          <Filter className="w-3.5 h-3.5 text-slate-500 ml-1.5 shrink-0" />
-          <button
-            onClick={() => setSelectedSubject('ALL')}
-            className={`px-3 py-1 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
-              selectedSubject === 'ALL'
-                ? 'bg-white text-slate-900 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            All Subjects
-          </button>
-          {ALL_SUBJECTS.map((sub) => (
+        {/* Class & Subject Filter Bar */}
+        <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
+          {/* Class Drag-Down Selector */}
+          <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200">
+            <Filter className="w-3.5 h-3.5 text-slate-600 shrink-0" />
+            <label htmlFor="gap-class-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
+              Class:
+            </label>
+            <select
+              id="gap-class-select"
+              value={selectedClassGrade}
+              onChange={(e) => setSelectedClassGrade(e.target.value)}
+              className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs"
+            >
+              <option value="ALL">All Classes (सर्व वर्ग)</option>
+              <option value="5">Class 5th - A (इयत्ता ५ वी)</option>
+              <option value="6">Class 6th - A (इयत्ता ६ वी)</option>
+              <option value="7">Class 7th - A (इयत्ता ७ वी)</option>
+              <option value="8">Class 8th - A (इयत्ता ८ वी)</option>
+            </select>
+          </div>
+
+          {/* Subject Filter Dropdown / Pills */}
+          <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 overflow-x-auto max-w-full">
             <button
-              key={sub}
-              onClick={() => setSelectedSubject(sub)}
-              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
-                selectedSubject === sub
-                  ? 'bg-white text-brand-700 shadow-xs'
+              onClick={() => setSelectedSubject('ALL')}
+              className={`px-3 py-1 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
+                selectedSubject === 'ALL'
+                  ? 'bg-white text-slate-900 shadow-xs'
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              {sub}
+              All Subjects
             </button>
-          ))}
+            {ALL_SUBJECTS.map((sub) => (
+              <button
+                key={sub}
+                onClick={() => setSelectedSubject(sub)}
+                className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
+                  selectedSubject === sub
+                    ? 'bg-white text-brand-700 shadow-xs'
+                    : 'text-slate-600 hover:text-slate-900'
+                }`}
+              >
+                {sub}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -225,6 +256,9 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
                                 : 'bg-amber-50 text-amber-800 border-amber-200'
                             }`}
                           >
+                            <span className="font-bold text-[9px] bg-white/80 px-1 rounded border border-slate-200">
+                              {student.grade}th-A
+                            </span>
                             <span>#{student.roll_number}</span>
                             <span className="text-[10px] opacity-75">({score_pct}%)</span>
                           </span>

@@ -64,7 +64,7 @@ export const PrintablePlan: React.FC<PrintablePlanProps> = ({
         <div className="grid grid-cols-4 gap-2 mt-3 pt-2 border-t border-slate-200 text-xs">
           <div>
             <span className="text-slate-500 block text-[10px]">{t('printable.gradeSectionLabel')}</span>
-            <span className="font-bold text-slate-800">{t('printable.gradeSectionVal')}</span>
+            <span className="font-bold text-slate-800">Class {plan.grade || 6}th - Section A</span>
           </div>
           <div>
             <span className="text-slate-500 block text-[10px]">{t('printable.subjectLabel')}</span>

@@ -68,6 +68,23 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   // Filter State
   const [filterSubject, setFilterSubject] = useState<string>('ALL');
   const [filterCompetency, setFilterCompetency] = useState<string>('ALL');
+  const [filterClassGrade, setFilterClassGrade] = useState<string>('ALL');
+
+  // Class selection for manual entry form
+  const [formClassGrade, setFormClassGrade] = useState<string>('5');
+  const formStudents = formClassGrade === 'ALL'
+    ? students
+    : students.filter(s => s.grade === parseInt(formClassGrade, 10));
+
+  const handleFormClassChange = (grade: string) => {
+    setFormClassGrade(grade);
+    const classStds = grade === 'ALL'
+      ? students
+      : students.filter(s => s.grade === parseInt(grade, 10));
+    if (classStds.length > 0) {
+      setSelectedStudentId(classStds[0].id);
+    }
+  };
 
   // Real-time Data Validation for Manual Form
   const numericScore = parseFloat(score);
@@ -267,6 +284,8 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
   // Filtered Assessments
   const filteredAssessments = assessments.filter(a => {
+    const student = students.find(s => s.id === a.student_id);
+    if (filterClassGrade !== 'ALL' && student?.grade !== parseInt(filterClassGrade, 10)) return false;
     const comp = competencies.find(c => c.id === a.competency_id);
     if (filterSubject !== 'ALL' && comp?.subject !== filterSubject) return false;
     if (filterCompetency !== 'ALL' && a.competency_id !== filterCompetency) return false;
@@ -322,19 +341,37 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
             <form onSubmit={handleManualSubmit} className="space-y-4">
               
+              {/* Select Class (5th A, 6th A, 7th A, 8th A, All) */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Select Class (इयत्ता)
+                </label>
+                <select
+                  value={formClassGrade}
+                  onChange={(e) => handleFormClassChange(e.target.value)}
+                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
+                >
+                  <option value="5">Class 5th - A (इयत्ता ५ वी - अ)</option>
+                  <option value="6">Class 6th - A (इयत्ता ६ वी - अ)</option>
+                  <option value="7">Class 7th - A (इयत्ता ७ वी - अ)</option>
+                  <option value="8">Class 8th - A (इयत्ता ८ वी - अ)</option>
+                  <option value="ALL">All Classes (सर्व वर्ग)</option>
+                </select>
+              </div>
+
               {/* Select Student */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Student Name (Preserved 20 Learners)
+                  Student Name ({formStudents.length} Learners in {formClassGrade === 'ALL' ? 'School' : `Class ${formClassGrade}th-A`})
                 </label>
                 <select
                   value={selectedStudentId}
                   onChange={(e) => setSelectedStudentId(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 p-2.5 text-xs bg-slate-50 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
-                  {students.map((s) => (
+                  {formStudents.map((s) => (
                     <option key={s.id} value={s.id}>
-                      Roll #{s.roll_number} - {formatStudentDisplay(s, currentLang)}
+                      [Class {s.grade}th-A] Roll #{s.roll_number} - {formatStudentDisplay(s, currentLang)}
                     </option>
                   ))}
                 </select>
@@ -565,8 +602,20 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 </p>
               </div>
 
-              {/* Subject & Competency Filter */}
-              <div className="flex items-center gap-2">
+              {/* Class, Subject & Competency Filter */}
+              <div className="flex flex-wrap items-center gap-2">
+                <select
+                  value={filterClassGrade}
+                  onChange={(e) => setFilterClassGrade(e.target.value)}
+                  className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+                >
+                  <option value="ALL">All Classes (सर्व वर्ग)</option>
+                  <option value="5">Class 5th - A</option>
+                  <option value="6">Class 6th - A</option>
+                  <option value="7">Class 7th - A</option>
+                  <option value="8">Class 8th - A</option>
+                </select>
+
                 <select
                   value={filterSubject}
                   onChange={(e) => {
@@ -627,6 +676,9 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                       return (
                         <tr key={asmt.id} className="hover:bg-slate-50/80 transition">
                           <td className="py-2.5 px-3 font-medium text-slate-900 whitespace-nowrap">
+                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 font-mono font-bold mr-1.5 text-slate-700">
+                              {student?.grade}th-A
+                            </span>
                             <span className="font-bold text-slate-700 mr-1">#{student?.roll_number}</span>
                             {student ? formatStudentDisplay(student, currentLang) : `Student ${asmt.student_id}`}
                           </td>

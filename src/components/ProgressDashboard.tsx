@@ -31,6 +31,8 @@ interface ProgressDashboardProps {
   assessments: AssessmentRecord[];
   plans: RemedialPlan[];
   userRole: UserRole;
+  selectedClassGrade?: string;
+  onClassGradeChange?: (grade: string) => void;
   onNavigateToAssessment?: () => void;
   onNavigateToPlanner?: () => void;
 }
@@ -41,6 +43,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   assessments,
   plans,
   userRole,
+  selectedClassGrade: externalClassGrade,
+  onClassGradeChange,
   onNavigateToAssessment,
   onNavigateToPlanner,
 }) => {
@@ -54,15 +58,23 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   // Class Teacher selects from options: 5th A, 6th A, 7th A, and 8th A.
   // Head Teacher can inspect Entire School ('ALL') or inspect any individual class.
   const [selectedClassGrade, setSelectedClassGrade] = useState<string>(
-    userRole === 'teacher' ? '6' : 'ALL'
+    externalClassGrade || (userRole === 'teacher' ? '6' : 'ALL')
   );
+
+  // Sync whenever externalClassGrade changes
+  useEffect(() => {
+    if (externalClassGrade) {
+      setSelectedClassGrade(externalClassGrade);
+    }
+  }, [externalClassGrade]);
 
   // Default to grade 6 if teacher role is active and selectedClassGrade was 'ALL'
   useEffect(() => {
     if (userRole === 'teacher' && selectedClassGrade === 'ALL') {
       setSelectedClassGrade('6');
+      onClassGradeChange?.('6');
     }
-  }, [userRole, selectedClassGrade]);
+  }, [userRole, selectedClassGrade, onClassGradeChange]);
 
   const activeGrade = userRole === 'teacher' && selectedClassGrade === 'ALL' ? '6' : selectedClassGrade;
 
@@ -79,7 +91,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
     ? plans
     : plans.filter(p => p.grade === parseInt(activeGrade, 10));
 
-  // Selected student state for individual student view
+  // Selected student state for individual student view (guaranteed to belong to active class)
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
     filteredStudents[0]?.id || students[0]?.id || 'std-501'
   );
@@ -91,14 +103,25 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
     }
   }, [filteredStudents, selectedStudentId]);
 
+  const handleClassSelect = (grade: string) => {
+    setSelectedClassGrade(grade);
+    onClassGradeChange?.(grade);
+    const classStds = grade === 'ALL'
+      ? students
+      : students.filter(s => s.grade === parseInt(grade, 10));
+    if (classStds.length > 0) {
+      setSelectedStudentId(classStds[0].id);
+    }
+  };
+
   // Closed loop metrics for active scope
   const metrics = calculateRemediationMetrics(competencies, filteredAssessments);
 
   // Cohort AI Predictions for active scope
   const cohortPrediction = predictCohortOutcomes(filteredStudents, filteredAssessments, competencies);
 
-  // Selected student & individual AI prediction
-  const selectedStudent = students.find(s => s.id === selectedStudentId) || students[0];
+  // Selected student & individual AI prediction (immediately points to student in active class)
+  const selectedStudent = filteredStudents.find(s => s.id === selectedStudentId) || filteredStudents[0] || students[0];
   const studentPrediction = selectedStudent
     ? predictStudentMastery(selectedStudent, assessments, competencies)
     : null;
@@ -268,14 +291,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               <select
                 id="teacher-class-select"
                 value={activeGrade}
-                onChange={(e) => {
-                  const newGrade = e.target.value;
-                  setSelectedClassGrade(newGrade);
-                  const classStds = students.filter(s => s.grade === parseInt(newGrade, 10));
-                  if (classStds.length > 0) {
-                    setSelectedStudentId(classStds[0].id);
-                  }
-                }}
+                onChange={(e) => handleClassSelect(e.target.value)}
                 className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2.5 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs"
               >
                 <option value="5">Class 5th - A (इयत्ता ५ वी - अ)</option>
@@ -330,7 +346,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               <select
                 id="head-teacher-class-select"
                 value={selectedClassGrade}
-                onChange={(e) => setSelectedClassGrade(e.target.value)}
+                onChange={(e) => handleClassSelect(e.target.value)}
                 className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
               >
                 <option value="ALL">Entire School (सर्व वर्ग - All Classes)</option>
@@ -391,7 +407,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             {selectedClassGrade !== 'ALL' && (
               <button
-                onClick={() => setSelectedClassGrade('ALL')}
+                onClick={() => handleClassSelect('ALL')}
                 className="text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1 rounded-lg border border-brand-200 self-start sm:self-auto"
               >
                 Reset to Entire School View
@@ -464,7 +480,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                       </td>
                       <td className="py-3 px-3 text-right whitespace-nowrap">
                         <button
-                          onClick={() => setSelectedClassGrade(String(cls.grade))}
+                          onClick={() => handleClassSelect(String(cls.grade))}
                           className={`px-3 py-1 rounded-lg text-xs font-bold transition shadow-2xs ${
                             isSelected
                               ? 'bg-emerald-600 text-white'
@@ -873,6 +889,114 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </div>
           </div>
 
+          {/* =========================================================================
+              CLASS STUDENT MARKSHEET & PERFORMANCE ROSTER (SHOWS DATA OF SELECTED CLASS)
+          ========================================================================= */}
+          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+              <div>
+                <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
+                  <span>Class {activeGrade === 'ALL' ? 'All Classes' : `${activeGrade}th - Section A`} Student Performance Roster</span>
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold uppercase tracking-wider">
+                    {filteredStudents.length} Learners Active
+                  </span>
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Comprehensive student-by-student marksheet data, baseline &amp; follow-up averages, net gains, and AI learning velocity for {activeGrade === 'ALL' ? 'the entire school' : `Class ${activeGrade}th - A`}
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 self-start sm:self-auto">
+                <Users className="w-3.5 h-3.5 text-brand-600" />
+                <span>Active Scope: {activeGrade === 'ALL' ? 'All 40 Students' : `Class ${activeGrade}th - A (${filteredStudents.length} Students)`}</span>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs">
+                <thead className="bg-slate-50 uppercase tracking-wider text-slate-700 font-bold border-b border-slate-200">
+                  <tr>
+                    <th className="py-3 px-3">Roll # &amp; Student Alias</th>
+                    <th className="py-3 px-3">Class</th>
+                    <th className="py-3 px-3">Baseline Avg</th>
+                    <th className="py-3 px-3">Follow-Up Avg</th>
+                    <th className="py-3 px-3">Net Gain</th>
+                    <th className="py-3 px-3">AI Velocity</th>
+                    <th className="py-3 px-3">Risk Level</th>
+                    <th className="py-3 px-3 text-right">Student Record</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {filteredStudents.map((std) => {
+                    const stdAsmts = assessments.filter(a => a.student_id === std.id);
+                    const baseAsmts = stdAsmts.filter(a => a.assessment_type === 'baseline');
+                    const folAsmts = stdAsmts.filter(a => a.assessment_type === 'follow_up');
+
+                    const baseAvg = baseAsmts.length > 0
+                      ? Math.round(baseAsmts.reduce((sum, a) => sum + a.percentage, 0) / baseAsmts.length)
+                      : 0;
+                    const folAvg = folAsmts.length > 0
+                      ? Math.round(folAsmts.reduce((sum, a) => sum + a.percentage, 0) / folAsmts.length)
+                      : baseAvg;
+                    const gain = folAvg - baseAvg;
+
+                    const pred = predictStudentMastery(std, assessments, competencies);
+
+                    return (
+                      <tr key={std.id} className="hover:bg-slate-50/80 transition">
+                        <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
+                          <span className="p-1 rounded-md bg-slate-100 text-slate-700 mr-2 font-mono">
+                            #{std.roll_number}
+                          </span>
+                          {formatStudentDisplay(std, currentLang)}
+                        </td>
+                        <td className="py-3 px-3 text-slate-600 font-semibold whitespace-nowrap">
+                          Class {std.grade}th - {std.section}
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="font-bold text-slate-700">{baseAvg}%</span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="font-bold text-emerald-700">{folAvg}%</span>
+                        </td>
+                        <td className="py-3 px-3 font-bold text-emerald-800">
+                          +{gain}%
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className="inline-flex items-center gap-1 font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                            +{pred.learning_velocity}%/wk
+                          </span>
+                        </td>
+                        <td className="py-3 px-3">
+                          <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded ${
+                            pred.risk_level === 'critical' || pred.risk_level === 'high'
+                              ? 'bg-rose-100 text-rose-800'
+                              : pred.risk_level === 'medium'
+                              ? 'bg-amber-100 text-amber-800'
+                              : 'bg-emerald-100 text-emerald-800'
+                          }`}>
+                            {pred.risk_level.toUpperCase()}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap">
+                          <button
+                            onClick={() => {
+                              setSelectedStudentId(std.id);
+                              setViewScope('individual');
+                            }}
+                            className="px-3 py-1 rounded-lg text-xs font-bold bg-brand-50 border border-brand-200 text-brand-700 hover:bg-brand-100 transition shadow-2xs"
+                          >
+                            Inspect Student &rarr;
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
         </div>
       )}
 
@@ -908,14 +1032,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">Class:</span>
                 <select
                   value={activeGrade}
-                  onChange={(e) => {
-                    const newGrade = e.target.value;
-                    setSelectedClassGrade(newGrade);
-                    const classStds = newGrade === 'ALL'
-                      ? students
-                      : students.filter(s => s.grade === parseInt(newGrade, 10));
-                    if (classStds.length > 0) setSelectedStudentId(classStds[0].id);
-                  }}
+                  onChange={(e) => handleClassSelect(e.target.value)}
                   className="text-xs font-bold rounded-lg border-0 bg-transparent py-1 px-1 text-slate-800 focus:outline-none cursor-pointer"
                 >
                   {userRole === 'head_teacher' && (

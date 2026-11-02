@@ -8,6 +8,8 @@ import { SUPPORTED_LANGUAGES } from '../i18n/languages';
 interface HeaderProps {
   currentRole: UserRole;
   onRoleChange: (role: UserRole) => void;
+  selectedClassGrade: string;
+  onClassGradeChange: (grade: string) => void;
   isOnline: boolean;
   onOpenPrivacy: () => void;
 }
@@ -15,6 +17,8 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({
   currentRole,
   onRoleChange,
+  selectedClassGrade,
+  onClassGradeChange,
   isOnline,
   onOpenPrivacy
 }) => {
@@ -86,6 +90,25 @@ export const Header: React.FC<HeaderProps> = ({
                 <span className="font-bold">{activeLangMeta.nativeName}</span>
                 <ChevronDown className="w-3 h-3 text-slate-400" />
               </button>
+
+              {/* Class Selector */}
+              <div className="relative">
+                <select
+                  value={selectedClassGrade}
+                  onChange={(e) => onClassGradeChange(e.target.value)}
+                  className="appearance-none bg-indigo-50 hover:bg-indigo-100 text-indigo-950 text-xs sm:text-sm font-bold py-1.5 pl-3 pr-7 rounded-lg border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs"
+                  title="Select Class (इयत्ता ५ वी, ६ वी, ७ वी, ८ वी)"
+                >
+                  {currentRole === 'head_teacher' && (
+                    <option value="ALL">All School (सर्व वर्ग)</option>
+                  )}
+                  <option value="5">Class 5th - A</option>
+                  <option value="6">Class 6th - A</option>
+                  <option value="7">Class 7th - A</option>
+                  <option value="8">Class 8th - A</option>
+                </select>
+                <ChevronDown className="w-3.5 h-3.5 text-indigo-600 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
+              </div>
 
               {/* Role Switcher */}
               <div className="relative">

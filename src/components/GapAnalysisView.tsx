@@ -10,6 +10,8 @@ interface GapAnalysisViewProps {
   competencies: Competency[];
   assessments: AssessmentRecord[];
   activities: RemedialActivity[];
+  selectedClassGrade?: string;
+  onClassGradeChange?: (grade: string) => void;
   onSelectGroupForPlan: (group: StudentGroup) => void;
 }
 
@@ -18,6 +20,8 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
   competencies,
   assessments,
   activities,
+  selectedClassGrade: externalClassGrade,
+  onClassGradeChange,
   onSelectGroupForPlan,
 }) => {
   const { t, i18n } = useTranslation();
@@ -25,7 +29,19 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
   const isEnglish = currentLang === 'en';
 
   const [selectedSubject, setSelectedSubject] = useState<'ALL' | SubjectType>('ALL');
-  const [selectedClassGrade, setSelectedClassGrade] = useState<string>('ALL');
+  const [selectedClassGrade, setSelectedClassGrade] = useState<string>(externalClassGrade || 'ALL');
+
+  // Sync with global class selection
+  React.useEffect(() => {
+    if (externalClassGrade) {
+      setSelectedClassGrade(externalClassGrade);
+    }
+  }, [externalClassGrade]);
+
+  const handleClassChange = (grade: string) => {
+    setSelectedClassGrade(grade);
+    onClassGradeChange?.(grade);
+  };
 
   // Filter learners and assessments by selected class
   const filteredStudents = selectedClassGrade === 'ALL'
@@ -77,7 +93,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
             <select
               id="gap-class-select"
               value={selectedClassGrade}
-              onChange={(e) => setSelectedClassGrade(e.target.value)}
+              onChange={(e) => handleClassChange(e.target.value)}
               className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs"
             >
               <option value="ALL">All Classes (सर्व वर्ग)</option>

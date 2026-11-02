@@ -25,9 +25,17 @@ export const App: React.FC = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [currentRole, setCurrentRole] = useState<UserRole>('teacher');
+  const [selectedClassGrade, setSelectedClassGrade] = useState<string>('6');
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [activeGroupForPlan, setActiveGroupForPlan] = useState<StudentGroup | null>(null);
+
+  const handleRoleChange = (role: UserRole) => {
+    setCurrentRole(role);
+    if (role === 'teacher' && selectedClassGrade === 'ALL') {
+      setSelectedClassGrade('6');
+    }
+  };
 
   // Initialize Dexie.js offline DB and Realtime Supabase listeners
   useEffect(() => {
@@ -168,7 +176,9 @@ export const App: React.FC = () => {
       {/* Header */}
       <Header
         currentRole={currentRole}
-        onRoleChange={setCurrentRole}
+        onRoleChange={handleRoleChange}
+        selectedClassGrade={selectedClassGrade}
+        onClassGradeChange={setSelectedClassGrade}
         isOnline={isOnline}
         onOpenPrivacy={() => setIsPrivacyOpen(true)}
       />
@@ -198,6 +208,8 @@ export const App: React.FC = () => {
             students={students}
             competencies={competencies}
             assessments={assessments}
+            selectedClassGrade={selectedClassGrade}
+            onClassGradeChange={setSelectedClassGrade}
             onAddAssessment={handleAddAssessment}
             onUpdateAssessment={handleUpdateAssessment}
             onBatchUpload={handleBatchUpload}
@@ -211,6 +223,8 @@ export const App: React.FC = () => {
             competencies={competencies}
             assessments={assessments}
             activities={activities}
+            selectedClassGrade={selectedClassGrade}
+            onClassGradeChange={setSelectedClassGrade}
             onSelectGroupForPlan={handleSelectGroupForPlan}
           />
         )}
@@ -221,6 +235,8 @@ export const App: React.FC = () => {
             competencies={competencies}
             activities={activities}
             plans={plans}
+            selectedClassGrade={selectedClassGrade}
+            onClassGradeChange={setSelectedClassGrade}
             activeGroupForPlan={activeGroupForPlan}
             onSavePlan={handleSavePlan}
             onClearActiveGroup={() => setActiveGroupForPlan(null)}
@@ -234,6 +250,8 @@ export const App: React.FC = () => {
             assessments={assessments}
             plans={plans}
             userRole={currentRole}
+            selectedClassGrade={selectedClassGrade}
+            onClassGradeChange={setSelectedClassGrade}
             onNavigateToAssessment={() => setActiveTab('assessment')}
             onNavigateToPlanner={() => setActiveTab('planner')}
           />

@@ -22,6 +22,8 @@ interface AssessmentManagerProps {
   students: Student[];
   competencies: Competency[];
   assessments: AssessmentRecord[];
+  selectedClassGrade?: string;
+  onClassGradeChange?: (grade: string) => void;
   onAddAssessment: (asmt: Omit<AssessmentRecord, 'id'>) => Promise<void>;
   onUpdateAssessment: (id: string, updates: Partial<AssessmentRecord>) => Promise<void>;
   onBatchUpload: (asmts: Omit<AssessmentRecord, 'id'>[]) => Promise<void>;
@@ -32,6 +34,8 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   students,
   competencies,
   assessments,
+  selectedClassGrade,
+  onClassGradeChange,
   onAddAssessment,
   onUpdateAssessment,
   onDeleteAssessment,
@@ -41,7 +45,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   const currentLang = i18n.language || 'en';
 
   // Manual Form State
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || 'std-301');
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || 'std-501');
   const [selectedCompetencyId, setSelectedCompetencyId] = useState<string>(competencies[0]?.id || 'MATH-01');
   const [assessmentType, setAssessmentType] = useState<AssessmentType>('baseline');
   const [score, setScore] = useState<string>('6');
@@ -68,22 +72,43 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   // Filter State
   const [filterSubject, setFilterSubject] = useState<string>('ALL');
   const [filterCompetency, setFilterCompetency] = useState<string>('ALL');
-  const [filterClassGrade, setFilterClassGrade] = useState<string>('ALL');
+  const [filterClassGrade, setFilterClassGrade] = useState<string>(selectedClassGrade || 'ALL');
 
   // Class selection for manual entry form
-  const [formClassGrade, setFormClassGrade] = useState<string>('5');
+  const [formClassGrade, setFormClassGrade] = useState<string>(selectedClassGrade === 'ALL' ? '5' : (selectedClassGrade || '5'));
+
+  // Sync with global class selection from header or dashboard
+  React.useEffect(() => {
+    if (selectedClassGrade) {
+      setFilterClassGrade(selectedClassGrade);
+      setFormClassGrade(selectedClassGrade === 'ALL' ? '5' : selectedClassGrade);
+      const classStds = selectedClassGrade === 'ALL'
+        ? students
+        : students.filter(s => s.grade === parseInt(selectedClassGrade, 10));
+      if (classStds.length > 0) {
+        setSelectedStudentId(classStds[0].id);
+      }
+    }
+  }, [selectedClassGrade, students]);
+
   const formStudents = formClassGrade === 'ALL'
     ? students
     : students.filter(s => s.grade === parseInt(formClassGrade, 10));
 
   const handleFormClassChange = (grade: string) => {
     setFormClassGrade(grade);
+    onClassGradeChange?.(grade);
     const classStds = grade === 'ALL'
       ? students
       : students.filter(s => s.grade === parseInt(grade, 10));
     if (classStds.length > 0) {
       setSelectedStudentId(classStds[0].id);
     }
+  };
+
+  const handleTableClassChange = (grade: string) => {
+    setFilterClassGrade(grade);
+    onClassGradeChange?.(grade);
   };
 
   // Real-time Data Validation for Manual Form
@@ -606,7 +631,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               <div className="flex flex-wrap items-center gap-2">
                 <select
                   value={filterClassGrade}
-                  onChange={(e) => setFilterClassGrade(e.target.value)}
+                  onChange={(e) => handleTableClassChange(e.target.value)}
                   className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
                 >
                   <option value="ALL">All Classes (सर्व वर्ग)</option>

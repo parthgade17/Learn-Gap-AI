@@ -14,6 +14,8 @@ interface RemedialPlannerViewProps {
   competencies: Competency[];
   activities: RemedialActivity[];
   plans: RemedialPlan[];
+  selectedClassGrade?: string;
+  onClassGradeChange?: (grade: string) => void;
   activeGroupForPlan: StudentGroup | null;
   onSavePlan: (plan: RemedialPlan) => Promise<void>;
   onClearActiveGroup: () => void;
@@ -24,6 +26,8 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
   competencies,
   activities,
   plans,
+  selectedClassGrade: externalClassGrade,
+  onClassGradeChange,
   activeGroupForPlan,
   onSavePlan,
 }) => {
@@ -31,13 +35,22 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
   const currentLang = i18n.language || 'en';
 
   // Selected Class Grade (5th A, 6th A, 7th A, 8th A, or All)
-  const initialGrade = activeGroupForPlan?.students[0]?.student.grade?.toString() || '6';
+  const initialGrade = externalClassGrade || activeGroupForPlan?.students[0]?.student.grade?.toString() || '6';
   const [selectedClassGrade, setSelectedClassGrade] = useState<string>(initialGrade);
+
+  // Sync class grade if externalClassGrade changes
+  useEffect(() => {
+    if (externalClassGrade) {
+      setSelectedClassGrade(externalClassGrade);
+    }
+  }, [externalClassGrade]);
 
   // Sync class grade if activeGroupForPlan changes
   useEffect(() => {
     if (activeGroupForPlan?.students[0]?.student.grade) {
-      setSelectedClassGrade(activeGroupForPlan.students[0].student.grade.toString());
+      const g = activeGroupForPlan.students[0].student.grade.toString();
+      setSelectedClassGrade(g);
+      onClassGradeChange?.(g);
       setSelectedCompId(activeGroupForPlan.competency.id);
       setSelectedActivityId(activeGroupForPlan.suggestedActivity.id);
       setSelectedStudentIds(activeGroupForPlan.students.map(s => s.student.id));
@@ -74,6 +87,7 @@ export const RemedialPlannerView: React.FC<RemedialPlannerViewProps> = ({
   // Handle class grade change
   const handleClassChange = (grade: string) => {
     setSelectedClassGrade(grade);
+    onClassGradeChange?.(grade);
     const stdsInClass = grade === 'ALL'
       ? students
       : students.filter(s => s.grade === parseInt(grade, 10));

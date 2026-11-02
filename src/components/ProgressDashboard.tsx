@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   TrendingUp,
@@ -50,26 +50,46 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   // Toggle between Overall Students Record and Individual Student Record
   const [viewScope, setViewScope] = useState<'overall' | 'individual'>('overall');
 
-  // Class / Grade filter for Head Teacher (can see entire school or any specific class)
-  const [selectedClassGrade, setSelectedClassGrade] = useState<string>('ALL');
+  // Class / Grade filter:
+  // Class Teacher selects from options: 5th A, 6th A, 7th A, and 8th A.
+  // Head Teacher can inspect Entire School ('ALL') or inspect any individual class.
+  const [selectedClassGrade, setSelectedClassGrade] = useState<string>(
+    userRole === 'teacher' ? '6' : 'ALL'
+  );
+
+  // Default to grade 6 if teacher role is active and selectedClassGrade was 'ALL'
+  useEffect(() => {
+    if (userRole === 'teacher' && selectedClassGrade === 'ALL') {
+      setSelectedClassGrade('6');
+    }
+  }, [userRole, selectedClassGrade]);
+
+  const activeGrade = userRole === 'teacher' && selectedClassGrade === 'ALL' ? '6' : selectedClassGrade;
 
   // Filter students by selected class
-  const filteredStudents = selectedClassGrade === 'ALL'
+  const filteredStudents = activeGrade === 'ALL'
     ? students
-    : students.filter(s => s.grade === parseInt(selectedClassGrade, 10));
+    : students.filter(s => s.grade === parseInt(activeGrade, 10));
 
   const filteredStudentIds = new Set(filteredStudents.map(s => s.id));
 
   // Filter assessments and plans corresponding to the active class scope
   const filteredAssessments = assessments.filter(a => filteredStudentIds.has(a.student_id));
-  const filteredPlans = selectedClassGrade === 'ALL'
+  const filteredPlans = activeGrade === 'ALL'
     ? plans
-    : plans.filter(p => p.grade === parseInt(selectedClassGrade, 10));
+    : plans.filter(p => p.grade === parseInt(activeGrade, 10));
 
   // Selected student state for individual student view
   const [selectedStudentId, setSelectedStudentId] = useState<string>(
-    filteredStudents[0]?.id || students[0]?.id || 'std-301'
+    filteredStudents[0]?.id || students[0]?.id || 'std-501'
   );
+
+  // Keep selected student synchronized whenever the class changes
+  useEffect(() => {
+    if (filteredStudents.length > 0 && !filteredStudents.some(s => s.id === selectedStudentId)) {
+      setSelectedStudentId(filteredStudents[0].id);
+    }
+  }, [filteredStudents, selectedStudentId]);
 
   // Closed loop metrics for active scope
   const metrics = calculateRemediationMetrics(competencies, filteredAssessments);
@@ -219,24 +239,52 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
       {/* =========================================================================
           ROLE HIGHLIGHT & CLASS SELECTOR
-          1. Class Teacher  |  2. Head Teacher (Entire School Class-Wise & Student Wise)
+          1. Class Teacher (Drag-down selection for 5th A, 6th A, 7th A, 8th A)
+          2. Head Teacher (Entire School Class-Wise & Student Wise)
       ========================================================================= */}
       {userRole === 'teacher' ? (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
-          <div className="flex items-center gap-3">
-            <span className="p-2 bg-blue-600 text-white rounded-xl shadow-xs font-bold">
-              Grade 6-A
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 sm:p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+            <span className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs font-black text-sm tracking-wide self-start sm:self-auto">
+              Grade {activeGrade}-A
             </span>
             <div>
-              <p className="font-bold text-blue-950">
+              <p className="font-bold text-blue-950 text-sm">
                 Classroom Teacher Command Center
               </p>
               <p className="text-blue-700 text-[11px] mt-0.5">
-                Class Section: Grade 6-A • 7 Core Subjects • Continuous Remedial Tracking
+                Class Section: Grade {activeGrade}-A • {filteredStudents.length} Students • 7 Core Subjects • Continuous Remedial Tracking
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2">
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Drag down option for selecting class: 5th A, 6th A, 7th A, 8th A */}
+            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-blue-200 shadow-2xs">
+              <Filter className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+              <label htmlFor="teacher-class-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
+                Select Class:
+              </label>
+              <select
+                id="teacher-class-select"
+                value={activeGrade}
+                onChange={(e) => {
+                  const newGrade = e.target.value;
+                  setSelectedClassGrade(newGrade);
+                  const classStds = students.filter(s => s.grade === parseInt(newGrade, 10));
+                  if (classStds.length > 0) {
+                    setSelectedStudentId(classStds[0].id);
+                  }
+                }}
+                className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2.5 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs"
+              >
+                <option value="5">Class 5th - A (इयत्ता ५ वी - अ)</option>
+                <option value="6">Class 6th - A (इयत्ता ६ वी - अ)</option>
+                <option value="7">Class 7th - A (इयत्ता ७ वी - अ)</option>
+                <option value="8">Class 8th - A (इयत्ता ८ वी - अ)</option>
+              </select>
+            </div>
+
             {onNavigateToAssessment && (
               <button
                 onClick={onNavigateToAssessment}
@@ -843,7 +891,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               </div>
               <div>
                 <span className="text-xs font-semibold text-slate-400 block uppercase tracking-wider">
-                  Select Individual Learner {userRole === 'head_teacher' && '(Across All School Classes)'}
+                  Select Individual Learner {userRole === 'head_teacher' ? '(School-Wide Drilldown)' : `(Class ${activeGrade}th - A)`}
                 </span>
                 <span className="font-black text-slate-900 text-base">
                   {selectedStudent ? formatStudentDisplay(selectedStudent, currentLang) : 'Learner'}
@@ -855,10 +903,11 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </div>
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-              {/* Optional Class Filter for quick narrowing */}
-              {userRole === 'head_teacher' && (
+              {/* Class Filter Drag-Down Menu */}
+              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-xl">
+                <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">Class:</span>
                 <select
-                  value={selectedClassGrade}
+                  value={activeGrade}
                   onChange={(e) => {
                     const newGrade = e.target.value;
                     setSelectedClassGrade(newGrade);
@@ -867,15 +916,17 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                       : students.filter(s => s.grade === parseInt(newGrade, 10));
                     if (classStds.length > 0) setSelectedStudentId(classStds[0].id);
                   }}
-                  className="text-xs font-semibold rounded-xl border border-slate-300 py-2 px-2.5 bg-slate-50 text-slate-800"
+                  className="text-xs font-bold rounded-lg border-0 bg-transparent py-1 px-1 text-slate-800 focus:outline-none cursor-pointer"
                 >
-                  <option value="ALL">Filter Class: All School</option>
-                  <option value="5">Class 5th</option>
-                  <option value="6">Class 6th</option>
-                  <option value="7">Class 7th</option>
-                  <option value="8">Class 8th</option>
+                  {userRole === 'head_teacher' && (
+                    <option value="ALL">Entire School (सर्व वर्ग)</option>
+                  )}
+                  <option value="5">5th A (इयत्ता ५ वी)</option>
+                  <option value="6">6th A (इयत्ता ६ वी)</option>
+                  <option value="7">7th A (इयत्ता ७ वी)</option>
+                  <option value="8">8th A (इयत्ता ८ वी)</option>
                 </select>
-              )}
+              </div>
 
               <select
                 id="student-picker"
@@ -885,7 +936,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               >
                 {filteredStudents.map((std) => (
                   <option key={std.id} value={std.id}>
-                    [Class {std.grade}th] Roll #{std.roll_number} - {formatStudentDisplay(std, currentLang)}
+                    [Class {std.grade}th - {std.section}] Roll #{std.roll_number} - {formatStudentDisplay(std, currentLang)}
                   </option>
                 ))}
               </select>

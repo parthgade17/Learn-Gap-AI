@@ -10,6 +10,7 @@ import { GapAnalysisView } from './components/GapAnalysisView';
 import { RemedialPlannerView } from './components/RemedialPlannerView';
 import { ProgressDashboard } from './components/ProgressDashboard';
 import { DPDPComplianceModal } from './components/DPDPComplianceModal';
+import { PWAInstallModal } from './components/PWAInstallModal';
 import { UserRole, StudentGroup, AssessmentRecord, RemedialPlan } from './types';
 import { diagnoseGaps } from './engine/gapEngine';
 import {
@@ -21,6 +22,11 @@ import {
 } from './lib/supabaseClient';
 import { WifiOff, Sparkles, CheckCircle2 } from 'lucide-react';
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: 'accepted' | 'dismissed' }>;
+}
+
 export const App: React.FC = () => {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
@@ -30,6 +36,11 @@ export const App: React.FC = () => {
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [activeGroupForPlan, setActiveGroupForPlan] = useState<StudentGroup | null>(null);
 
+  // PWA Install State
+  const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
+  const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [isInstalled, setIsInstalled] = useState<boolean>(false);
+
   const handleRoleChange = (role: UserRole) => {
     setCurrentRole(role);
     if (role === 'teacher' && selectedClassGrade === 'ALL') {
@@ -37,9 +48,27 @@ export const App: React.FC = () => {
     }
   };
 
-  // Initialize Dexie.js offline DB and Realtime Supabase listeners
+  // Initialize Dexie.js offline DB, PWA install prompts, and Realtime Supabase listeners
   useEffect(() => {
     seedInitialDataIfEmpty().catch(console.error);
+
+    // Detect standalone PWA mode
+    if (window.matchMedia('(display-mode: standalone)').matches || (window.navigator as unknown as { standalone?: boolean }).standalone) {
+      setIsInstalled(true);
+    }
+
+    const handleBeforeInstallPrompt = (e: Event) => {
+      e.preventDefault();
+      setInstallPrompt(e as BeforeInstallPromptEvent);
+    };
+
+    const handleAppInstalled = () => {
+      setIsInstalled(true);
+      setInstallPrompt(null);
+    };
+
+    window.addEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+    window.addEventListener('appinstalled', handleAppInstalled);
 
     const handleOnline = () => setIsOnline(true);
     const handleOffline = () => setIsOnline(false);
@@ -58,6 +87,8 @@ export const App: React.FC = () => {
     );
 
     return () => {
+      window.removeEventListener('beforeinstallprompt', handleBeforeInstallPrompt);
+      window.removeEventListener('appinstalled', handleAppInstalled);
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
       if (unsubscribe) unsubscribe();
@@ -181,6 +212,8 @@ export const App: React.FC = () => {
         onClassGradeChange={setSelectedClassGrade}
         isOnline={isOnline}
         onOpenPrivacy={() => setIsPrivacyOpen(true)}
+        onOpenInstallModal={() => setIsInstallModalOpen(true)}
+        isInstalled={isInstalled}
       />
 
       {/* Responsive Navigation Tabs */}
@@ -191,7 +224,11 @@ export const App: React.FC = () => {
       />
 
       {/* One-Tap PWA Install App Banner */}
-      <InstallAppBanner />
+      <InstallAppBanner
+        onOpenModal={() => setIsInstallModalOpen(true)}
+        installPrompt={installPrompt}
+        isInstalled={isInstalled}
+      />
 
       {/* Offline Mode Banner */}
       {!isOnline && (
@@ -284,6 +321,14 @@ export const App: React.FC = () => {
         onClose={() => setIsPrivacyOpen(false)}
         students={students}
         onToggleConsent={handleToggleConsent}
+      />
+
+      {/* PWA Mobile & Desktop Install Modal */}
+      <PWAInstallModal
+        isOpen={isInstallModalOpen}
+        onClose={() => setIsInstallModalOpen(false)}
+        installPrompt={installPrompt}
+        isInstalled={isInstalled}
       />
 
       {/* Footer */}

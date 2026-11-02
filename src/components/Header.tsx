@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Globe, Wifi, WifiOff, ShieldCheck, UserCheck, School, ChevronDown } from 'lucide-react';
+import { Globe, Wifi, WifiOff, ShieldCheck, UserCheck, School, ChevronDown, Smartphone } from 'lucide-react';
 import { UserRole } from '../types';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
@@ -12,6 +12,8 @@ interface HeaderProps {
   onClassGradeChange: (grade: string) => void;
   isOnline: boolean;
   onOpenPrivacy: () => void;
+  onOpenInstallModal?: () => void;
+  isInstalled?: boolean;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -20,7 +22,9 @@ export const Header: React.FC<HeaderProps> = ({
   selectedClassGrade,
   onClassGradeChange,
   isOnline,
-  onOpenPrivacy
+  onOpenPrivacy,
+  onOpenInstallModal,
+  isInstalled = false
 }) => {
   const { t, i18n } = useTranslation();
   const [isLangModalOpen, setIsLangModalOpen] = useState(false);
@@ -78,6 +82,18 @@ export const Header: React.FC<HeaderProps> = ({
                   </>
                 )}
               </div>
+
+              {/* Install PWA Mobile App Button */}
+              {onOpenInstallModal && (
+                <button
+                  onClick={onOpenInstallModal}
+                  className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 hover:bg-emerald-100 text-emerald-900 text-xs sm:text-sm font-bold transition shadow-2xs"
+                  title="Install LearnGap AI as Mobile App (PWA) / इन्स्टॉल ॲप"
+                >
+                  <Smartphone className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <span className="hidden md:inline">{isInstalled ? 'App Ready' : 'Install App'}</span>
+                </button>
+              )}
 
               {/* Multilingual Selector Button */}
               <button

@@ -1,15 +1,29 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Upload, PlusCircle, CheckCircle2, AlertTriangle, Download, FileSpreadsheet, Trash2 } from 'lucide-react';
+import {
+  Upload,
+  PlusCircle,
+  CheckCircle2,
+  AlertTriangle,
+  Download,
+  Trash2,
+  Edit2,
+  Database,
+  HelpCircle,
+  X,
+  Save
+} from 'lucide-react';
 import { Student, Competency, AssessmentRecord, AssessmentType } from '../types';
 import { validateAssessmentRecord } from '../engine/gapEngine';
-import { getCompetencyTitle, formatStudentDisplay } from '../data/curriculumData';
+import { getCompetencyTitle, formatStudentDisplay, ALL_SUBJECTS } from '../data/curriculumData';
+import { isSupabaseConfigured, checkSupabaseConnection } from '../lib/supabaseClient';
 
 interface AssessmentManagerProps {
   students: Student[];
   competencies: Competency[];
   assessments: AssessmentRecord[];
   onAddAssessment: (asmt: Omit<AssessmentRecord, 'id'>) => Promise<void>;
+  onUpdateAssessment: (id: string, updates: Partial<AssessmentRecord>) => Promise<void>;
   onBatchUpload: (asmts: Omit<AssessmentRecord, 'id'>[]) => Promise<void>;
   onDeleteAssessment: (id: string) => Promise<void>;
 }
@@ -19,19 +33,31 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   competencies,
   assessments,
   onAddAssessment,
-  onBatchUpload,
+  onUpdateAssessment,
   onDeleteAssessment,
+  onBatchUpload,
 }) => {
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
 
   // Manual Form State
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || '');
-  const [selectedCompetencyId, setSelectedCompetencyId] = useState<string>(competencies[0]?.id || '');
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || 'std-301');
+  const [selectedCompetencyId, setSelectedCompetencyId] = useState<string>(competencies[0]?.id || 'MATH-01');
   const [assessmentType, setAssessmentType] = useState<AssessmentType>('baseline');
-  const [score, setScore] = useState<string>('5');
+  const [score, setScore] = useState<string>('6');
   const [totalMarks, setTotalMarks] = useState<string>('10');
   const [formSuccess, setFormSuccess] = useState<string | null>(null);
+
+  // Edit Marks Modal State
+  const [editingRecord, setEditingRecord] = useState<AssessmentRecord | null>(null);
+  const [editScore, setEditScore] = useState<string>('');
+  const [editTotalMarks, setEditTotalMarks] = useState<string>('10');
+  const [editType, setEditType] = useState<AssessmentType>('baseline');
+
+  // Database Setup Instructions Modal State
+  const [isDbGuideOpen, setIsDbGuideOpen] = useState<boolean>(false);
+  const [dbStatus, setDbStatus] = useState<{ connected: boolean; message: string } | null>(null);
+  const [testingDb, setTestingDb] = useState<boolean>(false);
 
   // CSV Import State
   const [csvStatus, setCsvStatus] = useState<{ message: string; type: 'success' | 'error' | 'idle' }>({
@@ -40,14 +66,23 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   });
 
   // Filter State
+  const [filterSubject, setFilterSubject] = useState<string>('ALL');
   const [filterCompetency, setFilterCompetency] = useState<string>('ALL');
 
-  // Real-time Data Validation
+  // Real-time Data Validation for Manual Form
   const numericScore = parseFloat(score);
   const numericTotal = parseFloat(totalMarks);
   const validation = validateAssessmentRecord(numericScore, numericTotal);
   const currentPct = (!isNaN(numericScore) && !isNaN(numericTotal) && numericTotal > 0)
     ? Math.round((numericScore / numericTotal) * 100)
+    : 0;
+
+  // Validation for Edit Modal
+  const editNumScore = parseFloat(editScore);
+  const editNumTotal = parseFloat(editTotalMarks);
+  const editValidation = validateAssessmentRecord(editNumScore, editNumTotal);
+  const editPct = (!isNaN(editNumScore) && !isNaN(editNumTotal) && editNumTotal > 0)
+    ? Math.round((editNumScore / editNumTotal) * 100)
     : 0;
 
   const handleManualSubmit = async (e: React.FormEvent) => {
@@ -73,20 +108,50 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
     }
   };
 
+  const openEditModal = (asmt: AssessmentRecord) => {
+    setEditingRecord(asmt);
+    setEditScore(String(asmt.score_obtained));
+    setEditTotalMarks(String(asmt.total_marks));
+    setEditType(asmt.assessment_type);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingRecord || !editValidation.isValid) return;
+
+    try {
+      await onUpdateAssessment(editingRecord.id, {
+        score_obtained: editNumScore,
+        total_marks: editNumTotal,
+        percentage: editPct,
+        assessment_type: editType
+      });
+      setEditingRecord(null);
+    } catch (err) {
+      console.error('Error updating assessment score:', err);
+    }
+  };
+
+  const handleTestDatabase = async () => {
+    setTestingDb(true);
+    const result = await checkSupabaseConnection();
+    setDbStatus(result);
+    setTestingDb(false);
+  };
+
   const downloadSampleCSV = () => {
     const csvContent =
       "roll_number,student_alias,grade,competency_code,assessment_type,score_obtained,total_marks\n" +
-      "1,Learner 1,3,NUM-01,baseline,8,10\n" +
-      "2,Learner 2,3,NUM-02,baseline,3,10\n" +
-      "3,Learner 3,3,NUM-02,baseline,4,10\n" +
-      "4,Learner 4,3,LIT-01,baseline,2,10\n" +
-      "2,Learner 2,3,NUM-02,follow_up,8,10\n";
+      "1,विद्यार्थी १ (Aarav Patil),6,MATH-01,baseline,7,10\n" +
+      "2,विद्यार्थी २ (Sakshi Deshmukh),6,ENG-01,baseline,5,10\n" +
+      "3,विद्यार्थी ३ (Karan Shinde),6,PHY-01,baseline,4,10\n" +
+      "4,विद्यार्थी ४ (Pooja Jadhav),6,CHEM-01,baseline,6,10\n" +
+      "1,विद्यार्थी १ (Aarav Patil),6,MATH-01,follow_up,9,10\n";
 
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.setAttribute('download', 'learngap_sample_assessments.csv');
+    link.setAttribute('download', 'learngap_7subjects_sample_marks.csv');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -102,7 +167,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         const text = evt.target?.result as string;
         const lines = text.split('\n').filter(line => line.trim().length > 0);
         if (lines.length <= 1) {
-          setCsvStatus({ message: 'CSV file is empty or invalid header.', type: 'error' });
+          setCsvStatus({ message: 'CSV file is empty or missing headers.', type: 'error' });
           return;
         }
 
@@ -165,21 +230,45 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
     reader.readAsText(file);
   };
 
-  const filteredAssessments = filterCompetency === 'ALL'
-    ? assessments
-    : assessments.filter(a => a.competency_id === filterCompetency);
+  // Filtered Assessments
+  const filteredAssessments = assessments.filter(a => {
+    const comp = competencies.find(c => c.id === a.competency_id);
+    if (filterSubject !== 'ALL' && comp?.subject !== filterSubject) return false;
+    if (filterCompetency !== 'ALL' && a.competency_id !== filterCompetency) return false;
+    return true;
+  });
 
   return (
     <div className="space-y-6">
       
-      {/* Module Title Banner */}
-      <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-        <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
-          {t('assessment.title')}
-        </h2>
-        <p className="text-sm text-slate-600 mt-1">
-          {t('assessment.subtitle')}
-        </p>
+      {/* Module Title Banner & Database Connection Pill */}
+      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            {t('assessment.title')}
+          </h2>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Dynamic assessment manager for 7 subjects • Inline marks editor • Supabase database connected
+          </p>
+        </div>
+
+        {/* Database Quick Info Pill */}
+        <div className="flex items-center gap-2 self-start md:self-auto">
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border bg-slate-50 text-slate-700">
+            <Database className="w-4 h-4 text-brand-600" />
+            <span>
+              {isSupabaseConfigured ? 'Supabase Configured' : 'Offline IndexedDB Active'}
+            </span>
+          </div>
+
+          <button
+            onClick={() => setIsDbGuideOpen(true)}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
+          >
+            <HelpCircle className="w-3.5 h-3.5" />
+            <span>DB Connection Guide</span>
+          </button>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -188,138 +277,134 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         <div className="lg:col-span-5 space-y-6">
           
           {/* Quick Manual Entry Card */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
               <PlusCircle className="w-5 h-5 text-brand-600" />
-              <h3 className="font-semibold text-slate-900">
-                {t('assessment.manualEntry')}
+              <h3 className="font-bold text-slate-900 text-sm">
+                Add / Record Student Mark
               </h3>
             </div>
 
             <form onSubmit={handleManualSubmit} className="space-y-4">
               
-              {/* Student Picker */}
+              {/* Select Student */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {t('assessment.studentAlias')}
+                  Student Name (Preserved 20 Learners)
                 </label>
                 <select
                   value={selectedStudentId}
                   onChange={(e) => setSelectedStudentId(e.target.value)}
-                  className="w-full text-xs sm:text-sm rounded-lg border border-slate-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs bg-slate-50 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
-                  {students.map((st) => (
-                    <option key={st.id} value={st.id}>
-                      {formatStudentDisplay(st, currentLang)}
+                  {students.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      Roll #{s.roll_number} - {formatStudentDisplay(s, currentLang)}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Competency Picker */}
+              {/* Select Subject & Competency */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {t('assessment.selectCompetency')}
+                  Competency (Across 7 Subjects)
                 </label>
                 <select
                   value={selectedCompetencyId}
                   onChange={(e) => setSelectedCompetencyId(e.target.value)}
-                  className="w-full text-xs sm:text-sm rounded-lg border border-slate-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                  className="w-full rounded-xl border border-slate-200 p-2.5 text-xs bg-slate-50 font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
                 >
-                  {competencies.map((comp) => (
-                    <option key={comp.id} value={comp.id}>
-                      [{comp.code}] {getCompetencyTitle(comp, currentLang)}
+                  {competencies.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      [{c.subject}] {c.code} - {getCompetencyTitle(c, currentLang)}
                     </option>
                   ))}
                 </select>
               </div>
 
-              {/* Assessment Type Radio Toggle */}
+              {/* Assessment Type Toggle */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {t('assessment.asmtType')}
+                  Assessment Milestone
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
                     onClick={() => setAssessmentType('baseline')}
-                    className={`py-2 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`py-2 px-3 text-xs font-semibold rounded-xl border transition ${
                       assessmentType === 'baseline'
-                        ? 'bg-blue-50 text-blue-800 border-blue-300 font-semibold shadow-xs'
+                        ? 'bg-blue-50 border-blue-400 text-blue-700 shadow-2xs'
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    {t('assessment.baseline')}
+                    Baseline (आरंभिक)
                   </button>
                   <button
                     type="button"
                     onClick={() => setAssessmentType('follow_up')}
-                    className={`py-2 px-3 rounded-lg text-xs font-medium border text-center transition ${
+                    className={`py-2 px-3 text-xs font-semibold rounded-xl border transition ${
                       assessmentType === 'follow_up'
-                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 font-semibold shadow-xs'
+                        ? 'bg-emerald-50 border-emerald-400 text-emerald-700 shadow-2xs'
                         : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                     }`}
                   >
-                    {t('assessment.followup')}
+                    Follow-Up (उपचारात्मक)
                   </button>
                 </div>
               </div>
 
-              {/* Marks Entry with Live Validation */}
+              {/* Score and Total Marks */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {t('assessment.scoreObtained')}
+                    Score Obtained
                   </label>
                   <input
                     type="number"
+                    step="0.5"
                     min="0"
                     max={totalMarks}
-                    step="0.5"
                     value={score}
                     onChange={(e) => setScore(e.target.value)}
-                    className="w-full text-sm font-semibold rounded-lg border border-slate-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
-                    {t('assessment.totalMarks')}
+                    Total Marks
                   </label>
                   <input
                     type="number"
                     min="1"
                     value={totalMarks}
                     onChange={(e) => setTotalMarks(e.target.value)}
-                    className="w-full text-sm font-semibold rounded-lg border border-slate-300 py-2 px-3 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white"
+                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    required
                   />
                 </div>
               </div>
 
-              {/* Data Quality Live Feedback */}
-              <div className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-                <span className="text-slate-600">{t('assessment.calculatedPct')}</span>
-                <span
-                  className={`font-bold px-2 py-0.5 rounded text-xs ${
-                    currentPct < 40
-                      ? 'bg-rose-100 text-rose-800'
-                      : currentPct < 60
-                      ? 'bg-amber-100 text-amber-800'
-                      : 'bg-emerald-100 text-emerald-800'
-                  }`}
-                >
-                  {currentPct}% • {currentPct < 60 ? t('assessment.gapFlagged') : t('assessment.mastered')}
+              {/* Calculated Real-Time Percentage Preview */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
+                <span className="text-slate-500">Calculated Percentage:</span>
+                <span className={`font-black text-sm ${currentPct >= 60 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                  {currentPct}% {currentPct >= 60 ? '(Mastered)' : '(Learning Gap)'}
                 </span>
               </div>
 
-              {validation.errors.length > 0 && (
-                <div className="p-2.5 rounded-lg bg-rose-50 border border-rose-200 text-rose-700 text-xs flex items-center gap-2">
+              {/* Validation Errors */}
+              {!validation.isValid && (
+                <div className="p-2.5 bg-rose-50 border border-rose-200 rounded-xl text-rose-700 text-xs flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 shrink-0" />
                   <span>{validation.errors[0]}</span>
                 </div>
               )}
 
+              {/* Success Notification */}
               {formSuccess && (
-                <div className="p-2.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs flex items-center gap-2">
+                <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-800 text-xs flex items-center gap-1.5">
                   <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span>{formSuccess}</span>
                 </div>
@@ -328,40 +413,37 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               <button
                 type="submit"
                 disabled={!validation.isValid}
-                className="w-full py-2.5 px-4 bg-brand-600 hover:bg-brand-700 disabled:opacity-50 text-white font-medium text-sm rounded-lg shadow-sm transition"
+                className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold text-xs shadow-xs transition"
               >
-                {t('assessment.saveRecord')}
+                Save Record to Database
               </button>
             </form>
           </div>
 
-          {/* Batch CSV Upload Card */}
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex items-center justify-between mb-3 pb-2 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <FileSpreadsheet className="w-5 h-5 text-indigo-600" />
-                <h3 className="font-semibold text-slate-900">
-                  {t('assessment.csvUpload')}
-                </h3>
-              </div>
+          {/* Bulk CSV Upload Card */}
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+              <h3 className="font-bold text-slate-900 text-sm">
+                Bulk CSV Marksheet Import
+              </h3>
               <button
                 type="button"
                 onClick={downloadSampleCSV}
-                className="inline-flex items-center gap-1 text-xs text-brand-700 hover:text-brand-800 font-medium"
+                className="inline-flex items-center gap-1 text-xs text-brand-700 hover:text-brand-800 font-semibold"
               >
                 <Download className="w-3.5 h-3.5" />
-                <span>{t('assessment.downloadSample')}</span>
+                <span>Sample CSV</span>
               </button>
             </div>
 
-            <div className="border-2 border-dashed border-slate-200 hover:border-brand-400 rounded-xl p-4 text-center cursor-pointer transition">
-              <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-              <label className="cursor-pointer">
-                <span className="text-xs font-semibold text-brand-600 hover:text-brand-700">
-                  Click to select CSV file
+            <div className="border-2 border-dashed border-slate-200 hover:border-brand-400 rounded-2xl p-4 text-center cursor-pointer transition">
+              <Upload className="w-7 h-7 text-slate-400 mx-auto mb-1.5" />
+              <label className="cursor-pointer block">
+                <span className="text-xs font-bold text-brand-600 hover:text-brand-700">
+                  Select school CSV marksheet
                 </span>
-                <span className="text-xs text-slate-500 block mt-1">
-                  Accepts standard school marksheets (.csv)
+                <span className="text-[11px] text-slate-400 block mt-0.5">
+                  Automated offline validation for all 7 subjects
                 </span>
                 <input
                   type="file"
@@ -374,7 +456,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
             {csvStatus.message && (
               <div
-                className={`mt-3 p-2.5 rounded-lg text-xs flex items-center gap-2 ${
+                className={`p-2.5 rounded-xl text-xs flex items-center gap-2 ${
                   csvStatus.type === 'success'
                     ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                     : 'bg-rose-50 text-rose-800 border border-rose-200'
@@ -392,56 +474,76 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
         </div>
 
-        {/* Right Column: Assessment Records Table (7 cols) */}
+        {/* Right Column: Assessment Records Table with Dynamic Inline Editing (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white p-5 rounded-xl border border-slate-200 shadow-sm">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-2 border-b border-slate-100">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+            
+            {/* Filter and Heading */}
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div>
-                <h3 className="font-semibold text-slate-900">
-                  {t('assessment.recentRecords')}
+                <h3 className="font-bold text-slate-900 text-sm">
+                  Active Assessment Records ({filteredAssessments.length})
                 </h3>
                 <p className="text-xs text-slate-500">
-                  {t('assessment.totalRecords')} {assessments.length}
+                  Click the Edit (pencil) button to edit marks dynamically in real time
                 </p>
               </div>
 
-              {/* Filter Dropdown */}
-              <select
-                value={filterCompetency}
-                onChange={(e) => setFilterCompetency(e.target.value)}
-                className="text-xs rounded-lg border border-slate-200 py-1.5 px-2 bg-slate-50 focus:outline-none focus:ring-1 focus:ring-brand-500"
-              >
-                <option value="ALL">{t('assessment.filterByCompetency')}</option>
-                {competencies.map((comp) => (
-                  <option key={comp.id} value={comp.id}>
-                    {comp.code} - {getCompetencyTitle(comp, currentLang)}
-                  </option>
-                ))}
-              </select>
+              {/* Subject & Competency Filter */}
+              <div className="flex items-center gap-2">
+                <select
+                  value={filterSubject}
+                  onChange={(e) => {
+                    setFilterSubject(e.target.value);
+                    setFilterCompetency('ALL');
+                  }}
+                  className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                >
+                  <option value="ALL">All Subjects</option>
+                  {ALL_SUBJECTS.map((sub) => (
+                    <option key={sub} value={sub}>{sub}</option>
+                  ))}
+                </select>
+
+                <select
+                  value={filterCompetency}
+                  onChange={(e) => setFilterCompetency(e.target.value)}
+                  className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 max-w-[130px] truncate"
+                >
+                  <option value="ALL">All Competencies</option>
+                  {competencies
+                    .filter(c => filterSubject === 'ALL' || c.subject === filterSubject)
+                    .map((comp) => (
+                      <option key={comp.id} value={comp.id}>
+                        {comp.code}
+                      </option>
+                    ))}
+                </select>
+              </div>
             </div>
 
             {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs text-slate-600">
-                <thead className="bg-slate-50 text-slate-700 font-semibold uppercase tracking-wider border-b border-slate-200">
+                <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
                   <tr>
-                    <th className="py-2.5 px-3">{t('assessment.tableRoll')}</th>
-                    <th className="py-2.5 px-3">{t('assessment.tableComp')}</th>
-                    <th className="py-2.5 px-3">{t('assessment.tableType')}</th>
-                    <th className="py-2.5 px-3">{t('assessment.tableScore')}</th>
-                    <th className="py-2.5 px-3">{t('assessment.tableStatus')}</th>
-                    <th className="py-2.5 px-3 text-right">{t('assessment.tableAction')}</th>
+                    <th className="py-2.5 px-3">Roll &amp; Student</th>
+                    <th className="py-2.5 px-3">Subject / Comp</th>
+                    <th className="py-2.5 px-3">Type</th>
+                    <th className="py-2.5 px-3">Score</th>
+                    <th className="py-2.5 px-3">Status</th>
+                    <th className="py-2.5 px-3 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
                   {filteredAssessments.length === 0 ? (
                     <tr>
                       <td colSpan={6} className="py-8 text-center text-slate-400">
-                        {t('assessment.noRecords')}
+                        No assessment records found for this filter.
                       </td>
                     </tr>
                   ) : (
-                    filteredAssessments.slice(-15).reverse().map((asmt) => {
+                    filteredAssessments.slice(-25).reverse().map((asmt) => {
                       const student = students.find((s) => s.id === asmt.student_id);
                       const comp = competencies.find((c) => c.id === asmt.competency_id);
                       const isPassing = asmt.percentage >= (comp?.threshold_passing_pct || 60);
@@ -449,50 +551,62 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                       return (
                         <tr key={asmt.id} className="hover:bg-slate-50/80 transition">
                           <td className="py-2.5 px-3 font-medium text-slate-900 whitespace-nowrap">
+                            <span className="font-bold text-slate-700 mr-1">#{student?.roll_number}</span>
                             {student ? formatStudentDisplay(student, currentLang) : `Student ${asmt.student_id}`}
                           </td>
                           <td className="py-2.5 px-3 whitespace-nowrap">
-                            <span className="font-semibold text-slate-800">[{comp?.code}]</span>{' '}
-                            <span className="text-slate-500 text-[11px] truncate inline-block max-w-[140px] align-bottom">
-                              {comp ? getCompetencyTitle(comp, currentLang) : ''}
+                            <span className="font-semibold text-slate-800">[{comp?.code || asmt.competency_id}]</span>{' '}
+                            <span className="text-slate-500 text-[11px] truncate inline-block max-w-[120px] align-bottom">
+                              {comp?.subject}
                             </span>
                           </td>
                           <td className="py-2.5 px-3 whitespace-nowrap">
                             <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-semibold uppercase ${
+                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
                                 asmt.assessment_type === 'baseline'
                                   ? 'bg-blue-50 text-blue-700 border border-blue-200'
                                   : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                               }`}
                             >
-                              {asmt.assessment_type === 'baseline' ? t('assessment.baseline') : t('assessment.followup')}
+                              {asmt.assessment_type === 'baseline' ? 'Baseline' : 'Follow-up'}
                             </span>
                           </td>
-                          <td className="py-2.5 px-3 whitespace-nowrap font-semibold">
+                          <td className="py-2.5 px-3 whitespace-nowrap font-bold text-slate-900">
                             {asmt.score_obtained} / {asmt.total_marks}{' '}
                             <span className="text-slate-400 font-normal">({asmt.percentage}%)</span>
                           </td>
                           <td className="py-2.5 px-3 whitespace-nowrap">
                             <span
-                              className={`px-2 py-0.5 rounded text-[11px] font-medium ${
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                 isPassing
                                   ? 'bg-emerald-100 text-emerald-800'
                                   : asmt.percentage < 40
-                                  ? 'bg-rose-100 text-rose-800 font-semibold'
+                                  ? 'bg-rose-100 text-rose-800'
                                   : 'bg-amber-100 text-amber-800'
                               }`}
                             >
-                              {isPassing ? t('assessment.mastered') : t('assessment.gapFlagged')}
+                              {isPassing ? 'Mastered' : 'Gap Flagged'}
                             </span>
                           </td>
                           <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                            <button
-                              onClick={() => onDeleteAssessment(asmt.id)}
-                              className="text-slate-400 hover:text-rose-600 transition p-1"
-                              title={t('common.deleteTitle')}
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
+                            <div className="flex items-center justify-end gap-1.5">
+                              {/* Edit Button */}
+                              <button
+                                onClick={() => openEditModal(asmt)}
+                                className="p-1 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition"
+                                title="Edit Marks"
+                              >
+                                <Edit2 className="w-3.5 h-3.5" />
+                              </button>
+                              {/* Delete Button */}
+                              <button
+                                onClick={() => onDeleteAssessment(asmt.id)}
+                                className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
+                                title="Delete Record"
+                              >
+                                <Trash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -505,6 +619,230 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         </div>
 
       </div>
+
+      {/* =========================================================================
+          DYNAMIC EDIT MARKS MODAL
+      ========================================================================= */}
+      {editingRecord && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl border border-slate-200 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Edit2 className="w-5 h-5 text-brand-600" />
+                <h3 className="font-bold text-slate-900 text-base">
+                  Edit Assessment Marks
+                </h3>
+              </div>
+              <button
+                onClick={() => setEditingRecord(null)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs">
+              {/* Student info preserved */}
+              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
+                <span className="text-slate-400 block text-[10px] uppercase font-bold">Student (Preserved)</span>
+                <span className="font-bold text-slate-900 text-sm">
+                  {(() => {
+                    const s = students.find(x => x.id === editingRecord.student_id);
+                    return s ? `Roll #${s.roll_number} - ${s.student_alias}` : editingRecord.student_id;
+                  })()}
+                </span>
+                <span className="text-slate-500 block text-[11px] mt-0.5">
+                  Competency: {editingRecord.competency_id}
+                </span>
+              </div>
+
+              {/* Assessment Type */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  Milestone Type
+                </label>
+                <select
+                  value={editType}
+                  onChange={(e) => setEditType(e.target.value as AssessmentType)}
+                  className="w-full rounded-xl border border-slate-300 p-2 text-xs bg-white text-slate-800"
+                >
+                  <option value="baseline">Baseline (आरंभिक)</option>
+                  <option value="follow_up">Follow-up (उपचारात्मक)</option>
+                </select>
+              </div>
+
+              {/* Edit Score & Total Marks */}
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Score Obtained
+                  </label>
+                  <input
+                    type="number"
+                    step="0.5"
+                    min="0"
+                    value={editScore}
+                    onChange={(e) => setEditScore(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    Total Marks
+                  </label>
+                  <input
+                    type="number"
+                    min="1"
+                    value={editTotalMarks}
+                    onChange={(e) => setEditTotalMarks(e.target.value)}
+                    className="w-full rounded-xl border border-slate-300 p-2 text-xs font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  />
+                </div>
+              </div>
+
+              {/* Live Preview */}
+              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
+                <span className="text-slate-500">Updated Percentage:</span>
+                <span className={`font-black text-sm ${editPct >= 60 ? 'text-emerald-700' : 'text-rose-600'}`}>
+                  {editPct}% {editPct >= 60 ? '(Mastered)' : '(Learning Gap)'}
+                </span>
+              </div>
+
+              {!editValidation.isValid && (
+                <p className="text-rose-600 text-[11px] font-medium">
+                  {editValidation.errors[0]}
+                </p>
+              )}
+            </div>
+
+            <div className="flex items-center justify-end gap-2 pt-2 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setEditingRecord(null)}
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleSaveEdit}
+                disabled={!editValidation.isValid}
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white transition flex items-center gap-1.5 shadow-xs"
+              >
+                <Save className="w-3.5 h-3.5" />
+                <span>Save Changes</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* =========================================================================
+          DATABASE CONNECTION GUIDE MODAL (Step 4 from user prompt)
+      ========================================================================= */}
+      {isDbGuideOpen && (
+        <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+              <div className="flex items-center gap-2">
+                <Database className="w-5 h-5 text-indigo-600" />
+                <h3 className="font-bold text-slate-900 text-base">
+                  How to Connect Supabase Database
+                </h3>
+              </div>
+              <button
+                onClick={() => setIsDbGuideOpen(false)}
+                className="text-slate-400 hover:text-slate-600 p-1"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Connection Test Box */}
+            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-2 text-xs">
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-slate-800">Connection Status:</span>
+                <button
+                  onClick={handleTestDatabase}
+                  disabled={testingDb}
+                  className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px]"
+                >
+                  {testingDb ? 'Testing...' : 'Test Connection'}
+                </button>
+              </div>
+              {dbStatus ? (
+                <p className={`font-semibold ${dbStatus.connected ? 'text-emerald-700' : 'text-amber-700'}`}>
+                  {dbStatus.message}
+                </p>
+              ) : (
+                <p className="text-slate-500">
+                  Click 'Test Connection' to test connectivity to your Supabase project.
+                </p>
+              )}
+            </div>
+
+            {/* Step-by-Step Instructions */}
+            <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
+              <h4 className="font-bold text-slate-900 text-sm">
+                Steps to Connect Supabase (प्रक्रिया व पायऱ्या):
+              </h4>
+
+              <div className="space-y-2">
+                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
+                  <span className="font-bold text-indigo-950 block">पायरी १: Supabase मध्ये मोफत प्रोजेक्ट तयार करा</span>
+                  <p className="text-slate-600 mt-0.5">
+                    1. <a href="https://supabase.com" target="_blank" rel="noreferrer" className="text-brand-600 underline font-semibold">supabase.com</a> वर जा आणि नवीन प्रोजेक्ट तयार करा (उदा. <code>learngap-ai</code>).
+                  </p>
+                </div>
+
+                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
+                  <span className="font-bold text-indigo-950 block">पायरी २: SQL Schema चालवा (Run Schema)</span>
+                  <p className="text-slate-600 mt-0.5">
+                    2. Supabase डॅशबोर्डमध्ये <strong>SQL Editor</strong> उघडा. आपल्या रिपॉझिटरीमधील <code>supabase/schema.sql</code> फाइलची संपूर्ण संहिता कॉपी करून SQL Editor मध्ये पेस्ट करा आणि <strong>Run</strong> बटनावर क्लिक करा.
+                  </p>
+                </div>
+
+                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
+                  <span className="font-bold text-indigo-950 block">पायरी ३: API Credentials कॉपी करा</span>
+                  <p className="text-slate-600 mt-0.5">
+                    3. <strong>Project Settings &gt; API</strong> मध्ये जा आणि खालील माहिती कॉपी करा:
+                    <br />• <strong>Project URL</strong> (उदा. <code>https://xyz.supabase.co</code>)
+                    <br />• <strong>anon public API Key</strong>
+                  </p>
+                </div>
+
+                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
+                  <span className="font-bold text-indigo-950 block">पायरी ४: .env फाइलमध्ये कीज भरा</span>
+                  <p className="text-slate-600 mt-0.5">
+                    4. प्रोजेक्टच्या मुख्य डिरेक्टरीमधील <code>.env</code> फाइल उघडा आणि या व्हॅल्यूज भरा:
+                  </p>
+                  <pre className="bg-slate-900 text-emerald-400 p-2 rounded-lg mt-1 text-[11px] font-mono overflow-x-auto">
+{`VITE_SUPABASE_URL=https://your-project.supabase.co
+VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5c...`}
+                  </pre>
+                </div>
+
+                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
+                  <span className="font-bold text-indigo-950 block">पायरी ५: लाइव्ह रिअल-टाइम सिंक सुरू करा</span>
+                  <p className="text-slate-600 mt-0.5">
+                    5. प्रोजेक्ट रीस्टार्ट करा (<code>npm run dev</code>). सर्व गुण बदल, नवीन नोंदी आणि उपचारात्मक योजना थेट Supabase मध्ये रिअल-टाइम सिंक होतील!
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end pt-2 border-t border-slate-100">
+              <button
+                onClick={() => setIsDbGuideOpen(false)}
+                className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs"
+              >
+                समजले (Got it)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

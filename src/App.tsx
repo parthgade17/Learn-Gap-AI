@@ -12,17 +12,24 @@ import { ProgressDashboard } from './components/ProgressDashboard';
 import { DPDPComplianceModal } from './components/DPDPComplianceModal';
 import { UserRole, StudentGroup, AssessmentRecord, RemedialPlan } from './types';
 import { diagnoseGaps } from './engine/gapEngine';
+import {
+  syncAssessmentInsert,
+  syncAssessmentUpdate,
+  syncAssessmentDelete,
+  syncRemedialPlan,
+  subscribeToRealtimeChanges
+} from './lib/supabaseClient';
 import { WifiOff, Sparkles, CheckCircle2 } from 'lucide-react';
 
 export const App: React.FC = () => {
   const { t } = useTranslation();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('assessment');
+  const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [currentRole, setCurrentRole] = useState<UserRole>('teacher');
   const [isPrivacyOpen, setIsPrivacyOpen] = useState<boolean>(false);
   const [isOnline, setIsOnline] = useState<boolean>(navigator.onLine);
   const [activeGroupForPlan, setActiveGroupForPlan] = useState<StudentGroup | null>(null);
 
-  // Initialize Dexie.js offline DB
+  // Initialize Dexie.js offline DB and Realtime Supabase listeners
   useEffect(() => {
     seedInitialDataIfEmpty().catch(console.error);
 
@@ -32,13 +39,24 @@ export const App: React.FC = () => {
     window.addEventListener('online', handleOnline);
     window.addEventListener('offline', handleOffline);
 
+    // Subscribe to realtime database updates
+    const unsubscribe = subscribeToRealtimeChanges(
+      () => {
+        console.log('Realtime change received on assessments');
+      },
+      () => {
+        console.log('Realtime change received on remedial plans');
+      }
+    );
+
     return () => {
       window.removeEventListener('online', handleOnline);
       window.removeEventListener('offline', handleOffline);
+      if (unsubscribe) unsubscribe();
     };
   }, []);
 
-  // Live Reactive Queries from IndexedDB
+  // Live Reactive Queries from IndexedDB (Dexie live queries automatically re-render on any change)
   const students = useLiveQuery(() => db.students.toArray()) || [];
   const competencies = useLiveQuery(() => db.competencies.toArray()) || [];
   const activities = useLiveQuery(() => db.activities.toArray()) || [];
@@ -52,19 +70,59 @@ export const App: React.FC = () => {
   // Handlers
   const handleAddAssessment = async (asmtData: Omit<AssessmentRecord, 'id'>) => {
     const newId = `asmt-${Date.now()}`;
-    await db.assessments.put({
+    const newRecord: AssessmentRecord = {
       ...asmtData,
       id: newId
-    });
+    };
 
-    // Queue for Supabase sync
+    // 1. Local IndexedDB
+    await db.assessments.put(newRecord);
+
+    // 2. Queue for offline sync
     await db.syncQueue.put({
       id: `sync-${Date.now()}`,
       action: 'insert',
       table: 'assessments',
-      payload: { ...asmtData, id: newId },
+      payload: newRecord,
       created_at: new Date().toISOString()
     });
+
+    // 3. Live Supabase sync
+    await syncAssessmentInsert(newRecord);
+  };
+
+  const handleUpdateAssessment = async (id: string, updates: Partial<AssessmentRecord>) => {
+    // 1. Update local IndexedDB
+    await db.assessments.update(id, updates);
+
+    // 2. Queue for sync
+    await db.syncQueue.put({
+      id: `sync-update-${Date.now()}`,
+      action: 'update',
+      table: 'assessments',
+      payload: { id, ...updates },
+      created_at: new Date().toISOString()
+    });
+
+    // 3. Live Supabase sync
+    await syncAssessmentUpdate(id, updates);
+  };
+
+  const handleDeleteAssessment = async (id: string) => {
+    // 1. Local IndexedDB
+    await db.assessments.delete(id);
+
+    // 2. Queue for sync
+    await db.syncQueue.put({
+      id: `sync-del-${Date.now()}`,
+      action: 'delete',
+      table: 'assessments',
+      payload: { id },
+      created_at: new Date().toISOString()
+    });
+
+    // 3. Live Supabase sync
+    await syncAssessmentDelete(id);
   };
 
   const handleBatchUpload = async (records: Omit<AssessmentRecord, 'id'>[]) => {
@@ -73,15 +131,13 @@ export const App: React.FC = () => {
       id: `asmt-csv-${Date.now()}-${i}`
     }));
     await db.assessments.bulkPut(fullRecords);
-  };
-
-  const handleDeleteAssessment = async (id: string) => {
-    await db.assessments.delete(id);
+    for (const r of fullRecords) {
+      syncAssessmentInsert(r).catch(console.warn);
+    }
   };
 
   const handleSavePlan = async (plan: RemedialPlan) => {
     await db.plans.put(plan);
-    // Queue sync
     await db.syncQueue.put({
       id: `sync-plan-${Date.now()}`,
       action: 'insert',
@@ -89,6 +145,7 @@ export const App: React.FC = () => {
       payload: plan,
       created_at: new Date().toISOString()
     });
+    await syncRemedialPlan(plan);
   };
 
   const handleToggleConsent = async (studentId: string) => {
@@ -142,6 +199,7 @@ export const App: React.FC = () => {
             competencies={competencies}
             assessments={assessments}
             onAddAssessment={handleAddAssessment}
+            onUpdateAssessment={handleUpdateAssessment}
             onBatchUpload={handleBatchUpload}
             onDeleteAssessment={handleDeleteAssessment}
           />
@@ -176,6 +234,8 @@ export const App: React.FC = () => {
             assessments={assessments}
             plans={plans}
             userRole={currentRole}
+            onNavigateToAssessment={() => setActiveTab('assessment')}
+            onNavigateToPlanner={() => setActiveTab('planner')}
           />
         )}
 

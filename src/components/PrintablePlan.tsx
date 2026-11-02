@@ -69,7 +69,7 @@ export const PrintablePlan: React.FC<PrintablePlanProps> = ({
           <div>
             <span className="text-slate-500 block text-[10px]">{t('printable.subjectLabel')}</span>
             <span className="font-bold text-slate-800">
-              {competency.subject === 'Numeracy' ? t('subjects.numeracy') : t('subjects.literacy')}
+              {competency.subject}
             </span>
           </div>
           <div>

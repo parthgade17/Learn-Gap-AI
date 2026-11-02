@@ -1,8 +1,13 @@
 from typing import List, Optional
-from fastapi import APIRouter
-from ..models import GapDiagnosis, StudentGroup
-from ..supabase_client import local_store, get_supabase_client
-from ..engine.gap_engine import run_gap_diagnosis, cluster_students_by_competency
+from fastapi import APIRouter, HTTPException
+from ..models import GapDiagnosis, StudentGroup, StudentAIPrediction, CohortAIPrediction
+from ..supabase_client import local_store
+from ..engine.gap_engine import (
+    run_gap_diagnosis,
+    group_learners,
+    predict_student_mastery,
+    predict_cohort_outcomes
+)
 
 router = APIRouter(prefix="/gap-engine", tags=["Learning Gap Engine"])
 
@@ -22,14 +27,14 @@ def get_gap_diagnoses():
 def get_competency_groups(subject: Optional[str] = None):
     """
     Module B: Student Clustering
-    Groups students struggling with identical competencies for peer remediation.
+    Groups students struggling with identical competencies for peer remediation across all 7 subjects.
     """
     diagnoses = run_gap_diagnosis(
         local_store.students,
         local_store.competencies,
         local_store.assessments
     )
-    groups = cluster_students_by_competency(
+    groups = group_learners(
         diagnoses,
         local_store.students,
         local_store.competencies,
@@ -38,3 +43,29 @@ def get_competency_groups(subject: Optional[str] = None):
     if subject and subject.upper() != "ALL":
         groups = [g for g in groups if g.competency.subject.lower() == subject.lower()]
     return groups
+
+@router.get("/predict/cohort", response_model=CohortAIPrediction)
+def get_cohort_ai_prediction():
+    """
+    Hybrid Rule + AI Model: Overall Classroom / Cohort Outcome Forecasting
+    """
+    return predict_cohort_outcomes(
+        local_store.students,
+        local_store.assessments,
+        local_store.competencies
+    )
+
+@router.get("/predict/student/{student_id}", response_model=StudentAIPrediction)
+def get_student_ai_prediction(student_id: str):
+    """
+    Hybrid Rule + AI Model: Individual Student Mastery Trajectory & Next-Best Action
+    """
+    student = next((s for s in local_store.students if s.id == student_id), None)
+    if not student:
+        raise HTTPException(status_code=404, detail=f"Student {student_id} not found.")
+
+    return predict_student_mastery(
+        student,
+        local_store.assessments,
+        local_store.competencies
+    )

@@ -1,10 +1,20 @@
 from typing import List, Optional, Literal
 from pydantic import BaseModel, Field
 
-SubjectType = Literal['Literacy', 'Numeracy']
+SubjectType = Literal[
+    'English',
+    'Mathematics',
+    'Social Science',
+    'Physics',
+    'Chemistry',
+    'Marathi',
+    'Hindi'
+]
+
 UserRole = Literal['teacher', 'head_teacher', 'block_officer']
 AssessmentType = Literal['baseline', 'follow_up']
 PlanStatus = Literal['draft', 'approved', 'completed']
+RiskLevel = Literal['low', 'medium', 'high', 'critical']
 
 class Student(BaseModel):
     id: str
@@ -93,7 +103,7 @@ class RemedialPlanCreate(BaseModel):
     id: Optional[str] = None
     school_id: str = "ZP-KPG-01"
     teacher_id: Optional[str] = "teacher-01"
-    grade: int = 3
+    grade: int = 6
     competency_id: str
     activity_id: str
     plan_date: str
@@ -129,3 +139,36 @@ class DashboardMetricsResponse(BaseModel):
     total_persistent: int
     action_on_gaps_pct: float
     competency_metrics: List[CompetencyMetric]
+
+# Hybrid Rule + AI Prediction Models
+class SubjectPrediction(BaseModel):
+    subject: SubjectType
+    current_pct: float
+    predicted_pct: float
+    risk: Literal['low', 'medium', 'high']
+
+class StudentAIPrediction(BaseModel):
+    student_id: str
+    student_alias: str
+    roll_number: int
+    current_overall_pct: float
+    predicted_mastery_pct: float
+    predicted_gain_pct: float
+    risk_level: RiskLevel
+    recovery_velocity_days: int
+    confidence_score: float
+    learning_velocity: float
+    recommended_action_en: str
+    recommended_action_mr: str
+    subject_predictions: List[SubjectPrediction]
+
+class CohortAIPrediction(BaseModel):
+    projected_class_pass_rate: float
+    current_class_pass_rate: float
+    stagnation_risk_pct: float
+    estimated_weeks_to_goal: int
+    most_vulnerable_subject: SubjectType
+    strongest_subject: SubjectType
+    high_impact_activity_title: str
+    ai_insights_en: List[str]
+    ai_insights_mr: List[str]

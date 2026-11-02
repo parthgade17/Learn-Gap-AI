@@ -1,207 +1,248 @@
 from typing import List
 from ..models import Competency, RemedialActivity, Student, AssessmentRecord
 
+ALL_SUBJECTS = [
+    'English',
+    'Mathematics',
+    'Social Science',
+    'Physics',
+    'Chemistry',
+    'Marathi',
+    'Hindi'
+]
+
 FLN_COMPETENCIES: List[Competency] = [
+    # 1. ENGLISH
     Competency(
-        id='FLN-NUM-01',
-        code='NUM-01',
-        subject='Numeracy',
-        grade=3,
-        title_en='2 & 3-Digit Place Value',
-        title_mr='दोन व तीन अंकी संख्यांची स्थानिक किंमत',
-        description_en='Identifies unit, tens, and hundreds place value in numbers up to 999.',
-        description_mr='९९९ पर्यंतच्या संख्यांमधील एकक, दशक व शतक स्थान आणि त्यांची स्थानिक किंमत ओळखणे.',
+        id='ENG-01',
+        code='ENG-01',
+        subject='English',
+        grade=6,
+        title_en='Reading Comprehension & Contextual Vocabulary',
+        title_mr='इंग्रजी परिच्छेद वाचन, आकलन व शब्दसंग्रह',
+        description_en='Reads unfamiliar grade-level paragraphs with comprehension and infers word meanings from context.',
+        description_mr='इयत्तेनुसार इंग्रजी परिच्छेद समजपूर्वक वाचणे आणि संदर्भावरून शब्दांचे अर्थ लावणे.',
         threshold_passing_pct=60.0
     ),
     Competency(
-        id='FLN-NUM-02',
-        code='NUM-02',
-        subject='Numeracy',
-        grade=3,
-        title_en='2-Digit Subtraction with Regrouping (Borrowing)',
-        title_mr='हातच्याची दोन अंकी वजाबाकी',
-        description_en='Solves 2-digit subtraction problems requiring regrouping/borrowing across tens.',
-        description_mr='दशकाकडून सुटा घेऊन हातच्याची वजाबाकी अचूकपणे सोडवणे.',
+        id='ENG-02',
+        code='ENG-02',
+        subject='English',
+        grade=6,
+        title_en='Basic Grammar: Subject-Verb Agreement & Tenses',
+        title_mr='मूलभूत इंग्रजी व्याकरण: कर्ता-क्रियापद ताळमेळ व काळ',
+        description_en='Constructs grammatically accurate sentences using simple present and past tenses with correct agreement.',
+        description_mr='वर्तमानकाळ आणि भूतकाळात कर्त्यानुसार योग्य क्रियापद वापरून अचूक वाक्यरचना करणे.',
+        threshold_passing_pct=60.0
+    ),
+
+    # 2. MATHEMATICS
+    Competency(
+        id='MATH-01',
+        code='MATH-01',
+        subject='Mathematics',
+        grade=6,
+        title_en='Multi-digit Arithmetic & Regrouping Operations',
+        title_mr='अनेक अंकी संख्यांची बेरीज-वजाबाकी व हातच्याची क्रिया',
+        description_en='Performs multi-digit subtraction and addition involving borrowing across place values accurately.',
+        description_mr='स्थानिक किंमतीचा वापर करून हातच्याची बेरीज व वजाबाकी अचूकपणे सोडवणे.',
         threshold_passing_pct=60.0
     ),
     Competency(
-        id='FLN-NUM-03',
-        code='NUM-03',
-        subject='Numeracy',
-        grade=3,
-        title_en='Basic Addition & Subtraction Word Problems',
-        title_mr='बेरीज व वजाबाकीची दैनंदिन शाब्दिक उदाहरणे',
-        description_en='Translates real-life daily word problems into arithmetic equations.',
-        description_mr='दैनंदिन व्यवहारातील साध्या शाब्दिक उदाहरणांचा अर्थ लावून बेरीज किंवा वजाबाकी करणे.',
+        id='MATH-02',
+        code='MATH-02',
+        subject='Mathematics',
+        grade=6,
+        title_en='Fractions, Decimals & Equivalence',
+        title_mr='अपूर्णांक, दशांश अपूर्णांक व सममूल्य संकल्पना',
+        description_en='Understands part-whole relationships, equivalent fractions, and decimal representation.',
+        description_mr='अपूर्णांकांची संकल्पना, सममूल्य अपूर्णांक आणि दशांश चिन्हाचा अर्थ प्रत्यक्ष उदाहरणांतून समजणे.',
         threshold_passing_pct=60.0
     ),
     Competency(
-        id='FLN-NUM-04',
-        code='NUM-04',
-        subject='Numeracy',
-        grade=3,
-        title_en='Multiplication as Repeated Addition',
-        title_mr='समान गटांची मांडणी (गुणाकार संकल्पना)',
-        description_en='Understands multiplication concept using concrete objects and grouped arrays.',
-        description_mr='वस्तूंचे समान गट करून पुनरावृत्ती बेरीज म्हणजे गुणाकार ही संकल्पना समजणे.',
+        id='MATH-03',
+        code='MATH-03',
+        subject='Mathematics',
+        grade=6,
+        title_en='Perimeter, Area & Practical Geometry',
+        title_mr='परिमिती, क्षेत्रफळ व भौमितिक रचना',
+        description_en='Calculates perimeter and area of regular 2D figures using real-world classroom surfaces.',
+        description_mr='चौरस व आयताची परिमिती आणि क्षेत्रफळ सूत्रांच्या साहाय्याने दैनंदिन वस्तूंवर मोजणे.',
+        threshold_passing_pct=60.0
+    ),
+
+    # 3. SOCIAL SCIENCE
+    Competency(
+        id='SOC-01',
+        code='SOC-01',
+        subject='Social Science',
+        grade=6,
+        title_en='Map Reading: Cardinal Directions, Scale & Symbols',
+        title_mr='नकाशा वाचन: मुख्य दिशा, प्रमाण व सांकेतिक चिन्हे',
+        description_en='Interprets village, taluka, and district maps using directional compass and conventional legend symbols.',
+        description_mr='दिशा, प्रमाण आणि सांकेतिक चिन्हांच्या आधारे तालुका व जिल्ह्याचा नकाशा वाचणे.',
         threshold_passing_pct=60.0
     ),
     Competency(
-        id='FLN-LIT-01',
-        code='LIT-01',
-        subject='Literacy',
-        grade=3,
-        title_en='Conjunct Letters & Blend Decoding',
-        title_mr='जोडाक्षरे आणि संयुक्त ध्वनी वाचन',
-        description_en='Accurately decodes words containing Marathi conjunct consonants (जोडाक्षरे).',
-        description_mr='मराठी भाषेतील विविध जोडाक्षरयुक्त शब्दांचे स्पष्ट व अस्खलित वाचन करणे.',
+        id='SOC-02',
+        code='SOC-02',
+        subject='Social Science',
+        grade=6,
+        title_en='Local Democratic Institutions: Gram Panchayat',
+        title_mr='स्थानिक स्वराज्य संस्था: ग्रामपंचायत व गाव कारभार',
+        description_en='Understands structure, duties, and citizen participation in village Gram Panchayat.',
+        description_mr='ग्रामपंचायतीची रचना, सरपंचांची कर्तव्ये आणि ग्रामसभेचे लोकशाहीतील महत्त्व समजणे.',
+        threshold_passing_pct=60.0
+    ),
+
+    # 4. PHYSICS
+    Competency(
+        id='PHY-01',
+        code='PHY-01',
+        subject='Physics',
+        grade=6,
+        title_en='Types of Forces, Friction & Simple Machines',
+        title_mr='बलाचे प्रकार, घर्षण बल व साधी यंत्रे',
+        description_en='Distinguishes between muscular, gravitational, frictional, and magnetic forces using hands-on toys.',
+        description_mr='गुरुत्वीय, घर्षण, चुंबकीय आणि यांत्रिक बलाची प्रत्यक्ष प्रयोगांद्वारे उदाहरणे ओळखणे.',
         threshold_passing_pct=60.0
     ),
     Competency(
-        id='FLN-LIT-02',
-        code='LIT-02',
-        subject='Literacy',
-        grade=3,
-        title_en='Standard II Level Text Reading (ASER Test)',
-        title_mr='इयत्ता २ री पातळीचा उतारा अस्खलित वाचन व आकलन',
-        description_en='Reads standard 2 paragraph at 40+ wpm with 75% comprehension (ASER/NIPUN criteria).',
-        description_mr='४-५ वाक्यांचा साधा उतारा न अडखळता वाचणे आणि विचारलेल्या प्रश्नांची उत्तरे देणे.',
-        threshold_passing_pct=65.0
+        id='PHY-02',
+        code='PHY-02',
+        subject='Physics',
+        grade=6,
+        title_en='Light: Reflection, Shadows & Transparent Media',
+        title_mr='प्रकाश: सावलीची निर्मिती, परावर्तन व पारदर्शकता',
+        description_en='Explains shadow formation and law of light propagation in straight lines.',
+        description_mr='प्रकाश सरळ रेषेत प्रवास करतो, सावली कशी पडते आणि आरशातील परावर्तन कसे घडते हे समजणे.',
+        threshold_passing_pct=60.0
+    ),
+
+    # 5. CHEMISTRY
+    Competency(
+        id='CHEM-01',
+        code='CHEM-01',
+        subject='Chemistry',
+        grade=6,
+        title_en='Physical vs. Chemical Changes & Reversibility',
+        title_mr='भौतिक व रासायनिक बदल आणि त्यांची उलटसुलटता',
+        description_en='Differentiates between reversible physical transformations and irreversible chemical reactions.',
+        description_mr='बर्फ वितळणे (भौतिक) आणि लाकूड जळणे (रासायनिक) यातील मूलभूत फरक प्रयोगातून स्पष्ट करणे.',
+        threshold_passing_pct=60.0
     ),
     Competency(
-        id='FLN-LIT-03',
-        code='LIT-03',
-        subject='Literacy',
-        grade=3,
-        title_en='Simple Sentence Construction',
-        title_mr='साधी अर्थपूर्ण वाक्य रचना',
-        description_en='Forms simple, grammatically complete sentences using prompt words.',
-        description_mr='दिलेल्या चित्रावरून किंवा सूचक शब्दांवरून योग्य विरामचिन्हांसह स्वतःचे वाक्य तयार करणे.',
+        id='CHEM-02',
+        code='CHEM-02',
+        subject='Chemistry',
+        grade=6,
+        title_en='Acids, Bases & Litmus Indicator Reactions',
+        title_mr='आम्ल, आम्लारी व नैसर्गिक दर्शक (हळद/लिटमस)',
+        description_en='Identifies acidic and basic household substances using natural indicators like turmeric paper.',
+        description_mr='हळदीचा कागद व लिटमस पट्टी वापरून लिंबू (आम्ल) व चुना (आम्लारी) ओळखणे.',
+        threshold_passing_pct=60.0
+    ),
+
+    # 6. MARATHI
+    Competency(
+        id='MAR-01',
+        code='MAR-01',
+        subject='Marathi',
+        grade=6,
+        title_en='Marathi Conjunct Letters & Orthographic Accuracy',
+        title_mr='मराठी जोडाक्षरे, शुद्धलेखन व विरामचिन्हे',
+        description_en='Writes complex Marathi conjunct words with accurate punctuation marks without spelling errors.',
+        description_mr='कठीण जोडाक्षरयुक्त शब्दांचे अचूक शुद्धलेखन आणि पूर्णविराम, स्वल्पविरामाचा योग्य वापर करणे.',
+        threshold_passing_pct=60.0
+    ),
+    Competency(
+        id='MAR-02',
+        code='MAR-02',
+        subject='Marathi',
+        grade=6,
+        title_en='Expressive Reading & Prose Comprehension',
+        title_mr='उतारा अस्खलित वाचन, विचार आकलन व प्रकटीकरण',
+        description_en='Reads prose passages fluently with voice modulation and summarizes the central moral/theme.',
+        description_mr='गोष्टी किंवा माहितीपर उतारे न अडखळता वाचून विचारलेल्या प्रश्नांची स्वभाषेत उत्तरे देणे.',
+        threshold_passing_pct=60.0
+    ),
+
+    # 7. HINDI
+    Competency(
+        id='HIN-01',
+        code='HIN-01',
+        subject='Hindi',
+        grade=6,
+        title_en='Standard Hindi Spelling, Synonyms & Antonyms',
+        title_mr='हिंदी शुद्ध वर्तनी, विलोम व समानार्थी शब्द',
+        description_en='Identifies correct Hindi matras, antonyms, and synonyms in everyday vocabulary.',
+        description_mr='हिंदी शब्दांमधील मात्रांची अचूकता, विलोम (विरुद्धार्थी) आणि पर्यायवाची शब्द समजणे.',
+        threshold_passing_pct=60.0
+    ),
+    Competency(
+        id='HIN-02',
+        code='HIN-02',
+        subject='Hindi',
+        grade=6,
+        title_en='Hindi Sentence Structure & Tense Conjugation',
+        title_mr='हिंदी वाक्य रचना, क्रियापद व काल बोध',
+        description_en='Constructs meaningful sentences in Hindi matching gender, number, and tense correctly.',
+        description_mr='लिंग, वचन आणि काळानुसार योग्य क्रियापद निवडून परिपूर्ण हिंदी वाक्य तयार करणे.',
         threshold_passing_pct=60.0
     )
 ]
 
 REMEDIAL_ACTIVITIES: List[RemedialActivity] = [
     RemedialActivity(
-        id='ACT-NUM-01-A',
-        competency_id='FLN-NUM-01',
-        title_en='Bundle & Sticks Place Value Game',
-        title_mr='दशकाची कांडी व एककाचे सुटे खेळ',
-        instructions_en='Group children in pairs. Use bundles of 10 matchsticks and loose sticks. Teacher calls a 2-digit number (e.g., 47). Students represent it by showing 4 bundles and 7 loose sticks on place-value paper mats.',
-        instructions_mr='विद्यार्थ्यांना जोड्यांमध्ये बसवा. १० काड्यांचे दशक गट्टे आणि सुट्या काड्या वापरा. शिक्षकांनी संख्या सांगितल्यावर (उदा. ४७) मुलांनी ४ दशक गट्टे आणि ७ सुटे ठेवून दाखवावेत व स्थानिक किंमत वहीत नोंदवावी.',
-        materials_needed_en='Matchsticks/twigs tied with rubber bands into 10s, paper cups labeled Units/Tens.',
-        materials_needed_mr='१० च्या काड्यांचे गट्टे, सुट्या काड्या, एकक-दशक लिहिलेले कागदी कप.',
-        estimated_minutes=25,
-        is_teacher_reviewed=True,
-        pedagogical_reason_en='Uses concrete-pictorial-abstract (CPA) progression to demystify place value without rote memorization.',
-        pedagogical_reason_mr='मूर्त ते अमूर्त या अध्यापन पद्धतीचा वापर करून दशक व एकक संकल्पना प्रत्यक्ष कृतीतून पक्की होते.'
-    ),
-    RemedialActivity(
-        id='ACT-NUM-02-A',
-        competency_id='FLN-NUM-02',
-        title_en='Shopkeeper "Exchange Ten" Remedial Drill',
-        title_mr='दुकानदार व सुटे नाणी: हातचा वजाबाकी खेळ',
-        instructions_en='Role-play a village grocery stall. A student has 4 ten-rupee notes and needs to pay 18 rupees. They physically exchange 1 ten-rupee note with the banker for 10 one-rupee coins, then pay 8 coins from the 10. Emphasize why the tens column decreases by 1.',
-        instructions_mr='गावातील दुकानाचे नाट्यीकरण करा. विद्यार्थ्याकडे ४ दहाच्या नोटा आहेत आणि १८ रुपये द्यायचे आहेत. तो बँकेत जाऊन १ दहाची नोट देऊन १० एक रुपयांची नाणी घेतो. यामुळे दशकाचा एक कमी का होतो हे प्रत्यक्ष समजते.',
-        materials_needed_en='Play currency (Rs 10 toy notes, Rs 1 toy coins or cardboard tokens).',
-        materials_needed_mr='खेळातील कागदी नोटा (१० रुपये) आणि टोकन नाणी (१ रुपया).',
-        estimated_minutes=30,
-        is_teacher_reviewed=True,
-        pedagogical_reason_en='Resolves the conceptual misconception where students subtract smaller digit from larger digit (e.g. 52 - 17 doing 7-2=5).',
-        pedagogical_reason_mr='मुले अनेकदा ५२ - १७ करताना ७ मधून २ वजा करतात; ही त्रुटी सुटे करण्याच्या संकल्पनेमुळे कायमची दूर होते.'
-    ),
-    RemedialActivity(
-        id='ACT-NUM-03-A',
-        competency_id='FLN-NUM-03',
-        title_en='Classroom Story Circle Problem Solving',
-        title_mr='गोष्टीतील गणित: शाब्दिक उदाहरणांचा सराव',
-        instructions_en='Teacher presents an oral story with names of local fruits or birds. Children enact the scenario with pebbles before writing the equation.',
-        instructions_mr='स्थानिक परिसरातील उदाहरणे (उदा. पेरू, शेळ्या, पक्षांची चित्रे) वापरून तोंडी कथा सांगा. मुले खड्यांच्या साहाय्याने प्रत्यक्ष वाटणी करून दाखवतील.',
-        materials_needed_en='Pebbles, tamarind seeds (चिंचोके), slate and chalk.',
-        materials_needed_mr='चिंचोके/खडे, पाटी आणि पेन्सिल.',
+        id='ACT-ENG-01',
+        competency_id='ENG-01',
+        title_en='Bilingual Context Flashcard Scaffolding',
+        title_mr='द्विभाषिक संदर्भ चित्रपट्टी सराव',
+        instructions_en='Show 5 illustrated English sentences with Marathi cues. Have learners circle keywords.',
+        instructions_mr='चित्रांसह ५ इंग्रजी वाक्ये दाखवून मराठीतील अर्थाशी जोड्या लावा व शब्दांचे अर्थ समजून घ्या.',
+        materials_needed_en='Illustrated flashcards, chalkboard',
+        materials_needed_mr='सचित्र शब्दपट्ट्या, खडू, फळा',
         estimated_minutes=20,
-        is_teacher_reviewed=True,
-        pedagogical_reason_en='Bridges literacy barrier in numeracy by having students first visualize narrative context before calculating.',
-        pedagogical_reason_mr='शाब्दिक उदाहरणात भाषिक अडचणीमुळे मुले गोंधळतात; गोष्टीमुळे संदर्भ स्पष्ट होऊन क्रिया निवडणे सोपे होते.'
+        pedagogical_reason_en='Leverages native Marathi language mastery to build English contextual vocabulary.',
+        pedagogical_reason_mr='मातृभाषेच्या आधाराने इंग्रजी शब्दसंग्रह वेगाने आत्मसात होतो.'
     ),
     RemedialActivity(
-        id='ACT-NUM-04-A',
-        competency_id='FLN-NUM-04',
-        title_en='Egg Carton Array Multiplication',
-        title_mr='अंडी ट्रे व बिया: समान गटांचा गुणाकार',
-        instructions_en='Use an egg tray or drawing circles on ground. Place 3 tamarind seeds in each of 4 cups. Count total: 3 + 3 + 3 + 3 = 12.',
-        instructions_mr='जमिनीवर ४ गोल आखा. प्रत्येक गोलात ३-३ चिंचोके ठेवा. ३ + ३ + ३ + ३ = १२ म्हणजेच ४ वेळा ३ = ४ × ३ = १२ ही मांडणी मुलांकडून करून घ्या.',
-        materials_needed_en='Chalk, 30 tamarind seeds or bottle caps.',
-        materials_needed_mr='खडू, बाटल्यांची झाकणे किंवा चिंचोके.',
-        estimated_minutes=20,
-        is_teacher_reviewed=True,
-        pedagogical_reason_en='Prevents mechanical memorization of tables by establishing multiplication as repeated grouping.',
-        pedagogical_reason_mr='पाठांतराऐवजी समान गट एकत्र करणे म्हणजे गुणाकार हा पाया मजबूत होतो.'
-    ),
-    RemedialActivity(
-        id='ACT-LIT-01-A',
-        competency_id='FLN-LIT-01',
-        title_en='Joint-Letter Train Game (जोडाक्षर आगगाडी)',
-        title_mr='जोडाक्षर आगगाडी व शब्द पट्टी खेळ',
-        instructions_en='Create flashcards of half-letters and main letters. Two students hold the halves and collide to sound out conjunct syllables.',
-        instructions_mr='कागदाच्या पट्ट्यांवर अर्धी अक्षरे आणि पूर्ण अक्षरे लिहा. दोन मुले मिळून आगगाडीसारखे जोडून उच्चार करतील व फलकावरील शब्दांचे वाचन करतील.',
-        materials_needed_en='Bold flashcards, blackboard chalk, printed local word sheet.',
-        materials_needed_mr='जोडाक्षर फ्लॅशकार्ड, फळा आणि खडू, शब्द तक्ता.',
+        id='ACT-MATH-01',
+        competency_id='MATH-01',
+        title_en='Concrete Base-10 Bundle Sticks Regrouping',
+        title_mr='काड्यांचे दशक बंडल व सुटे यातून वजाबाकी',
+        instructions_en='Distribute bundles of 10 matchsticks and loose sticks. Physically unbundle 1 ten to subtract.',
+        instructions_mr='१० काड्यांचे बंडल (दशक) आणि सुट्या काड्या (एकक) वापरून प्रत्यक्ष हातचा सुटा करून वजाबाकी करा.',
+        materials_needed_en='Matchsticks / neem twigs, rubber bands',
+        materials_needed_mr='काड्या, रबर बँड, पाटी-पेन्सिल',
         estimated_minutes=25,
-        is_teacher_reviewed=True,
-        pedagogical_reason_en='Phonics-based physical blending allows auditory and visual association for difficult conjunct sounds.',
-        pedagogical_reason_mr='ध्वनी आणि दृश्य यांचा समन्वय साधून जोडाक्षरांचा उच्चार व वाचन सुलभ होते.'
+        pedagogical_reason_en='Concrete manipulation grounds abstract borrowing concept into physical conservation of quantity.',
+        pedagogical_reason_mr='प्रत्यक्ष वस्तूंच्या हाताळणीमुळे हातचा घेण्याची क्रिया स्पष्ट होते.'
     ),
     RemedialActivity(
-        id='ACT-LIT-02-A',
-        competency_id='FLN-LIT-02',
-        title_en='Paired Echo Reading with Picture Storybook',
-        title_mr='जोडीने वाचन (प्रतिध्वनी वाचन पद्धती)',
-        instructions_en='Pair a struggling reader with a confident peer reader or teacher. Teacher reads one short sentence emphasizing expression; student echoes immediately.',
-        instructions_mr='किमान वाचन येणाऱ्या विद्यार्थ्याला शिक्षकांसोबत किंवा मित्रासोबत बसवा. शिक्षक एक ओळ वाचतील; विद्यार्थी लगेच तिच्या मागे बोट फिरवत तोच उच्चार करेल.',
-        materials_needed_en='Illustrated Marathi Grade 2 short story (NIPUN Reader).',
-        materials_needed_mr='इयत्ता २ रीच्या गोष्टीचे चित्रमय पुस्तक किंवा निपुण भारत वाचन कार्ड.',
-        estimated_minutes=20,
-        is_teacher_reviewed=True,
-        pedagogical_reason_en='Improves reading prosody and fluency without intimidation.',
-        pedagogical_reason_mr='अडकळणाऱ्या विद्यार्थ्याचा आत्मविश्वास वाढतो आणि बोट फिरवल्यामुळे शब्दांवर लक्ष केंद्रित राहते.'
-    ),
-    RemedialActivity(
-        id='ACT-LIT-03-A',
-        competency_id='FLN-LIT-03',
-        title_en='Picture Cue Sentence Builder',
-        title_mr='चित्र पाहून स्वतःचे वाक्य तयार करणे',
-        instructions_en='Show an engaging picture of a village fair or rainy day. Ask three prompt questions: Who? What are they doing? Where? Help students write complete sentence.',
-        instructions_mr='जत्रा किंवा पावसाळ्याचे चित्र दाखवा. तीन प्रश्न विचारा: कोण आहे? काय करत आहे? कुठे आहे? विद्यार्थ्यांच्या तोंडी उत्तरांचे वाक्य फळ्यावर लिहून घ्या.',
-        materials_needed_en='Printed picture card, student notebooks.',
-        materials_needed_mr='चित्र कार्ड, विद्यार्थ्यांची वही आणि पेन्सिल.',
+        id='ACT-PHY-01',
+        competency_id='PHY-01',
+        title_en='Classroom Toy Friction Ramp Experiment',
+        title_mr='घर्षण बल प्रत्यक्ष उताराचा प्रयोग',
+        instructions_en='Roll a toy car down a wooden plank covered with smooth paper vs rough jute cloth. Measure distances.',
+        instructions_mr='लाकडी फळीवर एकीकडे गुळगुळीत कागद व दुसरीकडे गोणपाटाचा खडबडीत पृष्ठभाग ठेवून खेळण्यातील गाडीचे अंतर मोजा.',
+        materials_needed_en='Cardboard ramp, toy car, sandpaper/cloth, ruler',
+        materials_needed_mr='पुठ्ठा, खेळण्यातील गाडी, कापड/वाळूचा कागद, पट्टी',
         estimated_minutes=25,
-        is_teacher_reviewed=True,
-        pedagogical_reason_en='Scaffolds syntactic sentence structure using simple semantic question cues.',
-        pedagogical_reason_mr='प्रश्नोत्तरातून वाक्याची रचना शिकवल्याने विद्यार्थी अर्थपूर्ण लेखन करू लागतात.'
+        pedagogical_reason_en='Direct observation transforms abstract resistance force into concrete experiential learning.',
+        pedagogical_reason_mr='प्रत्यक्ष प्रयोगातून घर्षण बलाचा वेग आणि अंतरावर होणारा परिणाम समजतो.'
     )
 ]
 
-# 20 Synthetic students for Grade 3 (DPDP compliant)
-SYNTHETIC_STUDENTS: List[Student] = [
-    Student(id='std-301', school_id='ZP-KPG-01', grade=3, section='A', roll_number=1, student_alias='विद्यार्थी १ (Aarav)', parental_consent_verified=True),
-    Student(id='std-302', school_id='ZP-KPG-01', grade=3, section='A', roll_number=2, student_alias='विद्यार्थी २ (Sakshi)', parental_consent_verified=True),
-    Student(id='std-303', school_id='ZP-KPG-01', grade=3, section='A', roll_number=3, student_alias='विद्यार्थी ३ (Karan)', parental_consent_verified=True),
-    Student(id='std-304', school_id='ZP-KPG-01', grade=3, section='A', roll_number=4, student_alias='विद्यार्थी ४ (Pooja)', parental_consent_verified=True),
-    Student(id='std-305', school_id='ZP-KPG-01', grade=3, section='A', roll_number=5, student_alias='विद्यार्थी ५ (Omkar)', parental_consent_verified=True),
-    Student(id='std-306', school_id='ZP-KPG-01', grade=3, section='A', roll_number=6, student_alias='विद्यार्थी ६ (Ananya)', parental_consent_verified=True),
-    Student(id='std-307', school_id='ZP-KPG-01', grade=3, section='A', roll_number=7, student_alias='विद्यार्थी ७ (Tejas)', parental_consent_verified=True),
-    Student(id='std-308', school_id='ZP-KPG-01', grade=3, section='A', roll_number=8, student_alias='विद्यार्थी ८ (Snehal)', parental_consent_verified=True),
-    Student(id='std-309', school_id='ZP-KPG-01', grade=3, section='A', roll_number=9, student_alias='विद्यार्थी ९ (Rohan)', parental_consent_verified=True),
-    Student(id='std-310', school_id='ZP-KPG-01', grade=3, section='A', roll_number=10, student_alias='विद्यार्थी १० (Gauri)', parental_consent_verified=True),
-    Student(id='std-311', school_id='ZP-KPG-01', grade=3, section='A', roll_number=11, student_alias='विद्यार्थी ११ (Aditya)', parental_consent_verified=True),
-    Student(id='std-312', school_id='ZP-KPG-01', grade=3, section='A', roll_number=12, student_alias='विद्यार्थी १२ (Komal)', parental_consent_verified=True),
-    Student(id='std-313', school_id='ZP-KPG-01', grade=3, section='A', roll_number=13, student_alias='विद्यार्थी १३ (Sahil)', parental_consent_verified=True),
-    Student(id='std-314', school_id='ZP-KPG-01', grade=3, section='A', roll_number=14, student_alias='विद्यार्थी १४ (Neha)', parental_consent_verified=True),
-    Student(id='std-315', school_id='ZP-KPG-01', grade=3, section='A', roll_number=15, student_alias='विद्यार्थी १५ (Siddharth)', parental_consent_verified=True),
-    Student(id='std-316', school_id='ZP-KPG-01', grade=3, section='A', roll_number=16, student_alias='विद्यार्थी १६ (Tanvi)', parental_consent_verified=True),
-    Student(id='std-317', school_id='ZP-KPG-01', grade=3, section='A', roll_number=17, student_alias='विद्यार्थी १७ (Vedant)', parental_consent_verified=True),
-    Student(id='std-318', school_id='ZP-KPG-01', grade=3, section='A', roll_number=18, student_alias='विद्यार्थी १८ (Divya)', parental_consent_verified=True),
-    Student(id='std-319', school_id='ZP-KPG-01', grade=3, section='A', roll_number=19, student_alias='विद्यार्थी १९ (Mayur)', parental_consent_verified=True),
-    Student(id='std-320', school_id='ZP-KPG-01', grade=3, section='A', roll_number=20, student_alias='विद्यार्थी २० (Prachi)', parental_consent_verified=True),
+INITIAL_STUDENTS: List[Student] = [
+    Student(id=f'std-3{i+1:02d}', school_id='ZP-KPG-01', grade=6, section='A', roll_number=i+1, student_alias=name)
+    for i, name in enumerate([
+        'विद्यार्थी १ (Aarav Patil)', 'विद्यार्थी २ (Sakshi Deshmukh)', 'विद्यार्थी ३ (Karan Shinde)',
+        'विद्यार्थी ४ (Pooja Jadhav)', 'विद्यार्थी ५ (Omkar Pawar)', 'विद्यार्थी ६ (Ananya Kale)',
+        'विद्यार्थी ७ (Tejas Gaikwad)', 'विद्यार्थी ८ (Snehal More)', 'विद्यार्थी ९ (Rohan Chavan)',
+        'विद्यार्थी १० (Gauri Joshi)', 'विद्यार्थी ११ (Aditya Wagh)', 'विद्यार्थी १२ (Komal Sonawane)',
+        'विद्यार्थी १३ (Sahil Thorat)', 'विद्यार्थी १४ (Neha Londhe)', 'विद्यार्थी १५ (Siddharth Gorde)',
+        'विद्यार्थी १६ (Tanvi Kadam)', 'विद्यार्थी १७ (Vedant Jagtap)', 'विद्यार्थी १८ (Divya Salve)',
+        'विद्यार्थी १९ (Mayur Bankar)', 'विद्यार्थी २० (Prachi Tambe)'
+    ])
 ]

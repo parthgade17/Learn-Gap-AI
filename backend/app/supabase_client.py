@@ -1,8 +1,8 @@
 import logging
-from typing import Optional, List, Dict, Any
+from typing import Optional, List
 from supabase import create_client, Client
 from .config import settings
-from .data.curriculum import FLN_COMPETENCIES, REMEDIAL_ACTIVITIES, SYNTHETIC_STUDENTS
+from .data.curriculum import FLN_COMPETENCIES, REMEDIAL_ACTIVITIES, INITIAL_STUDENTS
 from .models import AssessmentRecord, RemedialPlan
 
 logger = logging.getLogger("learngap.supabase")
@@ -24,10 +24,10 @@ def get_supabase_client() -> Optional[Client]:
             return None
     return None
 
-# In-Memory local fallback store (seeded with synthetic baseline & follow-up assessments)
+# In-Memory local fallback store (seeded with 20 students & baseline + follow-up across 7 subjects)
 class LocalStore:
     def __init__(self):
-        self.students = list(SYNTHETIC_STUDENTS)
+        self.students = list(INITIAL_STUDENTS)
         self.competencies = list(FLN_COMPETENCIES)
         self.activities = list(REMEDIAL_ACTIVITIES)
         self.assessments: List[AssessmentRecord] = []
@@ -35,75 +35,78 @@ class LocalStore:
         self._seed_default_assessments()
 
     def _seed_default_assessments(self):
-        # Seed baseline records reflecting ASER 2024 rural India findings (~33% pass subtraction)
-        for i, st in enumerate(self.students):
-            # Place Value
-            score1 = 8.0 if i % 3 == 0 else (5.0 if i % 2 == 0 else 4.0)
-            self.assessments.append(AssessmentRecord(
-                id=f"asmt-b-1-{st.id}",
-                student_id=st.id,
-                competency_id="FLN-NUM-01",
-                assessment_type="baseline",
-                score_obtained=score1,
-                total_marks=10.0,
-                percentage=(score1 / 10.0) * 100.0,
-                assessed_at="2026-10-15"
-            ))
+        primary_comp_ids = [c.id for c in self.competencies]
 
-            # Subtraction with Borrowing (severe FLN gap)
-            score2 = 7.0 if i % 4 == 0 else (4.0 if i % 3 == 0 else 2.0)
-            self.assessments.append(AssessmentRecord(
-                id=f"asmt-b-2-{st.id}",
-                student_id=st.id,
-                competency_id="FLN-NUM-02",
-                assessment_type="baseline",
-                score_obtained=score2,
-                total_marks=10.0,
-                percentage=(score2 / 10.0) * 100.0,
-                assessed_at="2026-10-15"
-            ))
+        for s_idx, st in enumerate(self.students):
+            for c_idx, comp_id in enumerate(primary_comp_ids):
+                # Realistic score distribution based on subject
+                base_score = 6.0
+                if comp_id.startswith('MATH') or comp_id.startswith('PHY'):
+                    base_score = float(((s_idx * 3 + c_idx * 7) % 6) + 3) # 3.0 to 8.0
+                elif comp_id.startswith('MAR') or comp_id.startswith('HIN'):
+                    base_score = float(((s_idx * 2 + c_idx * 5) % 5) + 5) # 5.0 to 9.0
+                else:
+                    base_score = float(((s_idx + c_idx * 3) % 6) + 4) # 4.0 to 9.0
 
-            # Conjunct Letters
-            score3 = 8.0 if i % 3 == 1 else 3.0
-            self.assessments.append(AssessmentRecord(
-                id=f"asmt-b-5-{st.id}",
-                student_id=st.id,
-                competency_id="FLN-LIT-01",
-                assessment_type="baseline",
-                score_obtained=score3,
-                total_marks=10.0,
-                percentage=(score3 / 10.0) * 100.0,
-                assessed_at="2026-10-15"
-            ))
+                base_score = min(10.0, max(2.0, base_score))
 
-            # Follow-up assessments for students who completed "Exchange Ten" drill
-            if i < 10:
-                fol_score2 = min(10.0, score2 + 4.0)
                 self.assessments.append(AssessmentRecord(
-                    id=f"asmt-f-2-{st.id}",
+                    id=f"asmt-base-{st.id}-{comp_id}",
                     student_id=st.id,
-                    competency_id="FLN-NUM-02",
-                    assessment_type="follow_up",
-                    score_obtained=fol_score2,
+                    competency_id=comp_id,
+                    assessment_type="baseline",
+                    score_obtained=base_score,
                     total_marks=10.0,
-                    percentage=(fol_score2 / 10.0) * 100.0,
-                    assessed_at="2026-10-28"
+                    percentage=(base_score / 10.0) * 100.0,
+                    assessed_at="2026-10-15"
                 ))
 
-        # Sample approved plan
+                # Follow-up for first 14 students
+                if s_idx < 14:
+                    fol_score = base_score + (1.0 if (s_idx + c_idx) % 3 == 0 else 2.5)
+                    if s_idx == 2 and comp_id == 'MATH-02':
+                        fol_score = base_score # persistent gap
+                    fol_score = min(10.0, max(base_score, fol_score))
+
+                    self.assessments.append(AssessmentRecord(
+                        id=f"asmt-fol-{st.id}-{comp_id}",
+                        student_id=st.id,
+                        competency_id=comp_id,
+                        assessment_type="follow_up",
+                        score_obtained=fol_score,
+                        total_marks=10.0,
+                        percentage=(fol_score / 10.0) * 100.0,
+                        assessed_at="2026-10-28"
+                    ))
+
+        # Sample approved plans
         self.plans.append(RemedialPlan(
             id="plan-001",
             school_id="ZP-KPG-01",
             teacher_id="teacher-01",
-            grade=3,
-            competency_id="FLN-NUM-02",
-            activity_id="ACT-NUM-02-A",
+            grade=6,
+            competency_id="MATH-01",
+            activity_id="ACT-MATH-01",
             plan_date="2026-10-20",
-            student_ids=["std-302", "std-303", "std-305", "std-306", "std-308", "std-309"],
+            student_ids=["std-302", "std-303", "std-305", "std-307"],
             status="completed",
-            teacher_notes="विद्यार्थ्यांनी दुकानदाराचा खेळ आवडीने खेळला. दशकाकडून सुटे घेण्याची संकल्पना स्पष्ट झाली.",
-            scheduled_day="सप्ताह ४ (सोमवार ते बुधवार)",
+            teacher_notes="काड्यांचे दशक बंडल वापरून सराव घेतला. हातच्याची वजाबाकी समजली.",
+            scheduled_day="सोमवार, बुधवार (दुपारी २:३०)",
             created_at="2026-10-18T10:00:00Z"
+        ))
+        self.plans.append(RemedialPlan(
+            id="plan-002",
+            school_id="ZP-KPG-01",
+            teacher_id="teacher-01",
+            grade=6,
+            competency_id="ENG-01",
+            activity_id="ACT-ENG-01",
+            plan_date="2026-10-22",
+            student_ids=["std-301", "std-304", "std-308"],
+            status="approved",
+            teacher_notes="Bilingual flashcard drill scheduled.",
+            scheduled_day="मंगळवार, गुरुवार (सकाळी ११:००)",
+            created_at="2026-10-21T09:30:00Z"
         ))
 
 local_store = LocalStore()

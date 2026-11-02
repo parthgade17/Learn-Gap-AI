@@ -1,9 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Sparkles, Users, AlertCircle, CheckCircle, ArrowRight, BookOpen, Filter } from 'lucide-react';
-import { Student, Competency, RemedialActivity, AssessmentRecord, StudentGroup } from '../types';
+import { Student, Competency, RemedialActivity, AssessmentRecord, StudentGroup, SubjectType } from '../types';
 import { diagnoseGaps, groupLearnersForRemediation } from '../engine/gapEngine';
-import { getCompetencyTitle, getCompetencyDescription, getActivityTitle } from '../data/curriculumData';
+import { getCompetencyTitle, getCompetencyDescription, getActivityTitle, ALL_SUBJECTS } from '../data/curriculumData';
 
 interface GapAnalysisViewProps {
   students: Student[];
@@ -24,7 +24,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
   const currentLang = i18n.language || 'en';
   const isEnglish = currentLang === 'en';
 
-  const [selectedSubject, setSelectedSubject] = useState<'ALL' | 'Numeracy' | 'Literacy'>('ALL');
+  const [selectedSubject, setSelectedSubject] = useState<'ALL' | SubjectType>('ALL');
 
   // Run on-device deterministic gap engine
   const diagnoses = diagnoseGaps(students, competencies, assessments);
@@ -57,39 +57,32 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
           </p>
         </div>
 
-        {/* Subject Filter Pills */}
-        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-lg border border-slate-200 self-start md:self-auto">
-          <Filter className="w-3.5 h-3.5 text-slate-500 ml-1.5" />
+        {/* Subject Filter Dropdown / Pills */}
+        <div className="flex items-center gap-1.5 bg-slate-100 p-1 rounded-xl border border-slate-200 self-start md:self-auto overflow-x-auto max-w-full">
+          <Filter className="w-3.5 h-3.5 text-slate-500 ml-1.5 shrink-0" />
           <button
             onClick={() => setSelectedSubject('ALL')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition ${
+            className={`px-3 py-1 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
               selectedSubject === 'ALL'
                 ? 'bg-white text-slate-900 shadow-xs'
                 : 'text-slate-600 hover:text-slate-900'
             }`}
           >
-            {t('subjects.all')}
+            All Subjects
           </button>
-          <button
-            onClick={() => setSelectedSubject('Numeracy')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition ${
-              selectedSubject === 'Numeracy'
-                ? 'bg-white text-brand-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {t('subjects.numeracy')}
-          </button>
-          <button
-            onClick={() => setSelectedSubject('Literacy')}
-            className={`px-3 py-1 text-xs font-semibold rounded-md transition ${
-              selectedSubject === 'Literacy'
-                ? 'bg-white text-indigo-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
-            }`}
-          >
-            {t('subjects.literacy')}
-          </button>
+          {ALL_SUBJECTS.map((sub) => (
+            <button
+              key={sub}
+              onClick={() => setSelectedSubject(sub)}
+              className={`px-2.5 py-1 text-xs font-semibold rounded-lg transition whitespace-nowrap ${
+                selectedSubject === sub
+                  ? 'bg-white text-brand-700 shadow-xs'
+                  : 'text-slate-600 hover:text-slate-900'
+              }`}
+            >
+              {sub}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -191,13 +184,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
                   <div>
                     {/* Header: Subject & Urgency Badge */}
                     <div className="flex items-center justify-between gap-2 mb-2">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider ${
-                          comp.subject === 'Numeracy'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-indigo-100 text-indigo-800'
-                        }`}
-                      >
+                      <span className="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
                         {comp.subject} • {comp.code}
                       </span>
                       <span

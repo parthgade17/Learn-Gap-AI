@@ -1,4 +1,11 @@
-export type SubjectType = 'Literacy' | 'Numeracy';
+export type SubjectType = 
+  | 'English'
+  | 'Mathematics'
+  | 'Social Science'
+  | 'Physics'
+  | 'Chemistry'
+  | 'Marathi'
+  | 'Hindi';
 
 export type UserRole = 'teacher' | 'head_teacher' | 'block_officer';
 
@@ -16,7 +23,7 @@ export interface Student {
 }
 
 export interface Competency {
-  id: string; // e.g., 'FLN-NUM-01'
+  id: string; // e.g., 'ENG-01', 'MATH-02', etc.
   subject: SubjectType;
   grade: number;
   code: string;
@@ -104,4 +111,38 @@ export interface SyncQueueItem {
   table: 'assessments' | 'students' | 'remedial_plans';
   payload: any;
   created_at: string;
+}
+
+// AI-Based Prediction Engine Models
+export interface StudentAIPrediction {
+  student_id: string;
+  student_alias: string;
+  roll_number: number;
+  current_overall_pct: number;
+  predicted_mastery_pct: number;
+  predicted_gain_pct: number;
+  risk_level: 'low' | 'medium' | 'high' | 'critical';
+  recovery_velocity_days: number;
+  confidence_score: number;
+  learning_velocity: number; // rate of growth per week
+  recommended_action_en: string;
+  recommended_action_mr: string;
+  subject_predictions: {
+    subject: SubjectType;
+    current_pct: number;
+    predicted_pct: number;
+    risk: 'low' | 'medium' | 'high';
+  }[];
+}
+
+export interface CohortAIPrediction {
+  projected_class_pass_rate: number;
+  current_class_pass_rate: number;
+  stagnation_risk_pct: number;
+  estimated_weeks_to_goal: number;
+  most_vulnerable_subject: SubjectType;
+  strongest_subject: SubjectType;
+  high_impact_activity_title: string;
+  ai_insights_en: string[];
+  ai_insights_mr: string[];
 }

@@ -7,7 +7,7 @@ export type SubjectType =
   | 'Marathi'
   | 'Hindi';
 
-export type UserRole = 'teacher' | 'head_teacher' | 'block_officer';
+export type UserRole = 'teacher' | 'head_teacher';
 
 export type AssessmentType = 'baseline' | 'follow_up';
 

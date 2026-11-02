@@ -27,12 +27,12 @@ CREATE TABLE IF NOT EXISTS public.schools (
     created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
--- 2. Profiles (Teachers, Head Teachers / CRC, Block Officers)
+-- 2. Profiles (Teachers, Head Teachers / CRC)
 CREATE TABLE IF NOT EXISTS public.profiles (
     id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
     school_id UUID REFERENCES public.schools(id),
     full_name TEXT NOT NULL,
-    role TEXT CHECK (role IN ('teacher', 'head_teacher', 'block_officer', 'admin')) DEFAULT 'teacher',
+    role TEXT CHECK (role IN ('teacher', 'head_teacher', 'admin')) DEFAULT 'teacher',
     phone_number TEXT,
     language_pref TEXT DEFAULT 'mr',
     created_at TIMESTAMPTZ DEFAULT NOW()
@@ -150,27 +150,27 @@ VALUES
 ('ACT-PHY-01', 'PHY-01', 'Classroom Toy Friction Ramp Experiment', 'घर्षण बल प्रत्यक्ष उताराचा प्रयोग', 'Roll a toy car down a wooden plank covered with smooth paper vs rough jute cloth. Measure distances.', 'लाकडी फळीवर एकीकडे गुळगुळीत कागद व दुसरीकडे गोणपाटाचा खडबडीत पृष्ठभाग ठेवून खेळण्यातील गाडीचे अंतर मोजा.', 'Cardboard ramp, toy car, sandpaper/cloth, ruler', 'पुठ्ठा, खेळण्यातील गाडी, कापड/वाळूचा कागद, पट्टी', 25, true, 'Direct observation transforms abstract resistance force into concrete experiential learning.', 'प्रत्यक्ष प्रयोगातून घर्षण बलाचा वेग आणि अंतरावर होणारा परिणाम समजतो.')
 ON CONFLICT (id) DO NOTHING;
 
--- Seed 20 Students
+-- Seed 20 Students distributed across Classes (Grade 5 to 8)
 INSERT INTO public.students (id, school_id, grade, section, roll_number, student_alias, parental_consent_verified)
 VALUES
-('std-301', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 1, 'विद्यार्थी १ (Aarav Patil)', true),
-('std-302', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 2, 'विद्यार्थी २ (Sakshi Deshmukh)', true),
-('std-303', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 3, 'विद्यार्थी ३ (Karan Shinde)', true),
-('std-304', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 4, 'विद्यार्थी ४ (Pooja Jadhav)', true),
-('std-305', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 5, 'विद्यार्थी ५ (Omkar Pawar)', true),
+('std-301', 'a0000000-0000-0000-0000-000000000001', 5, 'A', 1, 'विद्यार्थी १ (Aarav Patil)', true),
+('std-302', 'a0000000-0000-0000-0000-000000000001', 5, 'A', 2, 'विद्यार्थी २ (Sakshi Deshmukh)', true),
+('std-303', 'a0000000-0000-0000-0000-000000000001', 5, 'A', 3, 'विद्यार्थी ३ (Karan Shinde)', true),
+('std-304', 'a0000000-0000-0000-0000-000000000001', 5, 'A', 4, 'विद्यार्थी ४ (Pooja Jadhav)', true),
+('std-305', 'a0000000-0000-0000-0000-000000000001', 5, 'A', 5, 'विद्यार्थी ५ (Omkar Pawar)', true),
 ('std-306', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 6, 'विद्यार्थी ६ (Ananya Kale)', true),
 ('std-307', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 7, 'विद्यार्थी ७ (Tejas Gaikwad)', true),
 ('std-308', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 8, 'विद्यार्थी ८ (Snehal More)', true),
 ('std-309', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 9, 'विद्यार्थी ९ (Rohan Chavan)', true),
 ('std-310', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 10, 'विद्यार्थी १० (Gauri Joshi)', true),
-('std-311', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 11, 'विद्यार्थी ११ (Aditya Wagh)', true),
-('std-312', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 12, 'विद्यार्थी १२ (Komal Sonawane)', true),
-('std-313', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 13, 'विद्यार्थी १३ (Sahil Thorat)', true),
-('std-314', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 14, 'विद्यार्थी १४ (Neha Londhe)', true),
-('std-315', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 15, 'विद्यार्थी १५ (Siddharth Gorde)', true),
-('std-316', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 16, 'विद्यार्थी १६ (Tanvi Kadam)', true),
-('std-317', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 17, 'विद्यार्थी १७ (Vedant Jagtap)', true),
-('std-318', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 18, 'विद्यार्थी १८ (Divya Salve)', true),
-('std-319', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 19, 'विद्यार्थी १९ (Mayur Bankar)', true),
-('std-320', 'a0000000-0000-0000-0000-000000000001', 6, 'A', 20, 'विद्यार्थी २० (Prachi Tambe)', true)
+('std-311', 'a0000000-0000-0000-0000-000000000001', 7, 'A', 11, 'विद्यार्थी ११ (Aditya Wagh)', true),
+('std-312', 'a0000000-0000-0000-0000-000000000001', 7, 'A', 12, 'विद्यार्थी १२ (Komal Sonawane)', true),
+('std-313', 'a0000000-0000-0000-0000-000000000001', 7, 'A', 13, 'विद्यार्थी १३ (Sahil Thorat)', true),
+('std-314', 'a0000000-0000-0000-0000-000000000001', 7, 'A', 14, 'विद्यार्थी १४ (Neha Londhe)', true),
+('std-315', 'a0000000-0000-0000-0000-000000000001', 7, 'A', 15, 'विद्यार्थी १५ (Siddharth Gorde)', true),
+('std-316', 'a0000000-0000-0000-0000-000000000001', 8, 'A', 16, 'विद्यार्थी १६ (Tanvi Kadam)', true),
+('std-317', 'a0000000-0000-0000-0000-000000000001', 8, 'A', 17, 'विद्यार्थी १७ (Vedant Jagtap)', true),
+('std-318', 'a0000000-0000-0000-0000-000000000001', 8, 'A', 18, 'विद्यार्थी १८ (Divya Salve)', true),
+('std-319', 'a0000000-0000-0000-0000-000000000001', 8, 'A', 19, 'विद्यार्थी १९ (Mayur Bankar)', true),
+('std-320', 'a0000000-0000-0000-0000-000000000001', 8, 'A', 20, 'विद्यार्थी २० (Prachi Tambe)', true)
 ON CONFLICT (id) DO NOTHING;

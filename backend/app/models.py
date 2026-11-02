@@ -11,7 +11,7 @@ SubjectType = Literal[
     'Hindi'
 ]
 
-UserRole = Literal['teacher', 'head_teacher', 'block_officer']
+UserRole = Literal['teacher', 'head_teacher']
 AssessmentType = Literal['baseline', 'follow_up']
 PlanStatus = Literal['draft', 'approved', 'completed']
 RiskLevel = Literal['low', 'medium', 'high', 'critical']

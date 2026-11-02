@@ -79,16 +79,16 @@ class LocalStore:
                         assessed_at="2026-10-28"
                     ))
 
-        # Sample approved plans
+        # Sample approved plans across grades
         self.plans.append(RemedialPlan(
             id="plan-001",
             school_id="ZP-KPG-01",
             teacher_id="teacher-01",
-            grade=6,
+            grade=5,
             competency_id="MATH-01",
             activity_id="ACT-MATH-01",
             plan_date="2026-10-20",
-            student_ids=["std-302", "std-303", "std-305", "std-307"],
+            student_ids=["std-301", "std-303", "std-305"],
             status="completed",
             teacher_notes="काड्यांचे दशक बंडल वापरून सराव घेतला. हातच्याची वजाबाकी समजली.",
             scheduled_day="सोमवार, बुधवार (दुपारी २:३०)",
@@ -102,11 +102,25 @@ class LocalStore:
             competency_id="ENG-01",
             activity_id="ACT-ENG-01",
             plan_date="2026-10-22",
-            student_ids=["std-301", "std-304", "std-308"],
+            student_ids=["std-306", "std-308", "std-310"],
             status="approved",
             teacher_notes="Bilingual flashcard drill scheduled.",
             scheduled_day="मंगळवार, गुरुवार (सकाळी ११:००)",
             created_at="2026-10-21T09:30:00Z"
+        ))
+        self.plans.append(RemedialPlan(
+            id="plan-003",
+            school_id="ZP-KPG-01",
+            teacher_id="teacher-01",
+            grade=7,
+            competency_id="PHY-01",
+            activity_id="ACT-PHY-01",
+            plan_date="2026-10-25",
+            student_ids=["std-311", "std-312", "std-315"],
+            status="approved",
+            teacher_notes="Ramp friction experiment conducted.",
+            scheduled_day="बुधवार (दुपारी १:४५)",
+            created_at="2026-10-24T10:00:00Z"
         ))
 
 local_store = LocalStore()

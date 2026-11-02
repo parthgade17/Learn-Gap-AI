@@ -235,7 +235,7 @@ REMEDIAL_ACTIVITIES: List[RemedialActivity] = [
 ]
 
 INITIAL_STUDENTS: List[Student] = [
-    Student(id=f'std-3{i+1:02d}', school_id='ZP-KPG-01', grade=6, section='A', roll_number=i+1, student_alias=name)
+    Student(id=f'std-3{i+1:02d}', school_id='ZP-KPG-01', grade=5 + (i // 5), section='A', roll_number=i+1, student_alias=name)
     for i, name in enumerate([
         'विद्यार्थी १ (Aarav Patil)', 'विद्यार्थी २ (Sakshi Deshmukh)', 'विद्यार्थी ३ (Karan Shinde)',
         'विद्यार्थी ४ (Pooja Jadhav)', 'विद्यार्थी ५ (Omkar Pawar)', 'विद्यार्थी ६ (Ananya Kale)',

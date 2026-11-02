@@ -96,7 +96,6 @@ export const Header: React.FC<HeaderProps> = ({
                 >
                   <option value="teacher">{t('roles.teacher')}</option>
                   <option value="head_teacher">{t('roles.head_teacher')}</option>
-                  <option value="block_officer">{t('roles.block_officer')}</option>
                 </select>
                 <UserCheck className="w-3.5 h-3.5 text-slate-500 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>

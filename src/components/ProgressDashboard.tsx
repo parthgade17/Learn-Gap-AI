@@ -4,14 +4,15 @@ import {
   TrendingUp,
   Award,
   BarChart3,
-  Shield,
   User,
   Users,
   Brain,
   Sparkles,
   School,
-  Building2,
-  ChevronRight
+  ChevronRight,
+  Filter,
+  CheckCircle2,
+  AlertTriangle
 } from 'lucide-react';
 import { Student, Competency, AssessmentRecord, RemedialPlan, UserRole, SubjectType } from '../types';
 import {
@@ -46,13 +47,33 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
   // Toggle between Overall Students Record and Individual Student Record
   const [viewScope, setViewScope] = useState<'overall' | 'individual'>('overall');
-  const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || 'std-301');
 
-  // Closed loop metrics
-  const metrics = calculateRemediationMetrics(competencies, assessments);
+  // Class / Grade filter for Head Teacher (can see entire school or any specific class)
+  const [selectedClassGrade, setSelectedClassGrade] = useState<string>('ALL');
 
-  // Overall Cohort & AI Predictions
-  const cohortPrediction = predictCohortOutcomes(students, assessments, competencies);
+  // Filter students by selected class
+  const filteredStudents = selectedClassGrade === 'ALL'
+    ? students
+    : students.filter(s => s.grade === parseInt(selectedClassGrade, 10));
+
+  const filteredStudentIds = new Set(filteredStudents.map(s => s.id));
+
+  // Filter assessments and plans corresponding to the active class scope
+  const filteredAssessments = assessments.filter(a => filteredStudentIds.has(a.student_id));
+  const filteredPlans = selectedClassGrade === 'ALL'
+    ? plans
+    : plans.filter(p => p.grade === parseInt(selectedClassGrade, 10));
+
+  // Selected student state for individual student view
+  const [selectedStudentId, setSelectedStudentId] = useState<string>(
+    filteredStudents[0]?.id || students[0]?.id || 'std-301'
+  );
+
+  // Closed loop metrics for active scope
+  const metrics = calculateRemediationMetrics(competencies, filteredAssessments);
+
+  // Cohort AI Predictions for active scope
+  const cohortPrediction = predictCohortOutcomes(filteredStudents, filteredAssessments, competencies);
 
   // Selected student & individual AI prediction
   const selectedStudent = students.find(s => s.id === selectedStudentId) || students[0];
@@ -60,10 +81,10 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
     ? predictStudentMastery(selectedStudent, assessments, competencies)
     : null;
 
-  // Overall statistics
-  const totalStudents = students.length;
+  // Active scope statistics
+  const totalStudents = filteredStudents.length;
   const assessedStudentsCount = new Set(
-    assessments.filter(a => a.assessment_type === 'baseline').map(a => a.student_id)
+    filteredAssessments.filter(a => a.assessment_type === 'baseline').map(a => a.student_id)
   ).size;
   const coveragePct = totalStudents > 0 ? Math.round((assessedStudentsCount / totalStudents) * 100) : 0;
 
@@ -80,10 +101,13 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
   const totalPersistent = metrics.reduce((acc, m) => acc + m.persistentGapCount, 0);
 
   // Action on identified gaps (Target: >= 80%)
-  const plannedCompIds = new Set(plans.map(p => p.competency_id));
-  const gapsReceivingPlanPct = Math.min(100, Math.round((plannedCompIds.size / Math.max(1, metrics.filter(m => m.baselinePassRate < 70).length)) * 100));
+  const plannedCompIds = new Set(filteredPlans.map(p => p.competency_id));
+  const gapsReceivingPlanPct = Math.min(
+    100,
+    Math.round((plannedCompIds.size / Math.max(1, metrics.filter(m => m.baselinePassRate < 70).length)) * 100)
+  );
 
-  // Subject-wise average scores across cohort
+  // Subject-wise average scores for active scope
   const subjectPerformance: Record<SubjectType, { baseline: number; followup: number; count: number }> = {
     'English': { baseline: 0, followup: 0, count: 0 },
     'Mathematics': { baseline: 0, followup: 0, count: 0 },
@@ -103,10 +127,48 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
     }
   });
 
+  // School-wide Class-by-Class Comparative Data for Head Teacher
+  const availableGrades = [5, 6, 7, 8];
+  const classBreakdown = availableGrades.map((grade) => {
+    const classStudents = students.filter(s => s.grade === grade);
+    const classStudentIds = new Set(classStudents.map(s => s.id));
+    const classAsmts = assessments.filter(a => classStudentIds.has(a.student_id));
+    const classPlans = plans.filter(p => p.grade === grade);
+
+    const classMetrics = calculateRemediationMetrics(competencies, classAsmts);
+    const withFol = classMetrics.filter(m => m.hasFollowup);
+    const baseAvg = classMetrics.length > 0
+      ? Math.round(classMetrics.reduce((acc, m) => acc + m.baselinePassRate, 0) / classMetrics.length)
+      : 50;
+    const folAvg = withFol.length > 0
+      ? Math.round(withFol.reduce((acc, m) => acc + m.followupPassRate, 0) / withFol.length)
+      : baseAvg;
+    const persistent = classMetrics.reduce((acc, m) => acc + m.persistentGapCount, 0);
+
+    const teacherNames: Record<number, string> = {
+      5: 'श्रीमती ए. बी. पाटील (S. A. Patil)',
+      6: 'श्री. एम. आर. कुलकर्णी (M. R. Kulkarni)',
+      7: 'श्रीमती के. एस. शिंदे (K. S. Shinde)',
+      8: 'श्री. व्ही. पी. चव्हाण (V. P. Chavan)'
+    };
+
+    return {
+      grade,
+      className: `Class ${grade}th - Section A (इयत्ता ${grade} वी)`,
+      teacherName: teacherNames[grade] || 'Teacher-in-Charge',
+      studentCount: classStudents.length,
+      baselinePassRate: baseAvg,
+      followupPassRate: folAvg,
+      netGainPct: folAvg - baseAvg,
+      activePlansCount: classPlans.length,
+      persistentGapsCount: persistent
+    };
+  });
+
   return (
     <div className="space-y-6">
       
-      {/* Header Banner */}
+      {/* Top Banner: Title & Primary Scope Toggle */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
@@ -118,15 +180,15 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 {t('dashboard.title')}
               </h2>
               <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                {userRole === 'teacher' && 'Classroom-level diagnostic radar & individual learner trajectory'}
-                {userRole === 'head_teacher' && 'CRC School-wide FLN competency matrix & teacher remediation compliance'}
-                {userRole === 'block_officer' && 'Taluka Cluster aggregate analytics & DPDP-compliant equity index'}
+                {userRole === 'head_teacher'
+                  ? 'Head Teacher (मुख्याध्यापक / CRC) Supervisory Portal • Entire School Class-Wise & Individual Records'
+                  : 'Classroom Teacher Command Center • Grade 6-A Diagnostic Radar & Individual Learner Trajectory'}
               </p>
             </div>
           </div>
         </div>
 
-        {/* View Switcher: Overall Record vs Individual Student Record */}
+        {/* View Switcher: Overall Students Record vs Individual Student Record */}
         <div className="flex items-center gap-2 self-start md:self-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button
             onClick={() => setViewScope('overall')}
@@ -154,10 +216,10 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
       </div>
 
       {/* =========================================================================
-          ROLE-SPECIFIC HIGHLIGHT CARDS
-          1. Class Teacher | 2. Head Teacher (CRC) | 3. Block Education Officer (BEO)
+          ROLE HIGHLIGHT & CLASS SELECTOR
+          1. Class Teacher  |  2. Head Teacher (Entire School Class-Wise & Student Wise)
       ========================================================================= */}
-      {userRole === 'teacher' && (
+      {userRole === 'teacher' ? (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 rounded-2xl flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-3">
             <span className="p-2 bg-blue-600 text-white rounded-xl shadow-xs font-bold">
@@ -168,7 +230,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 Classroom Teacher Command Center
               </p>
               <p className="text-blue-700 text-[11px] mt-0.5">
-                Active tracking: 20 Students • 7 Academic Subjects • Dynamic Supabase Real-time Sync
+                Class Section: Grade 6-A • 7 Core Subjects • Continuous Remedial Tracking
               </p>
             </div>
           </div>
@@ -191,58 +253,182 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             )}
           </div>
         </div>
-      )}
-
-      {userRole === 'head_teacher' && (
-        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 p-4 rounded-2xl space-y-3 text-xs">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <School className="w-5 h-5 text-emerald-700" />
-              <span className="font-bold text-emerald-950 text-sm">
-                Head Teacher (CRC) School Supervisory Index
-              </span>
+      ) : (
+        /* Head Teacher (मुख्याध्यापक) Portal */
+        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border border-emerald-200 p-5 rounded-2xl space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="p-2.5 bg-emerald-600 text-white rounded-xl shadow-sm">
+                <School className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="font-black text-emerald-950 text-base">
+                  Head Teacher (मुख्याध्यापक) School Supervisory Dashboard
+                </h3>
+                <p className="text-xs text-emerald-800">
+                  Zilla Parishad Primary School (UDISE: 27260501234) • All Classes (Grade 5 to 8)
+                </p>
+              </div>
             </div>
-            <span className="px-2.5 py-1 bg-emerald-100 text-emerald-800 rounded-full font-bold text-[11px]">
-              School UDISE: 27260501201 (ZP Primary School)
-            </span>
+
+            {/* Class Filter Bar for Head Teacher */}
+            <div className="flex items-center gap-2 bg-white/90 p-1.5 rounded-xl border border-emerald-200 shadow-2xs self-start sm:self-auto">
+              <Filter className="w-3.5 h-3.5 text-emerald-700 ml-1 shrink-0" />
+              <label htmlFor="head-teacher-class-select" className="text-xs font-bold text-slate-700">
+                Inspect Scope:
+              </label>
+              <select
+                id="head-teacher-class-select"
+                value={selectedClassGrade}
+                onChange={(e) => setSelectedClassGrade(e.target.value)}
+                className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              >
+                <option value="ALL">Entire School (सर्व वर्ग - All Classes)</option>
+                <option value="5">Class 5th - A (इयत्ता ५ वी)</option>
+                <option value="6">Class 6th - A (इयत्ता ६ वी)</option>
+                <option value="7">Class 7th - A (इयत्ता ७ वी)</option>
+                <option value="8">Class 8th - A (इयत्ता ८ वी)</option>
+              </select>
+            </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-1">
-            <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
+          <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1 text-xs">
+            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+              <span className="text-[11px] text-slate-500 font-medium">Total Enrolled Learners</span>
+              <p className="text-lg font-black text-slate-900 mt-0.5">
+                {totalStudents} <span className="text-[11px] text-slate-400 font-normal">Students in selected scope</span>
+              </p>
+            </div>
+            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
               <span className="text-[11px] text-slate-500 font-medium">Remedial Plan Compliance</span>
-              <p className="text-lg font-black text-emerald-700 mt-0.5">88% <span className="text-[10px] text-emerald-600 font-semibold">(Target &ge; 80%)</span></p>
+              <p className="text-lg font-black text-emerald-700 mt-0.5">
+                88% <span className="text-[10px] text-emerald-600 font-bold">&#10003; Compliant (&ge;80%)</span>
+              </p>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
-              <span className="text-[11px] text-slate-500 font-medium">Persistent Learning Gaps</span>
-              <p className="text-lg font-black text-amber-700 mt-0.5">{totalPersistent} <span className="text-[10px] text-slate-400 font-normal">Learners need Tier-3 support</span></p>
+            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+              <span className="text-[11px] text-slate-500 font-medium">Persistent Gaps Flagged</span>
+              <p className="text-lg font-black text-amber-700 mt-0.5">
+                {totalPersistent} <span className="text-[10px] text-slate-400 font-normal">Requires Tier-3 Support</span>
+              </p>
             </div>
-            <div className="bg-white p-3 rounded-xl border border-emerald-100 shadow-2xs">
-              <span className="text-[11px] text-slate-500 font-medium">CRC Mentor Visit Status</span>
-              <p className="text-lg font-black text-blue-700 mt-0.5">Verified <span className="text-[10px] text-emerald-600 font-semibold">&#10003; Approved</span></p>
+            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+              <span className="text-[11px] text-slate-500 font-medium">School Diagnostic Coverage</span>
+              <p className="text-lg font-black text-blue-700 mt-0.5">
+                {coveragePct}% <span className="text-[10px] text-blue-600 font-semibold">100% Target Met</span>
+              </p>
             </div>
           </div>
         </div>
       )}
 
-      {userRole === 'block_officer' && (
-        <div className="bg-gradient-to-r from-purple-50 to-indigo-50 border border-purple-200 p-4 rounded-2xl space-y-3 text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-purple-700" />
-              <span className="font-bold text-purple-950 text-sm">
-                Block Education Officer (BEO) - Taluka Administrative Overview
-              </span>
+      {/* =========================================================================
+          HEAD TEACHER SPECIAL: SCHOOL-WIDE CLASS-BY-CLASS COMPARATIVE MATRIX
+      ========================================================================= */}
+      {userRole === 'head_teacher' && viewScope === 'overall' && (
+        <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+            <div>
+              <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
+                <span>School-Wide Class-By-Class Comparative Performance</span>
+                <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-700 border border-emerald-200 font-bold uppercase tracking-wider">
+                  Head Teacher Multi-Class View
+                </span>
+              </h3>
+              <p className="text-xs text-slate-500">
+                Compare learning recovery, baseline vs follow-up pass rate, and teacher remediation compliance across Grade 5, 6, 7, and 8
+              </p>
             </div>
-            <span className="px-2.5 py-1 bg-purple-100 text-purple-800 rounded-full font-bold text-[11px] self-start sm:self-auto">
-              Cluster: Kopargaon North • 12 ZP Schools
-            </span>
+
+            {selectedClassGrade !== 'ALL' && (
+              <button
+                onClick={() => setSelectedClassGrade('ALL')}
+                className="text-xs font-bold text-brand-600 hover:text-brand-700 bg-brand-50 px-3 py-1 rounded-lg border border-brand-200 self-start sm:self-auto"
+              >
+                Reset to Entire School View
+              </button>
+            )}
           </div>
 
-          <div className="bg-white p-3 rounded-xl border border-purple-100 flex items-start gap-2.5">
-            <Shield className="w-4 h-4 text-purple-600 mt-0.5 shrink-0" />
-            <p className="text-purple-900 text-[11px] leading-relaxed">
-              <strong>DPDP Act 2023 Masking Active:</strong> Individual child identifiability is masked at administrative level. Only macro-level competency mastery indices and cluster recovery velocity are presented for equitable allocation of teacher training and learning kits.
-            </p>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50 uppercase tracking-wider text-slate-700 font-bold border-b border-slate-200">
+                <tr>
+                  <th className="py-3 px-3">Class &amp; Section</th>
+                  <th className="py-3 px-3">Class Teacher</th>
+                  <th className="py-3 px-3">Students</th>
+                  <th className="py-3 px-3">Baseline Pass</th>
+                  <th className="py-3 px-3">Follow-Up Pass</th>
+                  <th className="py-3 px-3">Net Gain</th>
+                  <th className="py-3 px-3">Remedial Plans</th>
+                  <th className="py-3 px-3">Persistent Gaps</th>
+                  <th className="py-3 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {classBreakdown.map((cls) => {
+                  const isSelected = selectedClassGrade === String(cls.grade);
+
+                  return (
+                    <tr
+                      key={cls.grade}
+                      className={`transition ${
+                        isSelected ? 'bg-emerald-50/70 font-semibold' : 'hover:bg-slate-50/80'
+                      }`}
+                    >
+                      <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
+                        <span className="p-1.5 rounded-lg bg-slate-100 text-slate-800 mr-2 font-mono">
+                          Std {cls.grade}
+                        </span>
+                        {cls.className}
+                      </td>
+                      <td className="py-3 px-3 text-slate-600 whitespace-nowrap">
+                        {cls.teacherName}
+                      </td>
+                      <td className="py-3 px-3 font-semibold text-slate-800">
+                        {cls.studentCount} Learners
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="font-bold text-slate-700">{cls.baselinePassRate}%</span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="font-bold text-emerald-700">{cls.followupPassRate}%</span>
+                      </td>
+                      <td className="py-3 px-3 font-bold text-emerald-800">
+                        +{cls.netGainPct}%
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className="inline-flex items-center gap-1 font-semibold text-blue-800 bg-blue-50 px-2 py-0.5 rounded border border-blue-200">
+                          <CheckCircle2 className="w-3 h-3 text-blue-600" />
+                          {cls.activePlansCount} Plans
+                        </span>
+                      </td>
+                      <td className="py-3 px-3">
+                        <span className={`inline-flex items-center gap-1 font-semibold px-2 py-0.5 rounded ${
+                          cls.persistentGapsCount > 0
+                            ? 'bg-amber-100 text-amber-800'
+                            : 'bg-slate-100 text-slate-600'
+                        }`}>
+                          {cls.persistentGapsCount > 0 && <AlertTriangle className="w-3 h-3 text-amber-600" />}
+                          {cls.persistentGapsCount} Gaps
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-right whitespace-nowrap">
+                        <button
+                          onClick={() => setSelectedClassGrade(String(cls.grade))}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition shadow-2xs ${
+                            isSelected
+                              ? 'bg-emerald-600 text-white'
+                              : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100'
+                          }`}
+                        >
+                          {isSelected ? 'Active Scope' : 'Inspect Class'}
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       )}
@@ -258,9 +444,11 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
               <div>
                 <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
-                  <span>Classroom Circular Performance Indicators</span>
+                  <span>Circular Performance Indicators</span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] bg-brand-50 text-brand-700 border border-brand-200 font-bold uppercase tracking-wider">
-                    All 20 Students
+                    {selectedClassGrade === 'ALL'
+                      ? 'Entire School (All 20 Students)'
+                      : `Class ${selectedClassGrade}th (5 Students)`}
                   </span>
                 </h3>
                 <p className="text-xs text-slate-500">
@@ -327,7 +515,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                   label="Gaps with Plan"
                 />
                 <span className="text-[11px] text-slate-400 mt-1 font-medium">
-                  {plans.length} active teacher plans
+                  {filteredPlans.length} active teacher plans
                 </span>
               </div>
             </div>
@@ -338,7 +526,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
                 <h3 className="font-black text-slate-900 text-base">
-                  Subject-Wise Circular Mastery Gauges (7 Subjects)
+                  Subject-Wise Circular Mastery Gauges (7 Core Subjects)
                 </h3>
                 <p className="text-xs text-slate-500">
                   Real-time mastery percentage per subject across English, Mathematics, Social Science, Physics, Chemistry, Marathi, and Hindi
@@ -394,14 +582,14 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                     </span>
                   </h4>
                   <p className="text-xs text-indigo-200/80">
-                    Continuous learning curve forecasting for end-of-term grade outcomes
+                    Continuous learning curve forecasting for {selectedClassGrade === 'ALL' ? 'Entire School' : `Class ${selectedClassGrade}th`}
                   </p>
                 </div>
               </div>
 
               <div className="flex items-center gap-3 text-xs bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 self-start sm:self-auto">
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Predicted Class Pass Rate</span>
+                  <span className="text-slate-400 block text-[10px]">Predicted Pass Rate</span>
                   <span className="text-lg font-black text-emerald-400">
                     {cohortPrediction.projected_class_pass_rate}%
                   </span>
@@ -585,6 +773,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
       {/* =========================================================================
           VIEW 2: INDIVIDUAL STUDENT RECORD (STUDENT SELECTOR, RADIAL GAUGE & AI TRAJECTORY)
+          Head Teacher & Class Teacher can drill into any individual student
       ========================================================================= */}
       {viewScope === 'individual' && studentPrediction && (
         <div className="space-y-6">
@@ -597,27 +786,49 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               </div>
               <div>
                 <span className="text-xs font-semibold text-slate-400 block uppercase tracking-wider">
-                  Select Individual Learner
+                  Select Individual Learner {userRole === 'head_teacher' && '(Across All School Classes)'}
                 </span>
                 <span className="font-black text-slate-900 text-base">
                   {selectedStudent ? formatStudentDisplay(selectedStudent, currentLang) : 'Learner'}
+                  <span className="ml-2 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                    Class {selectedStudent?.grade}th - {selectedStudent?.section}
+                  </span>
                 </span>
               </div>
             </div>
 
-            <div className="flex items-center gap-2">
-              <label htmlFor="student-picker" className="text-xs font-medium text-slate-500">
-                Switch Student:
-              </label>
+            <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+              {/* Optional Class Filter for quick narrowing */}
+              {userRole === 'head_teacher' && (
+                <select
+                  value={selectedClassGrade}
+                  onChange={(e) => {
+                    const newGrade = e.target.value;
+                    setSelectedClassGrade(newGrade);
+                    const classStds = newGrade === 'ALL'
+                      ? students
+                      : students.filter(s => s.grade === parseInt(newGrade, 10));
+                    if (classStds.length > 0) setSelectedStudentId(classStds[0].id);
+                  }}
+                  className="text-xs font-semibold rounded-xl border border-slate-300 py-2 px-2.5 bg-slate-50 text-slate-800"
+                >
+                  <option value="ALL">Filter Class: All School</option>
+                  <option value="5">Class 5th</option>
+                  <option value="6">Class 6th</option>
+                  <option value="7">Class 7th</option>
+                  <option value="8">Class 8th</option>
+                </select>
+              )}
+
               <select
                 id="student-picker"
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
                 className="text-xs font-semibold rounded-xl border border-slate-300 py-2 px-3 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-xs"
               >
-                {students.map((std) => (
+                {filteredStudents.map((std) => (
                   <option key={std.id} value={std.id}>
-                    Roll #{std.roll_number} - {formatStudentDisplay(std, currentLang)}
+                    [Class {std.grade}th] Roll #{std.roll_number} - {formatStudentDisplay(std, currentLang)}
                   </option>
                 ))}
               </select>
@@ -630,7 +841,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             {/* Left: Overall Circular Mastery & Risk Gauge (4 cols) */}
             <div className="md:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center space-y-4">
               <span className="text-xs uppercase tracking-wider font-bold text-slate-400">
-                Current Overall Proficiency
+                Current Individual Proficiency
               </span>
 
               <CircularGauge
@@ -652,7 +863,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                   {studentPrediction.risk_level} Risk Level
                 </span>
                 <p className="text-xs text-slate-500">
-                  Roll #{studentPrediction.roll_number} • Section A • Grade 6
+                  Roll #{studentPrediction.roll_number} • Section {selectedStudent?.section} • Class {selectedStudent?.grade}th
                 </p>
               </div>
 
@@ -735,7 +946,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           {/* Student Subject-Wise Circular Breakdown */}
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             <h4 className="font-bold text-slate-900 text-base">
-              Individual Subject Circular Progress Rings (7 Subjects)
+              Individual Subject Circular Progress Rings (7 Core Academic Subjects)
             </h4>
             
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4">

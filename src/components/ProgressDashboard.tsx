@@ -12,7 +12,9 @@ import {
   ChevronRight,
   Filter,
   CheckCircle2,
-  AlertTriangle
+  AlertTriangle,
+  Download,
+  FileSpreadsheet
 } from 'lucide-react';
 import { Student, Competency, AssessmentRecord, RemedialPlan, UserRole, SubjectType } from '../types';
 import {
@@ -434,6 +436,61 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
       )}
 
       {/* =========================================================================
+          STATIC DATASET DOWNLOADS (5th A, 6th A, 7th A, 8th A)
+      ========================================================================= */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-sm space-y-3 border border-indigo-900/50">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="p-1.5 bg-indigo-500/30 text-indigo-300 rounded-lg">
+                <FileSpreadsheet className="w-4 h-4" />
+              </span>
+              <h4 className="font-bold text-sm text-white">
+                School Static Marksheet Datasets (5th A, 6th A, 7th A, 8th A)
+              </h4>
+            </div>
+            <p className="text-xs text-indigo-200/80 mt-1">
+              Download complete, deterministic CSV datasets with 10 learners per class, 7 core subjects, baseline and follow-up scores.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            <a
+              href="/datasets/class_5th_A_marksheet.csv"
+              download="class_5th_A_marksheet.csv"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <span>5th A (.csv)</span>
+            </a>
+            <a
+              href="/datasets/class_6th_A_marksheet.csv"
+              download="class_6th_A_marksheet.csv"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <span>6th A (.csv)</span>
+            </a>
+            <a
+              href="/datasets/class_7th_A_marksheet.csv"
+              download="class_7th_A_marksheet.csv"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <span>7th A (.csv)</span>
+            </a>
+            <a
+              href="/datasets/class_8th_A_marksheet.csv"
+              download="class_8th_A_marksheet.csv"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+            >
+              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <span>8th A (.csv)</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      {/* =========================================================================
           VIEW 1: OVERALL STUDENTS RECORD (CIRCULAR GRAPHS & COHORT PREDICTION)
       ========================================================================= */}
       {viewScope === 'overall' && (
@@ -447,8 +504,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                   <span>Circular Performance Indicators</span>
                   <span className="px-2 py-0.5 rounded-full text-[10px] bg-brand-50 text-brand-700 border border-brand-200 font-bold uppercase tracking-wider">
                     {selectedClassGrade === 'ALL'
-                      ? 'Entire School (All 20 Students)'
-                      : `Class ${selectedClassGrade}th (5 Students)`}
+                      ? `Entire School (${totalStudents} Learners across 4 Classes)`
+                      : `Class ${selectedClassGrade}th - A (${totalStudents} Learners)`}
                   </span>
                 </h3>
                 <p className="text-xs text-slate-500">

@@ -1,0 +1,256 @@
+roll_number,student_name,grade,section,subject,competency_code,assessment_type,score_obtained,total_marks,percentage,status
+1,"विद्यार्थी १ (Ananya Kale)",6,A,English,ENG-01,baseline,8.0,10.0,80.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,English,ENG-01,follow_up,10.0,10.0,100.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,English,ENG-02,baseline,5.0,10.0,50.0%,Learning_Gap
+1,"विद्यार्थी १ (Ananya Kale)",6,A,English,ENG-02,follow_up,7.5,10.0,75.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Mathematics,MATH-01,baseline,5.0,10.0,50.0%,Learning_Gap
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Mathematics,MATH-01,follow_up,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Mathematics,MATH-02,baseline,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Mathematics,MATH-02,follow_up,8.5,10.0,85.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Mathematics,MATH-03,baseline,7.0,10.0,70.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Mathematics,MATH-03,follow_up,9.5,10.0,95.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Social Science,SOC-01,baseline,5.0,10.0,50.0%,Learning_Gap
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Social Science,SOC-01,follow_up,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Social Science,SOC-02,baseline,8.0,10.0,80.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Social Science,SOC-02,follow_up,10.0,10.0,100.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Physics,PHY-01,baseline,4.0,10.0,40.0%,Learning_Gap
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Physics,PHY-01,follow_up,6.5,10.0,65.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Physics,PHY-02,baseline,5.0,10.0,50.0%,Learning_Gap
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Physics,PHY-02,follow_up,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Chemistry,CHEM-01,baseline,5.0,10.0,50.0%,Learning_Gap
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Chemistry,CHEM-01,follow_up,7.5,10.0,75.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Chemistry,CHEM-02,baseline,8.0,10.0,80.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Chemistry,CHEM-02,follow_up,10.0,10.0,100.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Marathi,MAR-01,baseline,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Marathi,MAR-01,follow_up,7.0,10.0,70.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Marathi,MAR-02,baseline,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Marathi,MAR-02,follow_up,8.5,10.0,85.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Hindi,HIN-01,baseline,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Hindi,HIN-01,follow_up,8.5,10.0,85.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Hindi,HIN-02,baseline,6.0,10.0,60.0%,Mastered
+1,"विद्यार्थी १ (Ananya Kale)",6,A,Hindi,HIN-02,follow_up,7.0,10.0,70.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,English,ENG-01,baseline,9.0,10.0,90.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,English,ENG-02,baseline,6.0,10.0,60.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Mathematics,MATH-01,baseline,8.0,10.0,80.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Mathematics,MATH-02,baseline,3.0,10.0,30.0%,Learning_Gap
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Mathematics,MATH-03,baseline,4.0,10.0,40.0%,Learning_Gap
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Social Science,SOC-01,baseline,6.0,10.0,60.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Social Science,SOC-02,baseline,9.0,10.0,90.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Physics,PHY-01,baseline,7.0,10.0,70.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Physics,PHY-02,baseline,8.0,10.0,80.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Chemistry,CHEM-01,baseline,6.0,10.0,60.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Chemistry,CHEM-02,baseline,9.0,10.0,90.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Marathi,MAR-01,baseline,8.0,10.0,80.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Marathi,MAR-02,baseline,8.0,10.0,80.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Hindi,HIN-01,baseline,8.0,10.0,80.0%,Mastered
+2,"विद्यार्थी २ (Tejas Gaikwad)",6,A,Hindi,HIN-02,baseline,8.0,10.0,80.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,English,ENG-01,baseline,4.0,10.0,40.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,English,ENG-01,follow_up,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,English,ENG-02,baseline,7.0,10.0,70.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,English,ENG-02,follow_up,9.5,10.0,95.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Mathematics,MATH-01,baseline,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Mathematics,MATH-01,follow_up,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Mathematics,MATH-02,baseline,6.0,10.0,60.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Mathematics,MATH-02,follow_up,7.0,10.0,70.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Mathematics,MATH-03,baseline,7.0,10.0,70.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Mathematics,MATH-03,follow_up,9.5,10.0,95.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Social Science,SOC-01,baseline,7.0,10.0,70.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Social Science,SOC-01,follow_up,9.5,10.0,95.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Social Science,SOC-02,baseline,4.0,10.0,40.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Social Science,SOC-02,follow_up,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Physics,PHY-01,baseline,4.0,10.0,40.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Physics,PHY-01,follow_up,6.5,10.0,65.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Physics,PHY-02,baseline,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Physics,PHY-02,follow_up,7.5,10.0,75.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Chemistry,CHEM-01,baseline,7.0,10.0,70.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Chemistry,CHEM-01,follow_up,8.0,10.0,80.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Chemistry,CHEM-02,baseline,4.0,10.0,40.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Chemistry,CHEM-02,follow_up,6.5,10.0,65.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Marathi,MAR-01,baseline,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Marathi,MAR-01,follow_up,7.5,10.0,75.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Marathi,MAR-02,baseline,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Marathi,MAR-02,follow_up,6.0,10.0,60.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Hindi,HIN-01,baseline,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Hindi,HIN-01,follow_up,7.5,10.0,75.0%,Mastered
+3,"विद्यार्थी ३ (Snehal More)",6,A,Hindi,HIN-02,baseline,5.0,10.0,50.0%,Learning_Gap
+3,"विद्यार्थी ३ (Snehal More)",6,A,Hindi,HIN-02,follow_up,7.5,10.0,75.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,English,ENG-01,baseline,5.0,10.0,50.0%,Learning_Gap
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,English,ENG-01,follow_up,7.5,10.0,75.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,English,ENG-02,baseline,8.0,10.0,80.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,English,ENG-02,follow_up,10.0,10.0,100.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Mathematics,MATH-01,baseline,8.0,10.0,80.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Mathematics,MATH-01,follow_up,9.0,10.0,90.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Mathematics,MATH-02,baseline,3.0,10.0,30.0%,Learning_Gap
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Mathematics,MATH-02,follow_up,5.5,10.0,55.00000000000001%,Learning_Gap
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Mathematics,MATH-03,baseline,4.0,10.0,40.0%,Learning_Gap
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Mathematics,MATH-03,follow_up,6.5,10.0,65.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Social Science,SOC-01,baseline,8.0,10.0,80.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Social Science,SOC-01,follow_up,9.0,10.0,90.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Social Science,SOC-02,baseline,5.0,10.0,50.0%,Learning_Gap
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Social Science,SOC-02,follow_up,7.5,10.0,75.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Physics,PHY-01,baseline,7.0,10.0,70.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Physics,PHY-01,follow_up,9.5,10.0,95.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Physics,PHY-02,baseline,8.0,10.0,80.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Physics,PHY-02,follow_up,9.0,10.0,90.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Chemistry,CHEM-01,baseline,8.0,10.0,80.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Chemistry,CHEM-01,follow_up,10.0,10.0,100.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Chemistry,CHEM-02,baseline,5.0,10.0,50.0%,Learning_Gap
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Chemistry,CHEM-02,follow_up,7.5,10.0,75.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Marathi,MAR-01,baseline,7.0,10.0,70.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Marathi,MAR-01,follow_up,8.0,10.0,80.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Marathi,MAR-02,baseline,7.0,10.0,70.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Marathi,MAR-02,follow_up,9.5,10.0,95.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Hindi,HIN-01,baseline,7.0,10.0,70.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Hindi,HIN-01,follow_up,9.5,10.0,95.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Hindi,HIN-02,baseline,7.0,10.0,70.0%,Mastered
+4,"विद्यार्थी ४ (Rohan Chavan)",6,A,Hindi,HIN-02,follow_up,8.0,10.0,80.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,English,ENG-01,baseline,6.0,10.0,60.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,English,ENG-01,follow_up,8.5,10.0,85.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,English,ENG-02,baseline,9.0,10.0,90.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,English,ENG-02,follow_up,10.0,10.0,100.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Mathematics,MATH-01,baseline,5.0,10.0,50.0%,Learning_Gap
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Mathematics,MATH-01,follow_up,7.5,10.0,75.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Mathematics,MATH-02,baseline,6.0,10.0,60.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Mathematics,MATH-02,follow_up,8.5,10.0,85.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Mathematics,MATH-03,baseline,7.0,10.0,70.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Mathematics,MATH-03,follow_up,8.0,10.0,80.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Social Science,SOC-01,baseline,9.0,10.0,90.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Social Science,SOC-01,follow_up,10.0,10.0,100.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Social Science,SOC-02,baseline,6.0,10.0,60.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Social Science,SOC-02,follow_up,8.5,10.0,85.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Physics,PHY-01,baseline,4.0,10.0,40.0%,Learning_Gap
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Physics,PHY-01,follow_up,5.0,10.0,50.0%,Learning_Gap
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Physics,PHY-02,baseline,5.0,10.0,50.0%,Learning_Gap
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Physics,PHY-02,follow_up,7.5,10.0,75.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Chemistry,CHEM-01,baseline,9.0,10.0,90.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Chemistry,CHEM-01,follow_up,10.0,10.0,100.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Chemistry,CHEM-02,baseline,6.0,10.0,60.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Chemistry,CHEM-02,follow_up,7.0,10.0,70.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Marathi,MAR-01,baseline,9.0,10.0,90.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Marathi,MAR-01,follow_up,10.0,10.0,100.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Marathi,MAR-02,baseline,9.0,10.0,90.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Marathi,MAR-02,follow_up,10.0,10.0,100.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Hindi,HIN-01,baseline,9.0,10.0,90.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Hindi,HIN-01,follow_up,10.0,10.0,100.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Hindi,HIN-02,baseline,9.0,10.0,90.0%,Mastered
+5,"विद्यार्थी ५ (Gauri Joshi)",6,A,Hindi,HIN-02,follow_up,10.0,10.0,100.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,English,ENG-01,baseline,7.0,10.0,70.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,English,ENG-02,baseline,4.0,10.0,40.0%,Learning_Gap
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Mathematics,MATH-01,baseline,8.0,10.0,80.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Mathematics,MATH-02,baseline,3.0,10.0,30.0%,Learning_Gap
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Mathematics,MATH-03,baseline,4.0,10.0,40.0%,Learning_Gap
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Social Science,SOC-01,baseline,4.0,10.0,40.0%,Learning_Gap
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Social Science,SOC-02,baseline,7.0,10.0,70.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Physics,PHY-01,baseline,7.0,10.0,70.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Physics,PHY-02,baseline,8.0,10.0,80.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Chemistry,CHEM-01,baseline,4.0,10.0,40.0%,Learning_Gap
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Chemistry,CHEM-02,baseline,7.0,10.0,70.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Marathi,MAR-01,baseline,6.0,10.0,60.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Marathi,MAR-02,baseline,6.0,10.0,60.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Hindi,HIN-01,baseline,6.0,10.0,60.0%,Mastered
+6,"विद्यार्थी ६ (Mayuresh Borse)",6,A,Hindi,HIN-02,baseline,6.0,10.0,60.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,English,ENG-01,baseline,8.0,10.0,80.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,English,ENG-01,follow_up,10.0,10.0,100.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,English,ENG-02,baseline,5.0,10.0,50.0%,Learning_Gap
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,English,ENG-02,follow_up,7.5,10.0,75.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Mathematics,MATH-01,baseline,5.0,10.0,50.0%,Learning_Gap
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Mathematics,MATH-01,follow_up,6.0,10.0,60.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Mathematics,MATH-02,baseline,6.0,10.0,60.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Mathematics,MATH-02,follow_up,8.5,10.0,85.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Mathematics,MATH-03,baseline,7.0,10.0,70.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Mathematics,MATH-03,follow_up,9.5,10.0,95.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Social Science,SOC-01,baseline,5.0,10.0,50.0%,Learning_Gap
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Social Science,SOC-01,follow_up,6.0,10.0,60.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Social Science,SOC-02,baseline,8.0,10.0,80.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Social Science,SOC-02,follow_up,10.0,10.0,100.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Physics,PHY-01,baseline,4.0,10.0,40.0%,Learning_Gap
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Physics,PHY-01,follow_up,6.5,10.0,65.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Physics,PHY-02,baseline,5.0,10.0,50.0%,Learning_Gap
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Physics,PHY-02,follow_up,6.0,10.0,60.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Chemistry,CHEM-01,baseline,5.0,10.0,50.0%,Learning_Gap
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Chemistry,CHEM-01,follow_up,7.5,10.0,75.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Chemistry,CHEM-02,baseline,8.0,10.0,80.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Chemistry,CHEM-02,follow_up,10.0,10.0,100.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Marathi,MAR-01,baseline,8.0,10.0,80.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Marathi,MAR-01,follow_up,9.0,10.0,90.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Marathi,MAR-02,baseline,8.0,10.0,80.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Marathi,MAR-02,follow_up,10.0,10.0,100.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Hindi,HIN-01,baseline,8.0,10.0,80.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Hindi,HIN-01,follow_up,10.0,10.0,100.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Hindi,HIN-02,baseline,8.0,10.0,80.0%,Mastered
+7,"विद्यार्थी ७ (Kalyani Darekar)",6,A,Hindi,HIN-02,follow_up,9.0,10.0,90.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,English,ENG-01,baseline,9.0,10.0,90.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,English,ENG-01,follow_up,10.0,10.0,100.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,English,ENG-02,baseline,6.0,10.0,60.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,English,ENG-02,follow_up,7.0,10.0,70.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Mathematics,MATH-01,baseline,8.0,10.0,80.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Mathematics,MATH-01,follow_up,10.0,10.0,100.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Mathematics,MATH-02,baseline,3.0,10.0,30.0%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Mathematics,MATH-02,follow_up,5.5,10.0,55.00000000000001%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Mathematics,MATH-03,baseline,4.0,10.0,40.0%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Mathematics,MATH-03,follow_up,5.0,10.0,50.0%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Social Science,SOC-01,baseline,6.0,10.0,60.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Social Science,SOC-01,follow_up,8.5,10.0,85.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Social Science,SOC-02,baseline,9.0,10.0,90.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Social Science,SOC-02,follow_up,10.0,10.0,100.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Physics,PHY-01,baseline,7.0,10.0,70.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Physics,PHY-01,follow_up,8.0,10.0,80.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Physics,PHY-02,baseline,8.0,10.0,80.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Physics,PHY-02,follow_up,10.0,10.0,100.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Chemistry,CHEM-01,baseline,6.0,10.0,60.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Chemistry,CHEM-01,follow_up,8.5,10.0,85.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Chemistry,CHEM-02,baseline,9.0,10.0,90.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Chemistry,CHEM-02,follow_up,10.0,10.0,100.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Marathi,MAR-01,baseline,5.0,10.0,50.0%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Marathi,MAR-01,follow_up,7.5,10.0,75.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Marathi,MAR-02,baseline,5.0,10.0,50.0%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Marathi,MAR-02,follow_up,7.5,10.0,75.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Hindi,HIN-01,baseline,5.0,10.0,50.0%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Hindi,HIN-01,follow_up,6.0,10.0,60.0%,Mastered
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Hindi,HIN-02,baseline,5.0,10.0,50.0%,Learning_Gap
+8,"विद्यार्थी ८ (Abhishek Shelke)",6,A,Hindi,HIN-02,follow_up,7.5,10.0,75.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,English,ENG-01,baseline,4.0,10.0,40.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,English,ENG-01,follow_up,5.0,10.0,50.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,English,ENG-02,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,English,ENG-02,follow_up,9.5,10.0,95.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Mathematics,MATH-01,baseline,5.0,10.0,50.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Mathematics,MATH-01,follow_up,7.5,10.0,75.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Mathematics,MATH-02,baseline,6.0,10.0,60.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Mathematics,MATH-02,follow_up,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Mathematics,MATH-03,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Mathematics,MATH-03,follow_up,9.5,10.0,95.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Social Science,SOC-01,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Social Science,SOC-01,follow_up,9.5,10.0,95.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Social Science,SOC-02,baseline,4.0,10.0,40.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Social Science,SOC-02,follow_up,5.0,10.0,50.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Physics,PHY-01,baseline,4.0,10.0,40.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Physics,PHY-01,follow_up,6.5,10.0,65.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Physics,PHY-02,baseline,5.0,10.0,50.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Physics,PHY-02,follow_up,7.5,10.0,75.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Chemistry,CHEM-01,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Chemistry,CHEM-01,follow_up,8.0,10.0,80.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Chemistry,CHEM-02,baseline,4.0,10.0,40.0%,Learning_Gap
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Chemistry,CHEM-02,follow_up,6.5,10.0,65.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Marathi,MAR-01,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Marathi,MAR-01,follow_up,9.5,10.0,95.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Marathi,MAR-02,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Marathi,MAR-02,follow_up,8.0,10.0,80.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Hindi,HIN-01,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Hindi,HIN-01,follow_up,9.5,10.0,95.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Hindi,HIN-02,baseline,7.0,10.0,70.0%,Mastered
+9,"विद्यार्थी ९ (Rupali Gite)",6,A,Hindi,HIN-02,follow_up,9.5,10.0,95.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,English,ENG-01,baseline,5.0,10.0,50.0%,Learning_Gap
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,English,ENG-02,baseline,8.0,10.0,80.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Mathematics,MATH-01,baseline,8.0,10.0,80.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Mathematics,MATH-02,baseline,3.0,10.0,30.0%,Learning_Gap
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Mathematics,MATH-03,baseline,4.0,10.0,40.0%,Learning_Gap
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Social Science,SOC-01,baseline,8.0,10.0,80.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Social Science,SOC-02,baseline,5.0,10.0,50.0%,Learning_Gap
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Physics,PHY-01,baseline,7.0,10.0,70.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Physics,PHY-02,baseline,8.0,10.0,80.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Chemistry,CHEM-01,baseline,8.0,10.0,80.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Chemistry,CHEM-02,baseline,5.0,10.0,50.0%,Learning_Gap
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Marathi,MAR-01,baseline,9.0,10.0,90.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Marathi,MAR-02,baseline,9.0,10.0,90.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Hindi,HIN-01,baseline,9.0,10.0,90.0%,Mastered
+10,"विद्यार्थी १० (Digambar Kokate)",6,A,Hindi,HIN-02,baseline,9.0,10.0,90.0%,Mastered

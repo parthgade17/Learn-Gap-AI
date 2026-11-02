@@ -24,7 +24,7 @@ def get_supabase_client() -> Optional[Client]:
             return None
     return None
 
-# In-Memory local fallback store (seeded with 20 students & baseline + follow-up across 7 subjects)
+# In-Memory local fallback store (seeded with 40 students across 5th A, 6th A, 7th A, 8th A)
 class LocalStore:
     def __init__(self):
         self.students = list(INITIAL_STUDENTS)
@@ -42,11 +42,11 @@ class LocalStore:
                 # Realistic score distribution based on subject
                 base_score = 6.0
                 if comp_id.startswith('MATH') or comp_id.startswith('PHY'):
-                    base_score = float(((s_idx * 3 + c_idx * 7) % 6) + 3) # 3.0 to 8.0
+                    base_score = float(((s_idx * 3 + c_idx * 7 + st.grade) % 6) + 3) # 3.0 to 8.0
                 elif comp_id.startswith('MAR') or comp_id.startswith('HIN'):
-                    base_score = float(((s_idx * 2 + c_idx * 5) % 5) + 5) # 5.0 to 9.0
+                    base_score = float(((s_idx * 2 + c_idx * 5 + st.grade) % 5) + 5) # 5.0 to 9.0
                 else:
-                    base_score = float(((s_idx + c_idx * 3) % 6) + 4) # 4.0 to 9.0
+                    base_score = float(((s_idx + c_idx * 3 + st.grade) % 6) + 4) # 4.0 to 9.0
 
                 base_score = min(10.0, max(2.0, base_score))
 
@@ -61,10 +61,10 @@ class LocalStore:
                     assessed_at="2026-10-15"
                 ))
 
-                # Follow-up for first 14 students
-                if s_idx < 14:
+                # Follow-up for ~75% of learners across classes
+                if s_idx % 4 != 3:
                     fol_score = base_score + (1.0 if (s_idx + c_idx) % 3 == 0 else 2.5)
-                    if s_idx == 2 and comp_id == 'MATH-02':
+                    if st.roll_number == 3 and comp_id == 'MATH-01':
                         fol_score = base_score # persistent gap
                     fol_score = min(10.0, max(base_score, fol_score))
 
@@ -79,48 +79,62 @@ class LocalStore:
                         assessed_at="2026-10-28"
                     ))
 
-        # Sample approved plans across grades
+        # Sample approved plans across 5th A, 6th A, 7th A, and 8th A
         self.plans.append(RemedialPlan(
-            id="plan-001",
+            id="plan-5th-01",
             school_id="ZP-KPG-01",
-            teacher_id="teacher-01",
+            teacher_id="teacher-5th",
             grade=5,
             competency_id="MATH-01",
             activity_id="ACT-MATH-01",
-            plan_date="2026-10-20",
-            student_ids=["std-301", "std-303", "std-305"],
+            plan_date="2026-10-18",
+            student_ids=["std-503", "std-505", "std-507"],
             status="completed",
-            teacher_notes="काड्यांचे दशक बंडल वापरून सराव घेतला. हातच्याची वजाबाकी समजली.",
-            scheduled_day="सोमवार, बुधवार (दुपारी २:३०)",
-            created_at="2026-10-18T10:00:00Z"
+            teacher_notes="१० काड्यांचे दशक बंडल वापरून सराव घेतला. हातच्याची वजाबाकी समजली.",
+            scheduled_day="सोमवार, बुधवार (सकाळी १०:३०)",
+            created_at="2026-10-17T09:00:00Z"
         ))
         self.plans.append(RemedialPlan(
-            id="plan-002",
+            id="plan-6th-01",
             school_id="ZP-KPG-01",
-            teacher_id="teacher-01",
+            teacher_id="teacher-6th",
             grade=6,
             competency_id="ENG-01",
             activity_id="ACT-ENG-01",
             plan_date="2026-10-22",
-            student_ids=["std-306", "std-308", "std-310"],
+            student_ids=["std-602", "std-604", "std-607"],
             status="approved",
             teacher_notes="Bilingual flashcard drill scheduled.",
             scheduled_day="मंगळवार, गुरुवार (सकाळी ११:००)",
             created_at="2026-10-21T09:30:00Z"
         ))
         self.plans.append(RemedialPlan(
-            id="plan-003",
+            id="plan-7th-01",
             school_id="ZP-KPG-01",
-            teacher_id="teacher-01",
+            teacher_id="teacher-7th",
             grade=7,
             competency_id="PHY-01",
             activity_id="ACT-PHY-01",
             plan_date="2026-10-25",
-            student_ids=["std-311", "std-312", "std-315"],
+            student_ids=["std-701", "std-703", "std-707"],
             status="approved",
-            teacher_notes="Ramp friction experiment conducted.",
-            scheduled_day="बुधवार (दुपारी १:४५)",
+            teacher_notes="Ramp friction experiment conducted with toy cars.",
+            scheduled_day="बुधवार (दुपारी २:००)",
             created_at="2026-10-24T10:00:00Z"
+        ))
+        self.plans.append(RemedialPlan(
+            id="plan-8th-01",
+            school_id="ZP-KPG-01",
+            teacher_id="teacher-8th",
+            grade=8,
+            competency_id="CHEM-01",
+            activity_id="ACT-PHY-01",
+            plan_date="2026-10-27",
+            student_ids=["std-803", "std-804", "std-807"],
+            status="draft",
+            teacher_notes="मेणबत्ती वितळणे (भौतिक) आणि लाकूड जळणे (रासायनिक) प्रात्यक्षिक.",
+            scheduled_day="गुरुवार (दुपारी २:३०)",
+            created_at="2026-10-26T14:30:00Z"
         ))
 
 local_store = LocalStore()

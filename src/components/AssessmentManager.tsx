@@ -165,29 +165,64 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
     reader.onload = async (evt) => {
       try {
         const text = evt.target?.result as string;
-        const lines = text.split('\n').filter(line => line.trim().length > 0);
+        const lines = text.split('\n').map(line => line.trim()).filter(line => line.length > 0);
         if (lines.length <= 1) {
           setCsvStatus({ message: 'CSV file is empty or missing headers.', type: 'error' });
           return;
         }
 
+        // Header-aware column parsing
+        const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
+        const rollIdx = headers.indexOf('roll_number') !== -1 ? headers.indexOf('roll_number') : 0;
+        const gradeIdx = headers.indexOf('grade');
+        const compIdx = headers.findIndex(h => h === 'competency_code' || h === 'competency_id' || h === 'code');
+        const typeIdx = headers.indexOf('assessment_type');
+        const scoreIdx = headers.findIndex(h => h === 'score_obtained' || h === 'score');
+        const totalIdx = headers.findIndex(h => h === 'total_marks' || h === 'total');
+
         const newRecords: Omit<AssessmentRecord, 'id'>[] = [];
         let skippedRows = 0;
 
         for (let i = 1; i < lines.length; i++) {
-          const parts = lines[i].split(',').map(p => p.trim());
-          if (parts.length < 7) continue;
+          // Parse CSV line taking quotes into account
+          const rowText = lines[i];
+          const parts: string[] = [];
+          let current = '';
+          let inQuotes = false;
+          for (let c = 0; c < rowText.length; c++) {
+            const char = rowText[c];
+            if (char === '"' || char === "'") {
+              inQuotes = !inQuotes;
+            } else if (char === ',' && !inQuotes) {
+              parts.push(current.trim());
+              current = '';
+            } else {
+              current += char;
+            }
+          }
+          parts.push(current.trim());
 
-          const rollNo = parseInt(parts[0], 10);
-          const compCode = parts[3];
-          const asmtType = parts[4] === 'follow_up' ? 'follow_up' : 'baseline';
-          const scoreObt = parseFloat(parts[5]);
-          const maxMarks = parseFloat(parts[6]);
+          if (parts.length < 5) continue;
 
-          const student = students.find(s => s.roll_number === rollNo);
+          const rollNo = parseInt(parts[rollIdx !== -1 ? rollIdx : 0], 10);
+          const rowGrade = gradeIdx !== -1 ? parseInt(parts[gradeIdx], 10) : undefined;
+          const compCode = compIdx !== -1 ? parts[compIdx] : parts[3];
+          const rawType = typeIdx !== -1 ? parts[typeIdx].toLowerCase() : parts[4]?.toLowerCase();
+          const asmtType: AssessmentType = rawType === 'follow_up' || rawType === 'followup' ? 'follow_up' : 'baseline';
+          const scoreObt = parseFloat(scoreIdx !== -1 ? parts[scoreIdx] : parts[5]);
+          const maxMarks = parseFloat(totalIdx !== -1 ? parts[totalIdx] : parts[6]);
+
+          const student = students.find(s => {
+            if (s.roll_number !== rollNo) return false;
+            if (rowGrade !== undefined && !isNaN(rowGrade)) {
+              return s.grade === rowGrade;
+            }
+            return true;
+          });
+
           const comp = competencies.find(c => c.code === compCode || c.id === compCode);
 
-          if (!student || !comp) {
+          if (!student || !comp || isNaN(scoreObt) || isNaN(maxMarks)) {
             skippedRows++;
             continue;
           }
@@ -218,7 +253,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
           });
         } else {
           setCsvStatus({
-            message: `No matching records found. Please check student roll numbers and competency codes.`,
+            message: `No matching records found. Please check student roll numbers, grades, and competency codes.`,
             type: 'error'
           });
         }
@@ -470,6 +505,47 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 <span>{csvStatus.message}</span>
               </div>
             )}
+
+            {/* Quick-Download Pre-built Static Marksheets */}
+            <div className="pt-3 border-t border-slate-100">
+              <span className="text-[11px] font-bold text-slate-700 block mb-1.5">
+                Download Static Datasets for Testing &amp; Verification:
+              </span>
+              <div className="grid grid-cols-2 gap-1.5">
+                <a
+                  href="/datasets/class_5th_A_marksheet.csv"
+                  download="class_5th_A_marksheet.csv"
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 transition"
+                >
+                  <Download className="w-3 h-3 text-slate-500" />
+                  <span>5th A (.csv)</span>
+                </a>
+                <a
+                  href="/datasets/class_6th_A_marksheet.csv"
+                  download="class_6th_A_marksheet.csv"
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 transition"
+                >
+                  <Download className="w-3 h-3 text-slate-500" />
+                  <span>6th A (.csv)</span>
+                </a>
+                <a
+                  href="/datasets/class_7th_A_marksheet.csv"
+                  download="class_7th_A_marksheet.csv"
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 transition"
+                >
+                  <Download className="w-3 h-3 text-slate-500" />
+                  <span>7th A (.csv)</span>
+                </a>
+                <a
+                  href="/datasets/class_8th_A_marksheet.csv"
+                  download="class_8th_A_marksheet.csv"
+                  className="inline-flex items-center justify-center gap-1.5 py-1.5 px-2 bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg text-[11px] font-semibold text-slate-700 transition"
+                >
+                  <Download className="w-3 h-3 text-slate-500" />
+                  <span>8th A (.csv)</span>
+                </a>
+              </div>
+            </div>
           </div>
 
         </div>

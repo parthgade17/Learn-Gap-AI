@@ -1,5 +1,5 @@
 from typing import List
-from ..models import Competency, RemedialActivity, Student, AssessmentRecord
+from ..models import Competency, RemedialActivity, Student
 
 ALL_SUBJECTS = [
     'English',
@@ -234,15 +234,53 @@ REMEDIAL_ACTIVITIES: List[RemedialActivity] = [
     )
 ]
 
+# Static Dataset: 40 Students across 5th A, 6th A, 7th A, and 8th A (10 students per class)
 INITIAL_STUDENTS: List[Student] = [
-    Student(id=f'std-3{i+1:02d}', school_id='ZP-KPG-01', grade=5 + (i // 5), section='A', roll_number=i+1, student_alias=name)
-    for i, name in enumerate([
-        'विद्यार्थी १ (Aarav Patil)', 'विद्यार्थी २ (Sakshi Deshmukh)', 'विद्यार्थी ३ (Karan Shinde)',
-        'विद्यार्थी ४ (Pooja Jadhav)', 'विद्यार्थी ५ (Omkar Pawar)', 'विद्यार्थी ६ (Ananya Kale)',
-        'विद्यार्थी ७ (Tejas Gaikwad)', 'विद्यार्थी ८ (Snehal More)', 'विद्यार्थी ९ (Rohan Chavan)',
-        'विद्यार्थी १० (Gauri Joshi)', 'विद्यार्थी ११ (Aditya Wagh)', 'विद्यार्थी १२ (Komal Sonawane)',
-        'विद्यार्थी १३ (Sahil Thorat)', 'विद्यार्थी १४ (Neha Londhe)', 'विद्यार्थी १५ (Siddharth Gorde)',
-        'विद्यार्थी १६ (Tanvi Kadam)', 'विद्यार्थी १७ (Vedant Jagtap)', 'विद्यार्थी १८ (Divya Salve)',
-        'विद्यार्थी १९ (Mayur Bankar)', 'विद्यार्थी २० (Prachi Tambe)'
-    ])
+    # 5th A (Std 501-510)
+    Student(id='std-501', school_id='ZP-KPG-01', grade=5, section='A', roll_number=1, student_alias='विद्यार्थी १ (Aarav Patil)'),
+    Student(id='std-502', school_id='ZP-KPG-01', grade=5, section='A', roll_number=2, student_alias='विद्यार्थी २ (Sakshi Deshmukh)'),
+    Student(id='std-503', school_id='ZP-KPG-01', grade=5, section='A', roll_number=3, student_alias='विद्यार्थी ३ (Karan Shinde)'),
+    Student(id='std-504', school_id='ZP-KPG-01', grade=5, section='A', roll_number=4, student_alias='विद्यार्थी ४ (Pooja Jadhav)'),
+    Student(id='std-505', school_id='ZP-KPG-01', grade=5, section='A', roll_number=5, student_alias='विद्यार्थी ५ (Omkar Pawar)'),
+    Student(id='std-506', school_id='ZP-KPG-01', grade=5, section='A', roll_number=6, student_alias='विद्यार्थी ६ (Priya Gaikwad)'),
+    Student(id='std-507', school_id='ZP-KPG-01', grade=5, section='A', roll_number=7, student_alias='विद्यार्थी ७ (Yash Sonawane)'),
+    Student(id='std-508', school_id='ZP-KPG-01', grade=5, section='A', roll_number=8, student_alias='विद्यार्थी ८ (Sneha Kadam)'),
+    Student(id='std-509', school_id='ZP-KPG-01', grade=5, section='A', roll_number=9, student_alias='विद्यार्थी ९ (Rohit More)'),
+    Student(id='std-510', school_id='ZP-KPG-01', grade=5, section='A', roll_number=10, student_alias='विद्यार्थी १० (Anjali Wagh)'),
+
+    # 6th A (Std 601-610)
+    Student(id='std-601', school_id='ZP-KPG-01', grade=6, section='A', roll_number=1, student_alias='विद्यार्थी १ (Ananya Kale)'),
+    Student(id='std-602', school_id='ZP-KPG-01', grade=6, section='A', roll_number=2, student_alias='विद्यार्थी २ (Tejas Gaikwad)'),
+    Student(id='std-603', school_id='ZP-KPG-01', grade=6, section='A', roll_number=3, student_alias='विद्यार्थी ३ (Snehal More)'),
+    Student(id='std-604', school_id='ZP-KPG-01', grade=6, section='A', roll_number=4, student_alias='विद्यार्थी ४ (Rohan Chavan)'),
+    Student(id='std-605', school_id='ZP-KPG-01', grade=6, section='A', roll_number=5, student_alias='विद्यार्थी ५ (Gauri Joshi)'),
+    Student(id='std-606', school_id='ZP-KPG-01', grade=6, section='A', roll_number=6, student_alias='विद्यार्थी ६ (Mayuresh Borse)'),
+    Student(id='std-607', school_id='ZP-KPG-01', grade=6, section='A', roll_number=7, student_alias='विद्यार्थी ७ (Kalyani Darekar)'),
+    Student(id='std-608', school_id='ZP-KPG-01', grade=6, section='A', roll_number=8, student_alias='विद्यार्थी ८ (Abhishek Shelke)'),
+    Student(id='std-609', school_id='ZP-KPG-01', grade=6, section='A', roll_number=9, student_alias='विद्यार्थी ९ (Rupali Gite)'),
+    Student(id='std-610', school_id='ZP-KPG-01', grade=6, section='A', roll_number=10, student_alias='विद्यार्थी १० (Digambar Kokate)'),
+
+    # 7th A (Std 701-710)
+    Student(id='std-701', school_id='ZP-KPG-01', grade=7, section='A', roll_number=1, student_alias='विद्यार्थी १ (Aditya Wagh)'),
+    Student(id='std-702', school_id='ZP-KPG-01', grade=7, section='A', roll_number=2, student_alias='विद्यार्थी २ (Komal Sonawane)'),
+    Student(id='std-703', school_id='ZP-KPG-01', grade=7, section='A', roll_number=3, student_alias='विद्यार्थी ३ (Sahil Thorat)'),
+    Student(id='std-704', school_id='ZP-KPG-01', grade=7, section='A', roll_number=4, student_alias='विद्यार्थी ४ (Neha Londhe)'),
+    Student(id='std-705', school_id='ZP-KPG-01', grade=7, section='A', roll_number=5, student_alias='विद्यार्थी ५ (Siddharth Gorde)'),
+    Student(id='std-706', school_id='ZP-KPG-01', grade=7, section='A', roll_number=6, student_alias='विद्यार्थी ६ (Rutuja Shinde)'),
+    Student(id='std-707', school_id='ZP-KPG-01', grade=7, section='A', roll_number=7, student_alias='विद्यार्थी ७ (Nilesh Jagtap)'),
+    Student(id='std-708', school_id='ZP-KPG-01', grade=7, section='A', roll_number=8, student_alias='विद्यार्थी ८ (Pallavi Bankar)'),
+    Student(id='std-709', school_id='ZP-KPG-01', grade=7, section='A', roll_number=9, student_alias='विद्यार्थी ९ (Harshal Tambe)'),
+    Student(id='std-710', school_id='ZP-KPG-01', grade=7, section='A', roll_number=10, student_alias='विद्यार्थी १० (Megha Joshi)'),
+
+    # 8th A (Std 801-810)
+    Student(id='std-801', school_id='ZP-KPG-01', grade=8, section='A', roll_number=1, student_alias='विद्यार्थी १ (Tanvi Kadam)'),
+    Student(id='std-802', school_id='ZP-KPG-01', grade=8, section='A', roll_number=2, student_alias='विद्यार्थी २ (Vedant Jagtap)'),
+    Student(id='std-803', school_id='ZP-KPG-01', grade=8, section='A', roll_number=3, student_alias='विद्यार्थी ३ (Divya Salve)'),
+    Student(id='std-804', school_id='ZP-KPG-01', grade=8, section='A', roll_number=4, student_alias='विद्यार्थी ४ (Mayur Bankar)'),
+    Student(id='std-805', school_id='ZP-KPG-01', grade=8, section='A', roll_number=5, student_alias='विद्यार्थी ५ (Prachi Tambe)'),
+    Student(id='std-806', school_id='ZP-KPG-01', grade=8, section='A', roll_number=6, student_alias='विद्यार्थी ६ (Swapnil Kale)'),
+    Student(id='std-807', school_id='ZP-KPG-01', grade=8, section='A', roll_number=7, student_alias='विद्यार्थी ७ (Shraddha Deshmukh)'),
+    Student(id='std-808', school_id='ZP-KPG-01', grade=8, section='A', roll_number=8, student_alias='विद्यार्थी ८ (Akshay Chavan)'),
+    Student(id='std-809', school_id='ZP-KPG-01', grade=8, section='A', roll_number=9, student_alias='विद्यार्थी ९ (Tejaswini Patil)'),
+    Student(id='std-810', school_id='ZP-KPG-01', grade=8, section='A', roll_number=10, student_alias='विद्यार्थी १० (Gaurav More)')
 ]

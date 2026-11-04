@@ -409,7 +409,8 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         persistentBadge: 'need 2nd cycle',
         noneBadge: 'None',
         insightHeading: 'NIPUN Bharat & FLN Closed-Loop Impact Summary',
-        insightBody: 'Unlike traditional portals where assessment data remains a dormant compliance report, LearnGap AI completes the decision loop. Following targeted remedial intervention, students exhibited significant measured competency recovery, demonstrating verifiable learning gains.'
+        insightBody: 'Unlike traditional portals where assessment data remains a dormant compliance report, LearnGap AI completes the decision loop. Following targeted remedial intervention, students exhibited significant measured competency recovery, demonstrating verifiable learning gains.',
+        selectClass: 'Select Class'
       },
       dpdp: {
         title: 'DPDP Act 2023 & Child Privacy Guard',
@@ -432,7 +433,11 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         rollPrefix: 'Roll No.',
         studentPrefix: 'Learner',
         offlineBanner: 'Offline Mode Active. All records and action plans are saved safely on your device and will auto-sync with Supabase when internet is available.',
-        deleteTitle: 'Delete assessment'
+        deleteTitle: 'Delete assessment',
+        installApp: 'Install App',
+        appReady: 'App Ready',
+        classLabel: 'Class',
+        allClasses: 'All Classes'
       }
     }
   },
@@ -624,7 +629,8 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         persistentBadge: '२ री फेरी आवश्यक',
         noneBadge: 'काहीही नाही',
         insightHeading: 'निपुण भारत व FLN उपचारात्मक निष्पत्ती सारांश',
-        insightBody: 'पारंपारिक मूल्यमापनामध्ये चाचणीचे गुण केवळ अहवालापुरते मर्यादित राहतात. लर्न-गॅप एआय (LearnGap AI) च्या साहाय्याने शिक्षकांनी घेतलेल्या उपचारात्मक कृतीनंतर विद्यार्थ्यांच्या गुणवत्तेत प्रत्यक्ष व मोजता येणारी वाढ दिसून आली आहे.'
+        insightBody: 'पारंपारिक मूल्यमापनामध्ये चाचणीचे गुण केवळ अहवालापुरते मर्यादित राहतात. लर्न-गॅप एआय (LearnGap AI) च्या साहाय्याने शिक्षकांनी घेतलेल्या उपचारात्मक कृतीनंतर विद्यार्थ्यांच्या गुणवत्तेत प्रत्यक्ष व मोजता येणारी वाढ दिसून आली आहे.',
+        selectClass: 'इयत्ता निवडा'
       },
       dpdp: {
         title: 'डीपीडीपी कायदा २०२३ व बाल गोपनीयता संरक्षण',
@@ -647,7 +653,11 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         rollPrefix: 'हजेरी क्र.',
         studentPrefix: 'विद्यार्थी',
         offlineBanner: 'ऑफलाईन मोड सक्रिय आहे. सर्व मूल्यांकन नोंदी व कृती आराखडे फोनमध्ये सुरक्षित सेव्ह होत आहेत. इंटरनेट आल्यावर आपोआप सुपाबेसशी सिंक होतील.',
-        deleteTitle: 'नोंद हटवा'
+        deleteTitle: 'नोंद हटवा',
+        installApp: 'ॲप इन्स्टॉल करा',
+        appReady: 'ॲप इन्स्टॉल झाले',
+        classLabel: 'इयत्ता',
+        allClasses: 'सर्व इयत्ता'
       }
     }
   },
@@ -839,7 +849,8 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         persistentBadge: 'द्वितीय चक्र आवश्यक',
         noneBadge: 'कोई नहीं',
         insightHeading: 'निपुण भारत व FLN उपचारात्मक परिणाम सारांश',
-        insightBody: 'पारंपरिक पोर्टलों पर मूल्यांकन डेटा केवल कागजी रिपोर्ट तक सीमित रहता है। लर्न-गैप एआई की सहायता से शिक्षकों द्वारा लक्षित उपचारात्मक शिक्षण के बाद विद्यार्थियों में स्पष्ट और मापने योग्य सुधार देखा गया है।'
+        insightBody: 'पारंपरिक पोर्टलों पर मूल्यांकन डेटा केवल कागजी रिपोर्ट तक सीमित रहता है। लर्न-गैप एआई की सहायता से शिक्षकों द्वारा लक्षित उपचारात्मक शिक्षण के बाद विद्यार्थियों में स्पष्ट और मापने योग्य सुधार देखा गया है।',
+        selectClass: 'कक्षा चुनें'
       },
       dpdp: {
         title: 'डीपीडीपी अधिनियम २०२३ और बाल गोपनीयता सुरक्षा',
@@ -862,7 +873,11 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         rollPrefix: 'रोल नं.',
         studentPrefix: 'विद्यार्थी',
         offlineBanner: 'ऑफ़लाइन मोड सक्रिय है। सभी रिकॉर्ड आपके डिवाइस पर सुरक्षित हैं। इंटरनेट उपलब्ध होने पर स्वतः सिंक हो जाएंगे।',
-        deleteTitle: 'रिकॉर्ड हटाएं'
+        deleteTitle: 'रिकॉर्ड हटाएं',
+        installApp: 'ऐप इंस्टॉल करें',
+        appReady: 'ऐप तैयार है',
+        classLabel: 'कक्षा',
+        allClasses: 'सभी कक्षाएं'
       }
     }
   }

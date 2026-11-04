@@ -15,7 +15,6 @@ import {
   Copy,
   Check,
   Zap,
-  Clock,
   ShieldCheck,
   Users,
   BookOpen,
@@ -505,43 +504,25 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   return (
     <div className="space-y-6">
       
-      {/* Module Title Banner & Redis Middleman Buffer Indicator */}
+      {/* Module Title Banner */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
-            <span>{t('assessment.title')}</span>
-            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
-              Redis Buffer Active
-            </span>
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+            {t('assessment.title')}
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Deduplicated Student Roster • All-Subject Assessment Modal • Redis Buffer with 12s Auto-Sync to Supabase
+            Deduplicated Student Roster • All-Subject Assessment Modal • Automated Background Synchronization
           </p>
         </div>
 
-        {/* Redis Buffer & Rate Limiter Pill replacing the old manual button */}
+        {/* Database & Setup Guide */}
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          {/* Redis Middleman Status Pill */}
-          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border bg-slate-900 text-amber-300 border-slate-700 shadow-xs">
-            <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
-            <span>
-              Redis Buffer:{' '}
-              <strong className="text-white font-mono">{redisStatus?.buffered_marks_count ?? 0}</strong> pending
-            </span>
-            <span className="text-slate-500 text-[10px] hidden sm:inline">•</span>
-            <span className="text-slate-300 text-[11px] hidden sm:inline flex items-center gap-1">
-              <Clock className="w-3 h-3 text-slate-400" />
-              Auto-syncs every 12s
-            </span>
-          </div>
-
-          {/* Architecture / DB Guide */}
           <button
             onClick={() => setIsDbGuideOpen(true)}
-            className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition shadow-2xs cursor-pointer"
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>DB &amp; Redis Guide</span>
+            <span>Database Setup Guide</span>
           </button>
         </div>
       </div>

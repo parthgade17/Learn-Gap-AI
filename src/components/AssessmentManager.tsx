@@ -535,18 +535,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
             </span>
           </div>
 
-          {/* Quick Immediate Flush Button */}
-          <button
-            type="button"
-            onClick={handleFlushRedisNow}
-            disabled={isFlushingRedis || (redisStatus?.buffered_marks_count ?? 0) === 0}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-slate-950 transition shadow-2xs active:scale-95 cursor-pointer disabled:cursor-not-allowed"
-            title="Immediately commit Redis marks buffer into Supabase and clear Redis cache"
-          >
-            <Clock className={`w-3.5 h-3.5 ${isFlushingRedis ? 'animate-spin' : ''}`} />
-            <span>{isFlushingRedis ? 'Syncing...' : 'Flush Redis Now'}</span>
-          </button>
-
           {/* Architecture / DB Guide */}
           <button
             onClick={() => setIsDbGuideOpen(true)}
@@ -820,7 +808,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 disabled={!validation.isValid}
                 className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
-                Save Record (Buffers in Redis)
+                Save Record
               </button>
             </form>
           </div>
@@ -1368,7 +1356,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white transition flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>Save to Redis Buffer</span>
+                <span>Save Changes</span>
               </button>
             </div>
           </div>

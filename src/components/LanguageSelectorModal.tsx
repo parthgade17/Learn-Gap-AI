@@ -26,8 +26,14 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
     return matchesCategory && matchesSearch;
   });
 
+  const regionalCount = SUPPORTED_LANGUAGES.filter(l => l.category === 'regional').length;
+  const tribalCount = SUPPORTED_LANGUAGES.filter(l => l.category === 'tribal_adivasi').length;
+
   const selectLanguage = (code: string) => {
     i18n.changeLanguage(code);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('i18nextLng', code);
+    }
     onClose();
   };
 
@@ -91,7 +97,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
                 : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
             }`}
           >
-            {t('regionalCategory')} (13)
+            {t('regionalCategory')} ({regionalCount})
           </button>
           <button
             onClick={() => setCategoryFilter('tribal_adivasi')}
@@ -102,7 +108,7 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
             }`}
           >
             <Trees className="w-3.5 h-3.5" />
-            <span>{t('tribalCategory')} (10+)</span>
+            <span>{t('tribalCategory')} ({tribalCount})</span>
           </button>
         </div>
 

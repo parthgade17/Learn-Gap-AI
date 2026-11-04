@@ -1,4 +1,5 @@
 import { Competency, RemedialActivity, SubjectType } from '../types';
+import { LOCALIZED_COMPETENCIES, LOCALIZED_ACTIVITIES } from './localizedCurriculum';
 
 export const ALL_SUBJECTS: SubjectType[] = [
   'English',
@@ -417,33 +418,106 @@ export const REMEDIAL_ACTIVITIES: RemedialActivity[] = [
   }
 ];
 
+// Helper to get fallback language based on linguistic family
+function getFamilyFallbackLang(lang: string): string {
+  // Devanagari based tribal & regional languages
+  if (['gon', 'bhi', 'kru', 'unr', 'brx', 'korku'].includes(lang)) return 'hi';
+  // Bengali script based
+  if (['as', 'trp'].includes(lang)) return 'bn';
+  // Santali
+  if (lang === 'sat') return 'hi';
+  return 'en';
+}
+
 export function getCompetencyTitle(comp: Competency, lang: string): string {
   if (lang === 'mr') return comp.title_mr || comp.title_en;
+  
+  // Check exact language in localized dictionary
+  const direct = LOCALIZED_COMPETENCIES[lang]?.[comp.id]?.title;
+  if (direct) return direct;
+
+  // Check language family fallback
+  const fallback = getFamilyFallbackLang(lang);
+  if (fallback !== 'en') {
+    const familyTitle = LOCALIZED_COMPETENCIES[fallback]?.[comp.id]?.title;
+    if (familyTitle) return familyTitle;
+  }
+
   return comp.title_en;
 }
 
 export function getCompetencyDescription(comp: Competency, lang: string): string {
   if (lang === 'mr') return comp.description_mr || comp.description_en;
+
+  const direct = LOCALIZED_COMPETENCIES[lang]?.[comp.id]?.description;
+  if (direct) return direct;
+
+  const fallback = getFamilyFallbackLang(lang);
+  if (fallback !== 'en') {
+    const familyDesc = LOCALIZED_COMPETENCIES[fallback]?.[comp.id]?.description;
+    if (familyDesc) return familyDesc;
+  }
+
   return comp.description_en;
 }
 
 export function getActivityTitle(act: RemedialActivity, lang: string): string {
   if (lang === 'mr') return act.title_mr || act.title_en;
+
+  const direct = LOCALIZED_ACTIVITIES[lang]?.[act.id]?.title;
+  if (direct) return direct;
+
+  const fallback = getFamilyFallbackLang(lang);
+  if (fallback !== 'en') {
+    const familyTitle = LOCALIZED_ACTIVITIES[fallback]?.[act.id]?.title;
+    if (familyTitle) return familyTitle;
+  }
+
   return act.title_en;
 }
 
 export function getActivityInstructions(act: RemedialActivity, lang: string): string {
   if (lang === 'mr') return act.instructions_mr || act.instructions_en;
+
+  const direct = LOCALIZED_ACTIVITIES[lang]?.[act.id]?.instructions;
+  if (direct) return direct;
+
+  const fallback = getFamilyFallbackLang(lang);
+  if (fallback !== 'en') {
+    const familyInst = LOCALIZED_ACTIVITIES[fallback]?.[act.id]?.instructions;
+    if (familyInst) return familyInst;
+  }
+
   return act.instructions_en;
 }
 
 export function getActivityMaterials(act: RemedialActivity, lang: string): string {
   if (lang === 'mr') return act.materials_needed_mr || act.materials_needed_en;
+
+  const direct = LOCALIZED_ACTIVITIES[lang]?.[act.id]?.materials;
+  if (direct) return direct;
+
+  const fallback = getFamilyFallbackLang(lang);
+  if (fallback !== 'en') {
+    const familyMat = LOCALIZED_ACTIVITIES[fallback]?.[act.id]?.materials;
+    if (familyMat) return familyMat;
+  }
+
   return act.materials_needed_en;
 }
 
 export function getActivityReasoning(act: RemedialActivity, lang: string): string {
   if (lang === 'mr') return act.pedagogical_reason_mr || act.pedagogical_reason_en;
+
+  const direct = LOCALIZED_ACTIVITIES[lang]?.[act.id]?.reasoning;
+  if (direct) return direct;
+
+  const fallback = getFamilyFallbackLang(lang);
+  if (fallback !== 'en') {
+    const familyReas = LOCALIZED_ACTIVITIES[fallback]?.[act.id]?.reasoning;
+    if (familyReas) return familyReas;
+  }
+
   return act.pedagogical_reason_en;
 }
 
@@ -455,11 +529,222 @@ export function formatStudentDisplay(
   const rawName = match ? match[1] : student.student_alias.replace(/विद्यार्थी\s*\d+\s*/, '').trim();
   const name = rawName || `Learner ${student.roll_number}`;
 
-  if (lang === 'mr') {
-    return `हजेरी क्र. ${student.roll_number} - विद्यार्थी ${student.roll_number} (${name})`;
-  }
-  if (lang === 'hi') {
-    return `रोल नं. ${student.roll_number} - विद्यार्थी ${student.roll_number} (${name})`;
-  }
-  return `Roll No. ${student.roll_number} - Learner ${student.roll_number} (${name})`;
+  const prefixes: Record<string, { roll: string; student: string }> = {
+    mr: { roll: 'हजेरी क्र.', student: 'विद्यार्थी' },
+    hi: { roll: 'रोल नं.', student: 'विद्यार्थी' },
+    gu: { roll: 'રોલ નં.', student: 'વિદ્યાર્થી' },
+    bn: { roll: 'রোল নং', student: 'শিক্ষার্থী' },
+    ta: { roll: 'வரிசை எண்', student: 'மாணவர்' },
+    te: { roll: 'రోల్ నం.', student: 'విద్యార్థి' },
+    kn: { roll: 'ರೋಲ್ ನಂ.', student: 'ವಿದ್ಯಾರ್ಥಿ' },
+    ml: { roll: 'റോൾ നമ്പർ', student: 'വിദ്യാർത്ഥി' },
+    or: { roll: 'ରୋଲ୍ ନଂ', student: 'ଛାତ୍ର/ଛାତ୍ରୀ' },
+    pa: { roll: 'ਰੋਲ ਨੰ.', student: 'ਵਿਦਿਆਰਥੀ' },
+    as: { roll: 'ৰোল নং', student: 'শিক্ষাৰ্থী' },
+    ur: { roll: 'رول نمبر', student: 'طالب علم' },
+    sat: { roll: 'ᱨᱳᱞ ᱱᱚ.', student: 'ᱯᱟᱹᱴᱷᱩᱣᱟᱹ' },
+    gon: { roll: 'रोल नं.', student: 'चेला' },
+    bhi: { roll: 'रोल नं.', student: 'भणाविया' },
+    kru: { roll: 'रोल नं.', student: 'पढ़ुआ' },
+    hoc: { roll: 'ᱨᱳᱞ ᱱᱚ.', student: 'ᱤᱛᱩᱱᱤᱭᱟᱹ' },
+    unr: { roll: 'रोल नं.', student: 'पढ़ुआ' },
+    brx: { roll: 'र’ल नम्बर', student: 'सोलोंगो' },
+    trp: { roll: 'রোল নং', student: 'ফোরোংনাই' },
+    lus: { roll: 'Roll No.', student: 'Zirlai' },
+    kha: { roll: 'Roll No.', student: 'Khynnah Pule' },
+    korku: { roll: 'रोल नं.', student: 'पढ़नया' },
+    en: { roll: 'Roll No.', student: 'Learner' }
+  };
+
+  const p = prefixes[lang] || prefixes.en;
+  return `${p.roll} ${student.roll_number} - ${p.student} ${student.roll_number} (${name})`;
 }
+
+export function getSubjectName(subject: SubjectType, lang: string): string {
+  const subjectMap: Record<string, Partial<Record<SubjectType, string>>> = {
+    mr: {
+      English: 'इंग्रजी',
+      Mathematics: 'गणित',
+      'Social Science': 'सामाजिक शास्त्रे',
+      Physics: 'भौतिकशास्त्र',
+      Chemistry: 'रसायनशास्त्र',
+      Marathi: 'मराठी',
+      Hindi: 'हिंदी'
+    },
+    hi: {
+      English: 'अंग्रेज़ी',
+      Mathematics: 'गणित',
+      'Social Science': 'सामाजिक विज्ञान',
+      Physics: 'भौतिक विज्ञान',
+      Chemistry: 'रसायन विज्ञान',
+      Marathi: 'मराठी',
+      Hindi: 'हिन्दी'
+    },
+    gu: {
+      English: 'અંગ્રેજી',
+      Mathematics: 'ગણિત',
+      'Social Science': 'સામાજિક વિજ્ઞાન',
+      Physics: 'ભૌતિક વિજ્ઞાન',
+      Chemistry: 'રસાયણ વિજ્ઞાન',
+      Marathi: 'મરાઠી',
+      Hindi: 'હિન્દી'
+    },
+    bn: {
+      English: 'ইংরেজি',
+      Mathematics: 'গণিত',
+      'Social Science': 'সমাজ বিজ্ঞান',
+      Physics: 'পদার্থবিজ্ঞান',
+      Chemistry: 'রসায়ন',
+      Marathi: 'মারাঠি',
+      Hindi: 'হিন্দি'
+    },
+    ta: {
+      English: 'ஆங்கிலம்',
+      Mathematics: 'கணிதம்',
+      'Social Science': 'சமூக அறிவியல்',
+      Physics: 'இயற்பியல்',
+      Chemistry: 'வேதியியல்',
+      Marathi: 'மராத்தி',
+      Hindi: 'இந்தி'
+    },
+    te: {
+      English: 'ఇంగ్లీష్',
+      Mathematics: 'గణితం',
+      'Social Science': 'సాంఘిక శాస్త్రం',
+      Physics: 'భౌతిక శాస్త్రం',
+      Chemistry: 'రసాయన శాస్త్రం',
+      Marathi: 'మరాఠీ',
+      Hindi: 'హిందీ'
+    },
+    kn: {
+      English: 'ಇಂಗ್ಲಿಷ್',
+      Mathematics: 'ಗಣಿತ',
+      'Social Science': 'ಸಮಾಜ ವಿಜ್ಞಾನ',
+      Physics: 'ಭೌತಶಾಸ್ತ್ರ',
+      Chemistry: 'ರಸಾಯನಶಾಸ್ತ್ರ',
+      Marathi: 'ಮರಾಠಿ',
+      Hindi: 'ಹಿಂದಿ'
+    },
+    ml: {
+      English: 'ഇംഗ്ലീഷ്',
+      Mathematics: 'ഗണിതം',
+      'Social Science': 'സാമൂഹിക ശാസ്ത്രം',
+      Physics: 'ഭൗതികശാസ്ത്രം',
+      Chemistry: 'രസതന്ത്രം',
+      Marathi: 'മറാഠി',
+      Hindi: 'ഹിന്ദി'
+    },
+    or: {
+      English: 'ଇଂରାଜୀ',
+      Mathematics: 'ଗଣିତ',
+      'Social Science': 'ସାମାଜିକ ବିଜ୍ଞାନ',
+      Physics: 'ପଦାର୍ଥ ବିଜ୍ଞାନ',
+      Chemistry: 'ରସାୟନ ବିଜ୍ଞାନ',
+      Marathi: 'ମରାଠୀ',
+      Hindi: 'ହିନ୍ଦୀ'
+    },
+    pa: {
+      English: 'ਅੰਗਰੇਜ਼ੀ',
+      Mathematics: 'ਗਣਿਤ',
+      'Social Science': 'ਸਮਾਜਿਕ ਵਿਗਿਆਨ',
+      Physics: 'ਭੌਤਿਕ ਵਿਗਿਆਨ',
+      Chemistry: 'ਰਸਾਇਣ ਵਿਗਿਆਨ',
+      Marathi: 'ਮਰਾਠੀ',
+      Hindi: 'ਹਿੰਦੀ'
+    },
+    as: {
+      English: 'ইংৰাজী',
+      Mathematics: 'গণিত',
+      'Social Science': 'সমাজ বিজ্ঞান',
+      Physics: 'পদাৰ্থ বিজ্ঞান',
+      Chemistry: 'ৰসায়ন বিজ্ঞান',
+      Marathi: 'মাৰাঠী',
+      Hindi: 'হিন্দী'
+    },
+    ur: {
+      English: 'انگریزی',
+      Mathematics: 'ریاضی',
+      'Social Science': 'سماجی علوم',
+      Physics: 'طبیعیات',
+      Chemistry: 'کیمیا',
+      Marathi: 'مراٹھی',
+      Hindi: 'ہندی'
+    },
+    sat: {
+      English: 'ᱤᱝᱞᱤᱥ (English)',
+      Mathematics: 'ᱞᱮᱠᱷᱟ (Math)',
+      'Social Science': 'ᱥᱟᱶᱛᱟ ᱥᱟᱬᱮᱥ',
+      Physics: 'ᱯᱷᱤᱡᱤᱠᱥ',
+      Chemistry: 'ᱠᱮᱢᱤᱥᱴᱨᱤ',
+      Marathi: 'ᱢᱟᱨᱟᱴᱷᱤ',
+      Hindi: 'ᱦᱤᱱᱫᱤ'
+    }
+  };
+
+  const familyLang = getFamilyFallbackLang(lang);
+  return subjectMap[lang]?.[subject] || (familyLang !== 'en' ? subjectMap[familyLang]?.[subject] : undefined) || subject;
+}
+
+export function formatClassDisplay(grade: number | string, lang: string): string {
+  if (grade === 'ALL' || grade === 'all') {
+    const allLabels: Record<string, string> = {
+      mr: 'सर्व वर्ग',
+      hi: 'सभी कक्षाएँ',
+      gu: 'બધા વર્ગો',
+      bn: 'সকল শ্রেণি',
+      ta: 'அனைத்து வகுப்புகள்',
+      te: 'అన్ని తరగతులు',
+      kn: 'ಎಲ್ಲಾ ತರಗತಿಗಳು',
+      ml: 'എല്ലാ ക്ലാസുകളും',
+      or: 'ସମସ୍ତ ଶ୍ରେଣୀ',
+      pa: 'ਸਾਰੀਆਂ ਜਮਾਤਾਂ',
+      as: 'সকলো শ্ৰেণী',
+      ur: 'تمام جماعتیں',
+      sat: 'ᱡᱚᱛᱚ ᱪᱟᱱᱟᱪ',
+      gon: 'सब्बो ककसा',
+      bhi: 'बधी कक्षाओ',
+      kru: 'हुर्मि ककसा',
+      hoc: 'ᱡᱚᱛᱚ ᱪᱟᱱᱟᱪ',
+      unr: 'सबेन ककसा',
+      brx: 'गासै थाखो',
+      trp: 'জত ক্লাস',
+      lus: 'Class Zawng Zawng',
+      kha: 'Baroh ki Klas',
+      korku: 'सब्बो ककसा',
+      en: 'All Classes'
+    };
+    return allLabels[lang] || allLabels.en;
+  }
+
+  const gradeStr = grade.toString();
+  const classPatterns: Record<string, (g: string) => string> = {
+    mr: (g) => `इयत्ता ${g} वी - अ`,
+    hi: (g) => `कक्षा ${g} - अ`,
+    gu: (g) => `ધોરણ ${g} - અ`,
+    bn: (g) => `শ্রেণি ${g} - ক`,
+    ta: (g) => `வகுப்பு ${g} - அ`,
+    te: (g) => `తరగతి ${g} - ఎ`,
+    kn: (g) => `ತರಗತಿ ${g} - ಎ`,
+    ml: (g) => `ക്ലാസ് ${g} - എ`,
+    or: (g) => `ଶ୍ରେଣୀ ${g} - କ`,
+    pa: (g) => `ਜਮਾਤ ${g} - ਏ`,
+    as: (g) => `শ্ৰেণী ${g} - ক`,
+    ur: (g) => `جماعت ${g} - الف`,
+    sat: (g) => `ᱪᱟᱱᱟᱪ ${g} - ᱮ`,
+    gon: (g) => `ककसा ${g} - अ`,
+    bhi: (g) => `कक्षा ${g} - अ`,
+    kru: (g) => `ककसा ${g} - अ`,
+    hoc: (g) => `ᱪᱟᱱᱟᱪ ${g} - ᱮ`,
+    unr: (g) => `ककसा ${g} - अ`,
+    brx: (g) => `थाखो ${g} - ए`,
+    trp: (g) => `ক্লাস ${g} - ক`,
+    lus: (g) => `Class ${g} - A`,
+    kha: (g) => `Klas ${g} - A`,
+    korku: (g) => `ककसा ${g} - अ`,
+    en: (g) => `Class ${g}th - A`
+  };
+
+  const pattern = classPatterns[lang] || classPatterns.en;
+  return pattern(gradeStr);
+}
+

@@ -182,6 +182,15 @@ export interface TranslationSchema {
     noneBadge: string;
     insightHeading: string;
     insightBody: string;
+    selectClass?: string;
+    overallStudentsRecord?: string;
+    individualStudentRecord?: string;
+    teacherCommandCenter?: string;
+    headTeacherDashboard?: string;
+    inspectScope?: string;
+    allClasses?: string;
+    editMarks?: string;
+    openRemedialPlan?: string;
   };
   dpdp: {
     title: string;
@@ -205,6 +214,10 @@ export interface TranslationSchema {
     studentPrefix: string;
     offlineBanner: string;
     deleteTitle: string;
+    classLabel?: string;
+    allClasses?: string;
+    installApp?: string;
+    appReady?: string;
   };
 }
 

@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Sparkles, Users, AlertCircle, CheckCircle, ArrowRight, BookOpen, Filter } from 'lucide-react';
 import { Student, Competency, RemedialActivity, AssessmentRecord, StudentGroup, SubjectType } from '../types';
 import { diagnoseGaps, groupLearnersForRemediation } from '../engine/gapEngine';
-import { getCompetencyTitle, getCompetencyDescription, getActivityTitle, ALL_SUBJECTS } from '../data/curriculumData';
+import { getCompetencyTitle, getCompetencyDescription, getActivityTitle, ALL_SUBJECTS, formatClassDisplay, getSubjectName } from '../data/curriculumData';
 
 interface GapAnalysisViewProps {
   students: Student[];
@@ -88,7 +88,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
           <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200">
             <Filter className="w-3.5 h-3.5 text-slate-600 shrink-0" />
             <label htmlFor="gap-class-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
-              Class:
+              {t('dashboard.selectClass')}
             </label>
             <select
               id="gap-class-select"
@@ -96,11 +96,11 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
               onChange={(e) => handleClassChange(e.target.value)}
               className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs"
             >
-              <option value="ALL">All Classes (सर्व वर्ग)</option>
-              <option value="5">Class 5th - A (इयत्ता ५ वी)</option>
-              <option value="6">Class 6th - A (इयत्ता ६ वी)</option>
-              <option value="7">Class 7th - A (इयत्ता ७ वी)</option>
-              <option value="8">Class 8th - A (इयत्ता ८ वी)</option>
+              <option value="ALL">{formatClassDisplay('ALL', currentLang)}</option>
+              <option value="5">{formatClassDisplay('5', currentLang)}</option>
+              <option value="6">{formatClassDisplay('6', currentLang)}</option>
+              <option value="7">{formatClassDisplay('7', currentLang)}</option>
+              <option value="8">{formatClassDisplay('8', currentLang)}</option>
             </select>
           </div>
 
@@ -114,7 +114,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
                   : 'text-slate-600 hover:text-slate-900'
               }`}
             >
-              All Subjects
+              {t('subjects.all')}
             </button>
             {ALL_SUBJECTS.map((sub) => (
               <button
@@ -126,7 +126,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
                     : 'text-slate-600 hover:text-slate-900'
                 }`}
               >
-                {sub}
+                {getSubjectName(sub, currentLang)}
               </button>
             ))}
           </div>
@@ -232,7 +232,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
                     {/* Header: Subject & Urgency Badge */}
                     <div className="flex items-center justify-between gap-2 mb-2">
                       <span className="px-2 py-0.5 rounded text-[11px] font-bold uppercase tracking-wider bg-slate-100 text-slate-800 border border-slate-200">
-                        {comp.subject} • {comp.code}
+                        {getSubjectName(comp.subject, currentLang)} • {comp.code}
                       </span>
                       <span
                         className={`px-2 py-0.5 rounded text-[11px] font-semibold ${
@@ -273,7 +273,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
                             }`}
                           >
                             <span className="font-bold text-[9px] bg-white/80 px-1 rounded border border-slate-200">
-                              {student.grade}th-A
+                              {formatClassDisplay(student.grade, currentLang)}
                             </span>
                             <span>#{student.roll_number}</span>
                             <span className="text-[10px] opacity-75">({score_pct}%)</span>

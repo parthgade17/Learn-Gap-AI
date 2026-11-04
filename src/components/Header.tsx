@@ -4,6 +4,7 @@ import { Globe, Wifi, WifiOff, ShieldCheck, UserCheck, School, ChevronDown, Smar
 import { UserRole } from '../types';
 import { LanguageSelectorModal } from './LanguageSelectorModal';
 import { SUPPORTED_LANGUAGES } from '../i18n/languages';
+import { formatClassDisplay } from '../data/curriculumData';
 
 interface HeaderProps {
   currentRole: UserRole;
@@ -91,7 +92,7 @@ export const Header: React.FC<HeaderProps> = ({
                   title="Install LearnGap AI as Mobile App (PWA) / इन्स्टॉल ॲप"
                 >
                   <Smartphone className="w-4 h-4 text-emerald-600 shrink-0" />
-                  <span className="hidden md:inline">{isInstalled ? 'App Ready' : 'Install App'}</span>
+                  <span className="hidden md:inline">{isInstalled ? t('common.appReady') : t('common.installApp')}</span>
                 </button>
               )}
 
@@ -100,7 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
                 onClick={() => setIsLangModalOpen(true)}
                 className="flex items-center gap-1.5 px-2.5 sm:px-3 py-1.5 rounded-lg border border-slate-300 bg-slate-50 hover:bg-slate-100 text-slate-800 text-xs sm:text-sm font-semibold transition shadow-sm"
                 aria-label="Select Language"
-                title="Change language (All Indian Regional & Tribal Languages supported)"
+                title={t('selectLanguage')}
               >
                 <Globe className="w-4 h-4 text-brand-600 shrink-0" />
                 <span className="font-bold">{activeLangMeta.nativeName}</span>
@@ -113,15 +114,15 @@ export const Header: React.FC<HeaderProps> = ({
                   value={selectedClassGrade}
                   onChange={(e) => onClassGradeChange(e.target.value)}
                   className="appearance-none bg-indigo-50 hover:bg-indigo-100 text-indigo-950 text-xs sm:text-sm font-bold py-1.5 pl-3 pr-7 rounded-lg border border-indigo-200 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer shadow-2xs"
-                  title="Select Class (इयत्ता ५ वी, ६ वी, ७ वी, ८ वी)"
+                  title={t('dashboard.selectClass')}
                 >
                   {currentRole === 'head_teacher' && (
-                    <option value="ALL">All School (सर्व वर्ग)</option>
+                    <option value="ALL">{formatClassDisplay('ALL', activeLangCode)}</option>
                   )}
-                  <option value="5">Class 5th - A</option>
-                  <option value="6">Class 6th - A</option>
-                  <option value="7">Class 7th - A</option>
-                  <option value="8">Class 8th - A</option>
+                  <option value="5">{formatClassDisplay('5', activeLangCode)}</option>
+                  <option value="6">{formatClassDisplay('6', activeLangCode)}</option>
+                  <option value="7">{formatClassDisplay('7', activeLangCode)}</option>
+                  <option value="8">{formatClassDisplay('8', activeLangCode)}</option>
                 </select>
                 <ChevronDown className="w-3.5 h-3.5 text-indigo-600 absolute right-2 top-1/2 -translate-y-1/2 pointer-events-none" />
               </div>

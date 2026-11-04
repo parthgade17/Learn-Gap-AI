@@ -9,6 +9,8 @@ import { AssessmentManager } from './components/AssessmentManager';
 import { GapAnalysisView } from './components/GapAnalysisView';
 import { RemedialPlannerView } from './components/RemedialPlannerView';
 import { ProgressDashboard } from './components/ProgressDashboard';
+import { HeadTeacherDashboard } from './components/HeadTeacherDashboard';
+import { FacultyProfileSubpage } from './components/FacultyProfileSubpage';
 import { DPDPComplianceModal } from './components/DPDPComplianceModal';
 import { PWAInstallModal } from './components/PWAInstallModal';
 import { UserRole, StudentGroup, AssessmentRecord, RemedialPlan } from './types';
@@ -41,6 +43,30 @@ export const App: React.FC = () => {
   const [isInstallModalOpen, setIsInstallModalOpen] = useState<boolean>(false);
   const [installPrompt, setInstallPrompt] = useState<BeforeInstallPromptEvent | null>(null);
   const [isInstalled, setIsInstalled] = useState<boolean>(false);
+
+  // Dedicated Faculty Subpage Route State (#faculty/:id)
+  const [activeFacultyProfileId, setActiveFacultyProfileId] = useState<string | null>(null);
+
+  // Hash URL listener for deep-linking & Principal search redirection
+  useEffect(() => {
+    const handleHashChange = () => {
+      const hash = window.location.hash;
+      if (hash.startsWith('#faculty/')) {
+        const fid = hash.replace('#faculty/', '').trim();
+        if (fid) {
+          setActiveFacultyProfileId(fid);
+        }
+      } else if (hash === '' || !hash.startsWith('#faculty/')) {
+        setActiveFacultyProfileId(null);
+      }
+    };
+
+    handleHashChange();
+    window.addEventListener('hashchange', handleHashChange);
+    return () => {
+      window.removeEventListener('hashchange', handleHashChange);
+    };
+  }, []);
 
   const handleRoleChange = (role: UserRole) => {
     setCurrentRole(role);
@@ -246,78 +272,114 @@ export const App: React.FC = () => {
 
       {/* Main Tab Content */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 pb-24 sm:pb-8">
-        {activeTab === 'assessment' && (
-          <AssessmentManager
-            students={students}
-            competencies={competencies}
-            assessments={assessments}
-            selectedClassGrade={selectedClassGrade}
-            onClassGradeChange={setSelectedClassGrade}
-            onAddAssessment={handleAddAssessment}
-            onUpdateAssessment={handleUpdateAssessment}
-            onBatchUpload={handleBatchUpload}
-            onDeleteAssessment={handleDeleteAssessment}
-          />
-        )}
-
-        {activeTab === 'gaps' && (
-          <GapAnalysisView
-            students={students}
-            competencies={competencies}
-            assessments={assessments}
-            activities={activities}
-            selectedClassGrade={selectedClassGrade}
-            onClassGradeChange={setSelectedClassGrade}
-            onSelectGroupForPlan={handleSelectGroupForPlan}
-          />
-        )}
-
-        {activeTab === 'planner' && (
-          <RemedialPlannerView
-            students={students}
-            competencies={competencies}
-            activities={activities}
-            plans={plans}
-            selectedClassGrade={selectedClassGrade}
-            onClassGradeChange={setSelectedClassGrade}
-            activeGroupForPlan={activeGroupForPlan}
-            onSavePlan={handleSavePlan}
-            onClearActiveGroup={() => setActiveGroupForPlan(null)}
-          />
-        )}
-
-        {activeTab === 'dashboard' && (
-          <ProgressDashboard
-            students={students}
-            competencies={competencies}
-            assessments={assessments}
-            plans={plans}
+        {activeFacultyProfileId ? (
+          <FacultyProfileSubpage
+            facultyId={activeFacultyProfileId}
             userRole={currentRole}
-            selectedClassGrade={selectedClassGrade}
-            onClassGradeChange={setSelectedClassGrade}
-            onNavigateToAssessment={() => setActiveTab('assessment')}
-            onNavigateToPlanner={() => setActiveTab('planner')}
+            students={students}
+            competencies={competencies}
+            assessments={assessments}
+            plans={plans}
+            onBack={() => {
+              setActiveFacultyProfileId(null);
+              window.location.hash = '';
+            }}
+            onSwitchToHeadTeacher={() => {
+              setCurrentRole('head_teacher');
+            }}
           />
-        )}
+        ) : (
+          <>
+            {activeTab === 'assessment' && (
+              <AssessmentManager
+                students={students}
+                competencies={competencies}
+                assessments={assessments}
+                selectedClassGrade={selectedClassGrade}
+                onClassGradeChange={setSelectedClassGrade}
+                onAddAssessment={handleAddAssessment}
+                onUpdateAssessment={handleUpdateAssessment}
+                onBatchUpload={handleBatchUpload}
+                onDeleteAssessment={handleDeleteAssessment}
+              />
+            )}
 
-        {activeTab === 'privacy' && (
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-              <Sparkles className="w-5 h-5 text-emerald-600" />
-              <h2 className="text-xl font-bold text-slate-900">
-                {t('dpdp.title')}
-              </h2>
-            </div>
-            <p className="text-sm text-slate-600">
-              {t('dpdp.subtitle')}
-            </p>
-            <button
-              onClick={() => setIsPrivacyOpen(true)}
-              className="px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition"
-            >
-              {t('dpdp.consentRegisterTitle')}
-            </button>
-          </div>
+            {activeTab === 'gaps' && (
+              <GapAnalysisView
+                students={students}
+                competencies={competencies}
+                assessments={assessments}
+                activities={activities}
+                selectedClassGrade={selectedClassGrade}
+                onClassGradeChange={setSelectedClassGrade}
+                onSelectGroupForPlan={handleSelectGroupForPlan}
+              />
+            )}
+
+            {activeTab === 'planner' && (
+              <RemedialPlannerView
+                students={students}
+                competencies={competencies}
+                activities={activities}
+                plans={plans}
+                selectedClassGrade={selectedClassGrade}
+                onClassGradeChange={setSelectedClassGrade}
+                activeGroupForPlan={activeGroupForPlan}
+                onSavePlan={handleSavePlan}
+                onClearActiveGroup={() => setActiveGroupForPlan(null)}
+              />
+            )}
+
+            {activeTab === 'dashboard' && (
+              currentRole === 'head_teacher' ? (
+                <HeadTeacherDashboard
+                  students={students}
+                  competencies={competencies}
+                  assessments={assessments}
+                  plans={plans}
+                  userRole={currentRole}
+                  onOpenFacultyProfile={(fid) => {
+                    setActiveFacultyProfileId(fid);
+                    window.location.hash = `#faculty/${fid}`;
+                  }}
+                  onNavigateToAssessment={() => setActiveTab('assessment')}
+                  onNavigateToPlanner={() => setActiveTab('planner')}
+                />
+              ) : (
+                <ProgressDashboard
+                  students={students}
+                  competencies={competencies}
+                  assessments={assessments}
+                  plans={plans}
+                  userRole={currentRole}
+                  selectedClassGrade={selectedClassGrade}
+                  onClassGradeChange={setSelectedClassGrade}
+                  onNavigateToAssessment={() => setActiveTab('assessment')}
+                  onNavigateToPlanner={() => setActiveTab('planner')}
+                />
+              )
+            )}
+
+            {activeTab === 'privacy' && (
+              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+                <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
+                  <Sparkles className="w-5 h-5 text-emerald-600" />
+                  <h2 className="text-xl font-bold text-slate-900">
+                    {t('dpdp.title')}
+                  </h2>
+                </div>
+                <p className="text-sm text-slate-600">
+                  {t('dpdp.subtitle')}
+                </p>
+                <button
+                  onClick={() => setIsPrivacyOpen(true)}
+                  className="px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition"
+                >
+                  {t('dpdp.consentRegisterTitle')}
+                </button>
+              </div>
+            )}
+          </>
         )}
       </main>
 

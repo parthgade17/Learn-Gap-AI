@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Upload,
@@ -12,14 +12,34 @@ import {
   HelpCircle,
   X,
   Save,
-  CloudUpload,
   Copy,
-  Check
+  Check,
+  Zap,
+  Clock,
+  ShieldCheck,
+  Users,
+  BookOpen,
+  Layers,
+  ChevronRight
 } from 'lucide-react';
 import { Student, Competency, AssessmentRecord, AssessmentType } from '../types';
 import { validateAssessmentRecord } from '../engine/gapEngine';
-import { getCompetencyTitle, formatStudentDisplay, ALL_SUBJECTS } from '../data/curriculumData';
-import { isSupabaseConfigured, checkSupabaseConnection, syncAllAssessmentsToSupabase } from '../lib/supabaseClient';
+import {
+  getCompetencyTitle,
+  formatStudentDisplay,
+  ALL_SUBJECTS,
+  formatClassDisplay,
+  getSubjectName
+} from '../data/curriculumData';
+import { checkSupabaseConnection } from '../lib/supabaseClient';
+import { StudentAllSubjectAssessmentModal } from './StudentAllSubjectAssessmentModal';
+import {
+  bufferAssessmentToRedis,
+  bufferBatchToRedis,
+  getRedisBufferStatus,
+  forceFlushRedisToSupabase,
+  RedisBufferStatusResponse
+} from '../lib/redisBufferClient';
 
 interface AssessmentManagerProps {
   students: Student[];
@@ -47,6 +67,15 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   const { t, i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
 
+  // Modal State for Deduplicated Student All-Subject Manager
+  const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
+
+  // Student Dropdown Selection State for Quick All-Subject Launcher
+  const [dropdownStudentId, setDropdownStudentId] = useState<string>(students[0]?.id || '');
+
+  // Table View Mode: 'roster' (deduplicated per student) vs 'records' (raw audit log)
+  const [tableMode, setTableMode] = useState<'roster' | 'records'>('roster');
+
   // Manual Form State
   const [selectedStudentId, setSelectedStudentId] = useState<string>(students[0]?.id || 'std-501');
   const [selectedCompetencyId, setSelectedCompetencyId] = useState<string>(competencies[0]?.id || 'MATH-01');
@@ -66,9 +95,10 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   const [dbStatus, setDbStatus] = useState<{ connected: boolean; message: string; rowCount?: number; isRlsIssue?: boolean } | null>(null);
   const [testingDb, setTestingDb] = useState<boolean>(false);
 
-  // Batch DB Sync & Notification State
-  const [isSyncingAll, setIsSyncingAll] = useState<boolean>(false);
-  const [syncProgress, setSyncProgress] = useState<{ synced: number; total: number } | null>(null);
+  // Redis Middleman Buffer & Rate Limiting State
+  const [redisStatus, setRedisStatus] = useState<RedisBufferStatusResponse | null>(null);
+  const [isFlushingRedis, setIsFlushingRedis] = useState<boolean>(false);
+  const [redisNotice, setRedisNotice] = useState<string | null>(null);
   const [syncNotice, setSyncNotice] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
   const [copiedSql, setCopiedSql] = useState<boolean>(false);
 
@@ -87,7 +117,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
   const [formClassGrade, setFormClassGrade] = useState<string>(selectedClassGrade === 'ALL' ? '5' : (selectedClassGrade || '5'));
 
   // Sync with global class selection from header or dashboard
-  React.useEffect(() => {
+  useEffect(() => {
     if (selectedClassGrade) {
       setFilterClassGrade(selectedClassGrade);
       setFormClassGrade(selectedClassGrade === 'ALL' ? '5' : selectedClassGrade);
@@ -96,9 +126,27 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         : students.filter(s => s.grade === parseInt(selectedClassGrade, 10));
       if (classStds.length > 0) {
         setSelectedStudentId(classStds[0].id);
+        setDropdownStudentId(classStds[0].id);
       }
     }
   }, [selectedClassGrade, students]);
+
+  // Periodic poll of Redis Buffer status (every 8 seconds) to reflect background sync flushes
+  useEffect(() => {
+    let isMounted = true;
+    const fetchStatus = async () => {
+      const status = await getRedisBufferStatus();
+      if (isMounted && status) {
+        setRedisStatus(status);
+      }
+    };
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 8000);
+    return () => {
+      isMounted = false;
+      clearInterval(interval);
+    };
+  }, []);
 
   const formStudents = formClassGrade === 'ALL'
     ? students
@@ -112,12 +160,19 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
       : students.filter(s => s.grade === parseInt(grade, 10));
     if (classStds.length > 0) {
       setSelectedStudentId(classStds[0].id);
+      setDropdownStudentId(classStds[0].id);
     }
   };
 
   const handleTableClassChange = (grade: string) => {
     setFilterClassGrade(grade);
     onClassGradeChange?.(grade);
+    const classStds = grade === 'ALL'
+      ? students
+      : students.filter(s => s.grade === parseInt(grade, 10));
+    if (classStds.length > 0) {
+      setDropdownStudentId(classStds[0].id);
+    }
   };
 
   // Real-time Data Validation for Manual Form
@@ -141,7 +196,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
     if (!validation.isValid) return;
 
     try {
-      await onAddAssessment({
+      const newRec = {
         student_id: selectedStudentId || students[0].id,
         competency_id: selectedCompetencyId || competencies[0].id,
         assessment_type: assessmentType,
@@ -150,7 +205,19 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         percentage: currentPct,
         assessed_at: new Date().toISOString().split('T')[0],
         synced: false
-      });
+      };
+
+      // 1. Save locally to IndexedDB
+      await onAddAssessment(newRec);
+
+      // 2. Buffer into Redis Middleman (Auto-syncs to Supabase every 10-15s, rate limited)
+      const bufferRes = await bufferAssessmentToRedis(newRec);
+      if (bufferRes.success) {
+        setRedisNotice(`⚡ Buffered to Redis (Queue: ${bufferRes.buffer_queue_length}) → Auto-syncing to Supabase in 10-15s`);
+        const status = await getRedisBufferStatus();
+        if (status) setRedisStatus(status);
+        setTimeout(() => setRedisNotice(null), 5000);
+      }
 
       setFormSuccess(t('assessment.savedSuccess'));
       setTimeout(() => setFormSuccess(null), 3000);
@@ -170,17 +237,33 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
     if (!editingRecord || !editValidation.isValid) return;
 
     try {
-      await onUpdateAssessment(editingRecord.id, {
+      const updates = {
         score_obtained: editNumScore,
         total_marks: editNumTotal,
         percentage: editPct,
         assessment_type: editType
+      };
+
+      // 1. Update local database
+      await onUpdateAssessment(editingRecord.id, updates);
+
+      // 2. Buffer updated score into Redis middleman
+      await bufferAssessmentToRedis({
+        student_id: editingRecord.student_id,
+        competency_id: editingRecord.competency_id,
+        assessment_type: editType,
+        score_obtained: editNumScore,
+        total_marks: editNumTotal,
+        percentage: editPct,
+        assessed_at: new Date().toISOString().split('T')[0]
       });
+
+      const status = await getRedisBufferStatus();
+      if (status) setRedisStatus(status);
+
       setEditingRecord(null);
       setSyncNotice({
-        message: isSupabaseConfigured
-          ? 'Marks updated locally and dynamically synchronized to Supabase table (assessments)!'
-          : 'Marks updated locally in IndexedDB.',
+        message: 'Marks updated locally and buffered in Redis → Auto-syncs to Supabase in 10-15s!',
         type: 'success'
       });
       setTimeout(() => setSyncNotice(null), 4500);
@@ -193,30 +276,32 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
     }
   };
 
-  const handleSyncAllToSupabase = async () => {
-    if (assessments.length === 0) return;
-    setIsSyncingAll(true);
-    setSyncProgress({ synced: 0, total: assessments.length });
-
-    const result = await syncAllAssessmentsToSupabase(assessments, (synced, total) => {
-      setSyncProgress({ synced, total });
-    });
-
-    setIsSyncingAll(false);
-    if (result.success) {
-      setSyncNotice({
-        message: `Successfully synchronized all ${result.count} student marks into Supabase DB!`,
-        type: 'success'
-      });
-      // Refresh DB test status
-      const updatedStatus = await checkSupabaseConnection();
-      setDbStatus(updatedStatus);
+  // Immediate manual flush from Redis to Supabase
+  const handleFlushRedisNow = async () => {
+    setIsFlushingRedis(true);
+    try {
+      const result = await forceFlushRedisToSupabase();
+      if (result.error) {
+        setSyncNotice({
+          message: `Redis flush issue: ${result.error}`,
+          type: 'error'
+        });
+      } else {
+        setSyncNotice({
+          message: `⚡ Successfully transferred ${result.synced} marks from Redis into Supabase, and cleared Redis cache!`,
+          type: 'success'
+        });
+        const updatedStatus = await getRedisBufferStatus();
+        if (updatedStatus) setRedisStatus(updatedStatus);
+      }
       setTimeout(() => setSyncNotice(null), 5000);
-    } else {
+    } catch {
       setSyncNotice({
-        message: `Database sync issue: ${result.error || 'Check Supabase RLS policies'}. Ensure RLS is disabled in Supabase.`,
+        message: 'Error communicating with Redis buffer worker.',
         type: 'error'
       });
+    } finally {
+      setIsFlushingRedis(false);
     }
   };
 
@@ -260,7 +345,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
           return;
         }
 
-        // Header-aware column parsing
         const headers = lines[0].split(',').map(h => h.trim().toLowerCase().replace(/['"]/g, ''));
         const rollIdx = headers.indexOf('roll_number') !== -1 ? headers.indexOf('roll_number') : 0;
         const gradeIdx = headers.indexOf('grade');
@@ -273,7 +357,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         let skippedRows = 0;
 
         for (let i = 1; i < lines.length; i++) {
-          // Parse CSV line taking quotes into account
           const rowText = lines[i];
           const parts: string[] = [];
           let current = '';
@@ -298,63 +381,83 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
           const compCode = compIdx !== -1 ? parts[compIdx] : parts[3];
           const rawType = typeIdx !== -1 ? parts[typeIdx].toLowerCase() : parts[4]?.toLowerCase();
           const asmtType: AssessmentType = rawType === 'follow_up' || rawType === 'followup' ? 'follow_up' : 'baseline';
-          const scoreObt = parseFloat(scoreIdx !== -1 ? parts[scoreIdx] : parts[5]);
-          const maxMarks = parseFloat(totalIdx !== -1 ? parts[totalIdx] : parts[6]);
+          const scoreVal = parseFloat(scoreIdx !== -1 ? parts[scoreIdx] : parts[5]);
+          const totalVal = parseFloat(totalIdx !== -1 ? parts[totalIdx] : parts[6]) || 10;
 
-          const student = students.find(s => {
-            if (s.roll_number !== rollNo) return false;
-            if (rowGrade !== undefined && !isNaN(rowGrade)) {
-              return s.grade === rowGrade;
+          if (isNaN(rollNo) || isNaN(scoreVal) || !compCode) {
+            skippedRows++;
+            continue;
+          }
+
+          let matchedStudent = students.find(s => {
+            if (rowGrade !== undefined) {
+              return s.roll_number === rollNo && s.grade === rowGrade;
             }
-            return true;
+            if (filterClassGrade !== 'ALL') {
+              return s.roll_number === rollNo && s.grade === parseInt(filterClassGrade, 10);
+            }
+            return s.roll_number === rollNo;
           });
 
-          const comp = competencies.find(c => c.code === compCode || c.id === compCode);
+          if (!matchedStudent && students.length > 0) {
+            matchedStudent = students.find(s => s.roll_number === rollNo);
+          }
 
-          if (!student || !comp || isNaN(scoreObt) || isNaN(maxMarks)) {
+          const matchedComp = competencies.find(
+            c => c.id.toLowerCase() === compCode.toLowerCase() || c.code.toLowerCase() === compCode.toLowerCase()
+          );
+
+          if (!matchedStudent || !matchedComp) {
             skippedRows++;
             continue;
           }
 
-          const recordValidation = validateAssessmentRecord(scoreObt, maxMarks);
-          if (!recordValidation.isValid) {
-            skippedRows++;
-            continue;
-          }
-
+          const pct = Math.round((scoreVal / totalVal) * 100);
           newRecords.push({
-            student_id: student.id,
-            competency_id: comp.id,
+            student_id: matchedStudent.id,
+            competency_id: matchedComp.id,
             assessment_type: asmtType,
-            score_obtained: scoreObt,
-            total_marks: maxMarks,
-            percentage: Math.round((scoreObt / maxMarks) * 100),
+            score_obtained: scoreVal,
+            total_marks: totalVal,
+            percentage: pct,
             assessed_at: new Date().toISOString().split('T')[0],
             synced: false
           });
         }
 
-        if (newRecords.length > 0) {
-          await onBatchUpload(newRecords);
+        if (newRecords.length === 0) {
           setCsvStatus({
-            message: `Successfully validated and imported ${newRecords.length} records (${skippedRows} skipped/invalid).`,
-            type: 'success'
-          });
-        } else {
-          setCsvStatus({
-            message: `No matching records found. Please check student roll numbers, grades, and competency codes.`,
+            message: `Could not parse valid records. Skipped ${skippedRows} rows.`,
             type: 'error'
           });
+          return;
         }
-      } catch (err) {
-        console.error('Error parsing CSV', err);
+
+        // 1. Upload to local DB
+        await onBatchUpload(newRecords);
+
+        // 2. Buffer to Redis Middleman in batch
+        bufferBatchToRedis(newRecords).then(async (res) => {
+          if (res.success) {
+            const status = await getRedisBufferStatus();
+            if (status) setRedisStatus(status);
+            setRedisNotice(`⚡ ${newRecords.length} marks buffered in Redis. Background worker is auto-syncing to Supabase.`);
+            setTimeout(() => setRedisNotice(null), 6000);
+          }
+        }).catch(console.warn);
+
+        setCsvStatus({
+          message: `Successfully imported ${newRecords.length} marks! Buffered in Redis for auto-sync.`,
+          type: 'success'
+        });
+      } catch {
         setCsvStatus({ message: 'Error parsing CSV file format.', type: 'error' });
       }
     };
     reader.readAsText(file);
   };
 
-  // Filtered Assessments
+  // Filtered raw assessment records for audit trail
   const filteredAssessments = assessments.filter(a => {
     const student = students.find(s => s.id === a.student_id);
     if (filterClassGrade !== 'ALL' && student?.grade !== parseInt(filterClassGrade, 10)) return false;
@@ -364,54 +467,112 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
     return true;
   });
 
+  // Class Filtered Students for the Deduplicated Roster
+  const classFilteredStudents = filterClassGrade === 'ALL'
+    ? students
+    : students.filter(s => s.grade === parseInt(filterClassGrade, 10));
+
+  // Compute student stats across 7 subjects for the Deduplicated Roster View:
+  // Each student appears EXACTLY ONCE, without repeated rows!
+  const studentRosterData = classFilteredStudents.map(student => {
+    const studentAsmts = assessments.filter(a => a.student_id === student.id);
+
+    const assessedSubjectSet = new Set<string>();
+    studentAsmts.forEach(a => {
+      const comp = competencies.find(c => c.id === a.competency_id);
+      if (comp) assessedSubjectSet.add(comp.subject);
+    });
+
+    const baselineCount = studentAsmts.filter(a => a.assessment_type === 'baseline').length;
+    const followupCount = studentAsmts.filter(a => a.assessment_type === 'follow_up').length;
+
+    const avgPct = studentAsmts.length > 0
+      ? Math.round(studentAsmts.reduce((acc, a) => acc + a.percentage, 0) / studentAsmts.length)
+      : null;
+
+    return {
+      student,
+      assessedSubjectCount: assessedSubjectSet.size,
+      totalSubjects: ALL_SUBJECTS.length,
+      assessedSubjects: Array.from(assessedSubjectSet),
+      baselineCount,
+      followupCount,
+      totalRecords: studentAsmts.length,
+      avgPct
+    };
+  });
+
   return (
     <div className="space-y-6">
       
-      {/* Module Title Banner & Database Connection Pill */}
+      {/* Module Title Banner & Redis Middleman Buffer Indicator */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-            {t('assessment.title')}
+          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight flex items-center gap-2">
+            <span>{t('assessment.title')}</span>
+            <span className="px-2 py-0.5 rounded-full text-[11px] font-bold bg-amber-100 text-amber-900 border border-amber-300">
+              Redis Buffer Active
+            </span>
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Dynamic assessment manager for 7 subjects • Inline marks editor • Supabase database connected
+            Deduplicated Student Roster • All-Subject Assessment Modal • Redis Buffer with 12s Auto-Sync to Supabase
           </p>
         </div>
 
-        {/* Database Quick Info Pill */}
+        {/* Redis Buffer & Rate Limiter Pill replacing the old manual button */}
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold border bg-slate-50 text-slate-700">
-            <Database className="w-4 h-4 text-brand-600" />
+          {/* Redis Middleman Status Pill */}
+          <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold border bg-slate-900 text-amber-300 border-slate-700 shadow-xs">
+            <Zap className="w-3.5 h-3.5 text-amber-400 animate-pulse shrink-0" />
             <span>
-              {isSupabaseConfigured ? 'Supabase Configured' : 'Offline IndexedDB Active'}
+              Redis Buffer:{' '}
+              <strong className="text-white font-mono">{redisStatus?.buffered_marks_count ?? 0}</strong> pending
+            </span>
+            <span className="text-slate-500 text-[10px] hidden sm:inline">•</span>
+            <span className="text-slate-300 text-[11px] hidden sm:inline flex items-center gap-1">
+              <Clock className="w-3 h-3 text-slate-400" />
+              Auto-syncs every 12s
             </span>
           </div>
 
-          {isSupabaseConfigured && (
-            <button
-              onClick={handleSyncAllToSupabase}
-              disabled={isSyncingAll}
-              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white transition shadow-sm active:scale-95 disabled:opacity-50 cursor-pointer"
-              title="Push all student marks (all classes) to Supabase assessments table"
-            >
-              <CloudUpload className={`w-3.5 h-3.5 ${isSyncingAll ? 'animate-bounce' : ''}`} />
-              <span>
-                {isSyncingAll
-                  ? `Syncing (${syncProgress?.synced || 0}/${syncProgress?.total || assessments.length})...`
-                  : 'Sync All to DB'}
-              </span>
-            </button>
-          )}
+          {/* Quick Immediate Flush Button */}
+          <button
+            type="button"
+            onClick={handleFlushRedisNow}
+            disabled={isFlushingRedis || (redisStatus?.buffered_marks_count ?? 0) === 0}
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-amber-500 hover:bg-amber-600 disabled:bg-slate-200 disabled:text-slate-400 text-slate-950 transition shadow-2xs active:scale-95 cursor-pointer disabled:cursor-not-allowed"
+            title="Immediately commit Redis marks buffer into Supabase and clear Redis cache"
+          >
+            <Clock className={`w-3.5 h-3.5 ${isFlushingRedis ? 'animate-spin' : ''}`} />
+            <span>{isFlushingRedis ? 'Syncing...' : 'Flush Redis Now'}</span>
+          </button>
 
+          {/* Architecture / DB Guide */}
           <button
             onClick={() => setIsDbGuideOpen(true)}
             className="flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition shadow-2xs"
           >
             <HelpCircle className="w-3.5 h-3.5" />
-            <span>DB Connection Guide</span>
+            <span>DB &amp; Redis Guide</span>
           </button>
         </div>
       </div>
+
+      {/* Redis Buffer Notification Alert */}
+      {redisNotice && (
+        <div className="p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-sm bg-amber-50 text-amber-950 border border-amber-300 animate-in fade-in">
+          <div className="flex items-center gap-2">
+            <Zap className="w-4 h-4 text-amber-600 shrink-0" />
+            <span>{redisNotice}</span>
+          </div>
+          <button
+            onClick={() => setRedisNotice(null)}
+            className="p-1 rounded hover:bg-amber-200/50 text-amber-700"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Sync Status Toast Alert */}
       {syncNotice && (
@@ -439,9 +600,67 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         </div>
       )}
 
+      {/* =========================================================================
+          STUDENT DROPDOWN SELECTOR BAR FOR ALL-SUBJECT ASSESSMENT MODAL
+          (Fulfills: "implement a dropdown for every student when the teacher clicks on drop down all the students must be visible and when teacher clicks on student name then his all subject assesment manager must be opened")
+      ========================================================================= */}
+      <div className="bg-gradient-to-r from-brand-50 via-indigo-50 to-purple-50 p-4 sm:p-5 rounded-2xl border-2 border-brand-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div className="flex items-start sm:items-center gap-3">
+          <div className="w-10 h-10 rounded-2xl bg-brand-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-brand-600/20">
+            <Users className="w-5 h-5" />
+          </div>
+          <div>
+            <h3 className="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2">
+              <span>All-Subject Assessment Manager</span>
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-200 text-brand-900 uppercase">
+                7 Subjects
+              </span>
+            </h3>
+            <p className="text-xs text-slate-600 mt-0.5">
+              Click the dropdown to view all students. Selecting a student opens their full 7-subject mark assessment sheet.
+            </p>
+          </div>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
+          <div className="relative">
+            <select
+              value={dropdownStudentId}
+              onChange={(e) => {
+                const stdId = e.target.value;
+                setDropdownStudentId(stdId);
+                const std = students.find(s => s.id === stdId);
+                if (std) setSelectedStudentForModal(std);
+              }}
+              className="w-full sm:w-auto min-w-[260px] rounded-xl border-2 border-brand-300 bg-white py-2.5 px-3 text-xs font-bold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
+            >
+              <option value="" disabled>-- Select Student from Dropdown --</option>
+              {classFilteredStudents.map((s) => (
+                <option key={s.id} value={s.id}>
+                  [{formatClassDisplay(s.grade, currentLang)}] #{s.roll_number} - {formatStudentDisplay(s, currentLang)}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <button
+            type="button"
+            onClick={() => {
+              const std = students.find(s => s.id === dropdownStudentId) || classFilteredStudents[0];
+              if (std) setSelectedStudentForModal(std);
+            }}
+            disabled={classFilteredStudents.length === 0}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20 transition active:scale-95 cursor-pointer disabled:opacity-50 whitespace-nowrap"
+          >
+            <BookOpen className="w-4 h-4" />
+            <span>Open All Subjects Sheet</span>
+          </button>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         
-        {/* Left Column: Input Form & CSV Upload (5 cols) */}
+        {/* Left Column: Quick Manual Entry Form & CSV Marksheet Import (5 cols) */}
         <div className="lg:col-span-5 space-y-6">
           
           {/* Quick Manual Entry Card */}
@@ -449,34 +668,34 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
             <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
               <PlusCircle className="w-5 h-5 text-brand-600" />
               <h3 className="font-bold text-slate-900 text-sm">
-                Add / Record Student Mark
+                Add / Record Single Competency Mark
               </h3>
             </div>
 
             <form onSubmit={handleManualSubmit} className="space-y-4">
               
-              {/* Select Class (5th A, 6th A, 7th A, 8th A, All) */}
+              {/* Select Class */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Select Class (इयत्ता)
+                  {t('dashboard.selectClass')}
                 </label>
                 <select
                   value={formClassGrade}
                   onChange={(e) => handleFormClassChange(e.target.value)}
                   className="w-full rounded-xl border border-slate-200 p-2.5 text-xs bg-slate-50 font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
                 >
-                  <option value="5">Class 5th - A (इयत्ता ५ वी - अ)</option>
-                  <option value="6">Class 6th - A (इयत्ता ६ वी - अ)</option>
-                  <option value="7">Class 7th - A (इयत्ता ७ वी - अ)</option>
-                  <option value="8">Class 8th - A (इयत्ता ८ वी - अ)</option>
-                  <option value="ALL">All Classes (सर्व वर्ग)</option>
+                  <option value="5">{formatClassDisplay('5', currentLang)}</option>
+                  <option value="6">{formatClassDisplay('6', currentLang)}</option>
+                  <option value="7">{formatClassDisplay('7', currentLang)}</option>
+                  <option value="8">{formatClassDisplay('8', currentLang)}</option>
+                  <option value="ALL">{formatClassDisplay('ALL', currentLang)}</option>
                 </select>
               </div>
 
               {/* Select Student */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Student Name ({formStudents.length} Learners in {formClassGrade === 'ALL' ? 'School' : `Class ${formClassGrade}th-A`})
+                  {t('assessment.studentAlias')} ({formStudents.length} {t('gaps.studentsCount')})
                 </label>
                 <select
                   value={selectedStudentId}
@@ -485,7 +704,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 >
                   {formStudents.map((s) => (
                     <option key={s.id} value={s.id}>
-                      [Class {s.grade}th-A] Roll #{s.roll_number} - {formatStudentDisplay(s, currentLang)}
+                      [{formatClassDisplay(s.grade, currentLang)}] #{s.roll_number} - {formatStudentDisplay(s, currentLang)}
                     </option>
                   ))}
                 </select>
@@ -494,7 +713,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               {/* Select Subject & Competency */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  Competency (Across 7 Subjects)
+                  {t('assessment.selectCompetency')}
                 </label>
                 <select
                   value={selectedCompetencyId}
@@ -503,7 +722,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 >
                   {competencies.map((c) => (
                     <option key={c.id} value={c.id}>
-                      [{c.subject}] {c.code} - {getCompetencyTitle(c, currentLang)}
+                      [{getSubjectName(c.subject, currentLang)}] {c.code} - {getCompetencyTitle(c, currentLang)}
                     </option>
                   ))}
                 </select>
@@ -599,9 +818,9 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               <button
                 type="submit"
                 disabled={!validation.isValid}
-                className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold text-xs shadow-xs transition"
+                className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
-                Save Record to Database
+                Save Record (Buffers in Redis)
               </button>
             </form>
           </div>
@@ -701,169 +920,350 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
         </div>
 
-        {/* Right Column: Assessment Records Table with Dynamic Inline Editing (7 cols) */}
+        {/* Right Column: Deduplicated Student Roster & Live Audit Records (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
+          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
             
-            {/* Filter and Heading */}
+            {/* Header with Mode Toggle & Filters */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
               <div>
-                <h3 className="font-bold text-slate-900 text-sm">
-                  Active Assessment Records ({filteredAssessments.length})
+                <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                  <span>
+                    {tableMode === 'roster'
+                      ? `Student Roster (${studentRosterData.length} Students)`
+                      : `Raw Assessment Entries (${filteredAssessments.length})`}
+                  </span>
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                    {tableMode === 'roster' ? 'Deduplicated' : 'Audit Trail'}
+                  </span>
                 </h3>
                 <p className="text-xs text-slate-500">
-                  Click the Edit (pencil) button to edit marks dynamically in real time
+                  {tableMode === 'roster'
+                    ? 'Every student is shown once. Click "Open All Subjects" to inspect or edit marks across all 7 subjects.'
+                    : 'Individual competency assessment records and audit timestamps.'}
                 </p>
               </div>
 
-              {/* Class, Subject & Competency Filter */}
-              <div className="flex flex-wrap items-center gap-2">
-                <select
-                  value={filterClassGrade}
-                  onChange={(e) => handleTableClassChange(e.target.value)}
-                  className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+              {/* View Mode Toggle Button */}
+              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
+                <button
+                  type="button"
+                  onClick={() => setTableMode('roster')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                    tableMode === 'roster'
+                      ? 'bg-white text-brand-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="Deduplicated list showing each student once"
                 >
-                  <option value="ALL">All Classes (सर्व वर्ग)</option>
-                  <option value="5">Class 5th - A</option>
-                  <option value="6">Class 6th - A</option>
-                  <option value="7">Class 7th - A</option>
-                  <option value="8">Class 8th - A</option>
-                </select>
-
-                <select
-                  value={filterSubject}
-                  onChange={(e) => {
-                    setFilterSubject(e.target.value);
-                    setFilterCompetency('ALL');
-                  }}
-                  className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  <Users className="w-3.5 h-3.5" />
+                  <span>Student Roster</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setTableMode('records')}
+                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                    tableMode === 'records'
+                      ? 'bg-white text-brand-700 shadow-2xs'
+                      : 'text-slate-600 hover:text-slate-900'
+                  }`}
+                  title="View individual raw records"
                 >
-                  <option value="ALL">All Subjects</option>
-                  {ALL_SUBJECTS.map((sub) => (
-                    <option key={sub} value={sub}>{sub}</option>
-                  ))}
-                </select>
-
-                <select
-                  value={filterCompetency}
-                  onChange={(e) => setFilterCompetency(e.target.value)}
-                  className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 max-w-[130px] truncate"
-                >
-                  <option value="ALL">All Competencies</option>
-                  {competencies
-                    .filter(c => filterSubject === 'ALL' || c.subject === filterSubject)
-                    .map((comp) => (
-                      <option key={comp.id} value={comp.id}>
-                        {comp.code}
-                      </option>
-                    ))}
-                </select>
+                  <Layers className="w-3.5 h-3.5" />
+                  <span>Audit Entries</span>
+                </button>
               </div>
             </div>
 
-            {/* Table */}
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs text-slate-600">
-                <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
-                  <tr>
-                    <th className="py-2.5 px-3">Roll &amp; Student</th>
-                    <th className="py-2.5 px-3">Subject / Comp</th>
-                    <th className="py-2.5 px-3">Type</th>
-                    <th className="py-2.5 px-3">Score</th>
-                    <th className="py-2.5 px-3">Status</th>
-                    <th className="py-2.5 px-3 text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {filteredAssessments.length === 0 ? (
-                    <tr>
-                      <td colSpan={6} className="py-8 text-center text-slate-400">
-                        No assessment records found for this filter.
-                      </td>
-                    </tr>
-                  ) : (
-                    filteredAssessments.slice(-25).reverse().map((asmt) => {
-                      const student = students.find((s) => s.id === asmt.student_id);
-                      const comp = competencies.find((c) => c.id === asmt.competency_id);
-                      const isPassing = asmt.percentage >= (comp?.threshold_passing_pct || 60);
+            {/* Filter Bar */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+                <span>Filter:</span>
+              </div>
 
-                      return (
-                        <tr key={asmt.id} className="hover:bg-slate-50/80 transition">
-                          <td className="py-2.5 px-3 font-medium text-slate-900 whitespace-nowrap">
-                            <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 font-mono font-bold mr-1.5 text-slate-700">
-                              {student?.grade}th-A
-                            </span>
-                            <span className="font-bold text-slate-700 mr-1">#{student?.roll_number}</span>
-                            {student ? formatStudentDisplay(student, currentLang) : `Student ${asmt.student_id}`}
-                          </td>
-                          <td className="py-2.5 px-3 whitespace-nowrap">
-                            <span className="font-semibold text-slate-800">[{comp?.code || asmt.competency_id}]</span>{' '}
-                            <span className="text-slate-500 text-[11px] truncate inline-block max-w-[120px] align-bottom">
-                              {comp?.subject}
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-3 whitespace-nowrap">
-                            <span
-                              className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
-                                asmt.assessment_type === 'baseline'
-                                  ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                                  : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                              }`}
-                            >
-                              {asmt.assessment_type === 'baseline' ? 'Baseline' : 'Follow-up'}
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-3 whitespace-nowrap font-bold text-slate-900">
-                            {asmt.score_obtained} / {asmt.total_marks}{' '}
-                            <span className="text-slate-400 font-normal">({asmt.percentage}%)</span>
-                          </td>
-                          <td className="py-2.5 px-3 whitespace-nowrap">
-                            <span
-                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                                isPassing
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : asmt.percentage < 40
-                                  ? 'bg-rose-100 text-rose-800'
-                                  : 'bg-amber-100 text-amber-800'
-                              }`}
-                            >
-                              {isPassing ? 'Mastered' : 'Gap Flagged'}
-                            </span>
-                          </td>
-                          <td className="py-2.5 px-3 text-right whitespace-nowrap">
-                            <div className="flex items-center justify-end gap-1.5">
-                              {/* Edit Button */}
-                              <button
-                                onClick={() => openEditModal(asmt)}
-                                className="p-1 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition"
-                                title="Edit Marks"
-                              >
-                                <Edit2 className="w-3.5 h-3.5" />
-                              </button>
-                              {/* Delete Button */}
-                              <button
-                                onClick={() => onDeleteAssessment(asmt.id)}
-                                className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition"
-                                title="Delete Record"
-                              >
-                                <Trash2 className="w-3.5 h-3.5" />
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      );
-                    })
-                  )}
-                </tbody>
-              </table>
+              <select
+                value={filterClassGrade}
+                onChange={(e) => handleTableClassChange(e.target.value)}
+                className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+              >
+                <option value="ALL">{formatClassDisplay('ALL', currentLang)}</option>
+                <option value="5">{formatClassDisplay('5', currentLang)}</option>
+                <option value="6">{formatClassDisplay('6', currentLang)}</option>
+                <option value="7">{formatClassDisplay('7', currentLang)}</option>
+                <option value="8">{formatClassDisplay('8', currentLang)}</option>
+              </select>
+
+              {tableMode === 'records' && (
+                <>
+                  <select
+                    value={filterSubject}
+                    onChange={(e) => {
+                      setFilterSubject(e.target.value);
+                      setFilterCompetency('ALL');
+                    }}
+                    className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  >
+                    <option value="ALL">{t('subjects.all')}</option>
+                    {ALL_SUBJECTS.map((sub) => (
+                      <option key={sub} value={sub}>{getSubjectName(sub, currentLang)}</option>
+                    ))}
+                  </select>
+
+                  <select
+                    value={filterCompetency}
+                    onChange={(e) => setFilterCompetency(e.target.value)}
+                    className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 max-w-[130px] truncate"
+                  >
+                    <option value="ALL">All Competencies</option>
+                    {competencies
+                      .filter(c => filterSubject === 'ALL' || c.subject === filterSubject)
+                      .map((comp) => (
+                        <option key={comp.id} value={comp.id}>
+                          {comp.code}
+                        </option>
+                      ))}
+                  </select>
+                </>
+              )}
             </div>
+
+            {/* Architecture Info Banner on Rate Limiting */}
+            <div className="flex flex-wrap items-center justify-between text-[11px] bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-600 gap-2">
+              <div className="flex items-center gap-1.5">
+                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>
+                  Rate Limiters: <strong>120 writes/min (Redis)</strong> • <strong>30 flushes/min (Supabase)</strong>
+                </span>
+              </div>
+              <div className="flex items-center gap-1 text-emerald-700 font-semibold">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>Redis cache auto-clears on DB commit</span>
+              </div>
+            </div>
+
+            {/* ===============================================================
+                1. DEDUPLICATED STUDENT ROSTER VIEW (NO REPETITION)
+            =============================================================== */}
+            {tableMode === 'roster' && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-600">
+                  <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="py-2.5 px-3">Roll &amp; Student</th>
+                      <th className="py-2.5 px-3">Subject Progress (7 Subjects)</th>
+                      <th className="py-2.5 px-3">Avg Score</th>
+                      <th className="py-2.5 px-3">Milestones</th>
+                      <th className="py-2.5 px-3 text-right">All-Subject Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {studentRosterData.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-8 text-center text-slate-400">
+                          No students found for this class grade filter.
+                        </td>
+                      </tr>
+                    ) : (
+                      studentRosterData.map(({ student, assessedSubjectCount, totalSubjects, avgPct, baselineCount, followupCount }) => {
+                        const isPassing = avgPct !== null && avgPct >= 60;
+
+                        return (
+                          <tr key={student.id} className="hover:bg-slate-50/80 transition">
+                            <td className="py-2.5 px-3 font-medium text-slate-900 whitespace-nowrap">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 font-mono font-bold mr-1.5 text-slate-700">
+                                {student.grade}th-A
+                              </span>
+                              <span className="font-bold text-slate-700 mr-1">#{student.roll_number}</span>
+                              <span className="font-bold text-slate-900">
+                                {formatStudentDisplay(student, currentLang)}
+                              </span>
+                            </td>
+
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <div className="flex items-center gap-2">
+                                <span className="font-bold text-slate-800">
+                                  {assessedSubjectCount} / {totalSubjects} Subjects
+                                </span>
+                                <div className="w-16 bg-slate-200 h-2 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full ${assessedSubjectCount === totalSubjects ? 'bg-emerald-500' : 'bg-brand-500'}`}
+                                    style={{ width: `${(assessedSubjectCount / totalSubjects) * 100}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </td>
+
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              {avgPct !== null ? (
+                                <span
+                                  className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                    isPassing
+                                      ? 'bg-emerald-100 text-emerald-800'
+                                      : 'bg-rose-100 text-rose-800'
+                                  }`}
+                                >
+                                  {avgPct}% {isPassing ? 'Mastered' : 'Needs Support'}
+                                </span>
+                              ) : (
+                                <span className="text-slate-400 text-[10px] italic">Not Assessed Yet</span>
+                              )}
+                            </td>
+
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <div className="flex items-center gap-1.5 text-[10px] font-semibold">
+                                <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                                  Base: {baselineCount}
+                                </span>
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                  Follow-up: {followupCount}
+                                </span>
+                              </div>
+                            </td>
+
+                            <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                              <button
+                                onClick={() => setSelectedStudentForModal(student)}
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs border border-brand-200 transition shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+                              >
+                                <BookOpen className="w-3.5 h-3.5 text-brand-600" />
+                                <span>Open All Subjects</span>
+                                <ChevronRight className="w-3 h-3 text-brand-400" />
+                              </button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            {/* ===============================================================
+                2. RAW ASSESSMENT ENTRIES TABLE (OPTIONAL AUDIT TRAIL)
+            =============================================================== */}
+            {tableMode === 'records' && (
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs text-slate-600">
+                  <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                    <tr>
+                      <th className="py-2.5 px-3">Roll &amp; Student</th>
+                      <th className="py-2.5 px-3">Subject / Comp</th>
+                      <th className="py-2.5 px-3">Type</th>
+                      <th className="py-2.5 px-3">Score</th>
+                      <th className="py-2.5 px-3">Status</th>
+                      <th className="py-2.5 px-3 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {filteredAssessments.length === 0 ? (
+                      <tr>
+                        <td colSpan={6} className="py-8 text-center text-slate-400">
+                          No assessment records found for this filter.
+                        </td>
+                      </tr>
+                    ) : (
+                      filteredAssessments.slice(-25).reverse().map((asmt) => {
+                        const student = students.find((s) => s.id === asmt.student_id);
+                        const comp = competencies.find((c) => c.id === asmt.competency_id);
+                        const isPassing = asmt.percentage >= (comp?.threshold_passing_pct || 60);
+
+                        return (
+                          <tr key={asmt.id} className="hover:bg-slate-50/80 transition">
+                            <td className="py-2.5 px-3 font-medium text-slate-900 whitespace-nowrap">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 font-mono font-bold mr-1.5 text-slate-700">
+                                {student?.grade}th-A
+                              </span>
+                              <span className="font-bold text-slate-700 mr-1">#{student?.roll_number}</span>
+                              {student ? formatStudentDisplay(student, currentLang) : `Student ${asmt.student_id}`}
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <span className="font-semibold text-slate-800">[{comp?.code || asmt.competency_id}]</span>{' '}
+                              <span className="text-slate-500 text-[11px] truncate inline-block max-w-[120px] align-bottom">
+                                {comp ? getSubjectName(comp.subject, currentLang) : ''}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <span
+                                className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${
+                                  asmt.assessment_type === 'baseline'
+                                    ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                                    : 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+                                }`}
+                              >
+                                {asmt.assessment_type === 'baseline' ? t('assessment.baseline') : t('assessment.followup')}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap font-bold text-slate-900">
+                              {asmt.score_obtained} / {asmt.total_marks}{' '}
+                              <span className="text-slate-400 font-normal">({asmt.percentage}%)</span>
+                            </td>
+                            <td className="py-2.5 px-3 whitespace-nowrap">
+                              <span
+                                className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                  isPassing
+                                    ? 'bg-emerald-100 text-emerald-800'
+                                    : asmt.percentage < 40
+                                    ? 'bg-rose-100 text-rose-800'
+                                    : 'bg-amber-100 text-amber-800'
+                                }`}
+                              >
+                                {isPassing ? 'Mastered' : 'Gap Flagged'}
+                              </span>
+                            </td>
+                            <td className="py-2.5 px-3 text-right whitespace-nowrap">
+                              <div className="flex items-center justify-end gap-1.5">
+                                <button
+                                  onClick={() => openEditModal(asmt)}
+                                  className="p-1 rounded-lg text-slate-500 hover:text-brand-600 hover:bg-brand-50 transition cursor-pointer"
+                                  title="Edit Marks"
+                                >
+                                  <Edit2 className="w-3.5 h-3.5" />
+                                </button>
+                                <button
+                                  onClick={() => onDeleteAssessment(asmt.id)}
+                                  className="p-1 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition cursor-pointer"
+                                  title="Delete Record"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
           </div>
         </div>
 
       </div>
 
       {/* =========================================================================
-          DYNAMIC EDIT MARKS MODAL
+          DYNAMIC STUDENT ALL-SUBJECT ASSESSMENT MODAL
+          (Opens when teacher clicks dropdown or "Open All Subjects")
+      ========================================================================= */}
+      {selectedStudentForModal && (
+        <StudentAllSubjectAssessmentModal
+          isOpen={Boolean(selectedStudentForModal)}
+          onClose={() => setSelectedStudentForModal(null)}
+          student={selectedStudentForModal}
+          competencies={competencies}
+          assessments={assessments}
+          onSaveAssessment={async (newRec) => {
+            await onAddAssessment(newRec);
+            const status = await getRedisBufferStatus();
+            if (status) setRedisStatus(status);
+          }}
+        />
+      )}
+
+      {/* =========================================================================
+          DYNAMIC EDIT MARKS MODAL (FOR AUDIT LOG)
       ========================================================================= */}
       {editingRecord && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -884,7 +1284,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
             </div>
 
             <div className="space-y-3 text-xs">
-              {/* Student info preserved */}
               <div className="bg-slate-50 p-3 rounded-xl border border-slate-200">
                 <span className="text-slate-400 block text-[10px] uppercase font-bold">Student (Preserved)</span>
                 <span className="font-bold text-slate-900 text-sm">
@@ -898,7 +1297,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 </span>
               </div>
 
-              {/* Assessment Type */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
                   Milestone Type
@@ -913,7 +1311,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 </select>
               </div>
 
-              {/* Edit Score & Total Marks */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-xs font-semibold text-slate-700 mb-1">
@@ -942,7 +1339,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 </div>
               </div>
 
-              {/* Live Preview */}
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between">
                 <span className="text-slate-500">Updated Percentage:</span>
                 <span className={`font-black text-sm ${editPct >= 60 ? 'text-emerald-700' : 'text-rose-600'}`}>
@@ -961,7 +1357,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               <button
                 type="button"
                 onClick={() => setEditingRecord(null)}
-                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition"
+                className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 transition cursor-pointer"
               >
                 Cancel
               </button>
@@ -969,10 +1365,10 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 type="button"
                 onClick={handleSaveEdit}
                 disabled={!editValidation.isValid}
-                className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white transition flex items-center gap-1.5 shadow-xs"
+                className="px-4 py-2 rounded-xl text-xs font-bold bg-brand-600 hover:bg-brand-700 text-white transition flex items-center gap-1.5 shadow-xs cursor-pointer"
               >
                 <Save className="w-3.5 h-3.5" />
-                <span>Save Changes</span>
+                <span>Save to Redis Buffer</span>
               </button>
             </div>
           </div>
@@ -980,7 +1376,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
       )}
 
       {/* =========================================================================
-          DATABASE CONNECTION GUIDE MODAL (Step 4 from user prompt)
+          DATABASE & REDIS BUFFER ARCHITECTURE GUIDE MODAL
       ========================================================================= */}
       {isDbGuideOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
@@ -989,59 +1385,74 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               <div className="flex items-center gap-2">
                 <Database className="w-5 h-5 text-indigo-600" />
                 <h3 className="font-bold text-slate-900 text-base">
-                  How to Connect Supabase Database
+                  Supabase &amp; Redis Middleman Buffer Architecture
                 </h3>
               </div>
               <button
                 onClick={() => setIsDbGuideOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1"
+                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Connection Test Box */}
+            {/* Redis & DB Live Test Box */}
             <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
               <div className="flex items-center justify-between">
                 <span className="font-bold text-slate-800">Connection Status:</span>
                 <div className="flex items-center gap-2">
-                  {isSupabaseConfigured && (
-                    <button
-                      onClick={handleSyncAllToSupabase}
-                      disabled={isSyncingAll}
-                      className="px-3 py-1 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
-                    >
-                      <CloudUpload className="w-3 h-3" />
-                      <span>{isSyncingAll ? 'Syncing...' : 'Sync All Data Now'}</span>
-                    </button>
-                  )}
+                  <button
+                    onClick={handleFlushRedisNow}
+                    disabled={isFlushingRedis}
+                    className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
+                  >
+                    <Zap className="w-3 h-3" />
+                    <span>{isFlushingRedis ? 'Syncing...' : 'Flush Redis Buffer'}</span>
+                  </button>
                   <button
                     onClick={handleTestDatabase}
                     disabled={testingDb}
                     className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] cursor-pointer"
                   >
-                    {testingDb ? 'Testing...' : 'Test Connection'}
+                    {testingDb ? 'Testing...' : 'Test DB Connection'}
                   </button>
                 </div>
               </div>
-              {dbStatus ? (
+
+              {/* Status Display */}
+              <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Redis Temporary Queue:</span>
+                  <span className="font-mono font-bold text-amber-700">
+                    {redisStatus?.buffered_marks_count ?? 0} marks pending
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Redis Rate Limiter:</span>
+                  <span className="font-bold text-emerald-700">120 requests/minute max</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Supabase Rate Limiter:</span>
+                  <span className="font-bold text-emerald-700">30 batch syncs/minute max</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Auto-Sync Cycle:</span>
+                  <span className="font-bold text-indigo-700">Every 10-15 seconds (12s interval)</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-slate-600">Cache Invalidation:</span>
+                  <span className="font-bold text-slate-900">Automatically cleared from Redis upon DB commit</span>
+                </div>
+              </div>
+
+              {dbStatus && (
                 <div className={`p-2.5 rounded-lg border text-xs ${
                   dbStatus.connected
                     ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
                     : 'bg-amber-50 border-amber-200 text-amber-900'
                 }`}>
                   <p className="font-bold">{dbStatus.message}</p>
-                  {dbStatus.rowCount !== undefined && (
-                    <p className="text-[11px] mt-0.5 opacity-90">
-                      Current rows in Supabase <code>assessments</code> table: <strong>{dbStatus.rowCount}</strong>.
-                      {dbStatus.rowCount === 0 && ' (Click "Sync All Data Now" above to populate all classroom marks).'}
-                    </p>
-                  )}
                 </div>
-              ) : (
-                <p className="text-slate-500">
-                  Click 'Test Connection' to test connectivity to your Supabase project.
-                </p>
               )}
             </div>
 
@@ -1050,7 +1461,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               <div className="flex items-center justify-between">
                 <span className="font-bold text-amber-950 flex items-center gap-1.5">
                   <AlertTriangle className="w-4 h-4 text-amber-600" />
-                  Marks edited but not showing in Supabase? (गुणांची नोंद न दिसल्यास):
+                  Supabase RLS Policy Configuration:
                 </span>
                 <button
                   type="button"
@@ -1066,9 +1477,6 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                   <span>{copiedSql ? 'Copied!' : 'Copy SQL Fix'}</span>
                 </button>
               </div>
-              <p className="text-amber-900 text-[11px] leading-relaxed">
-                Supabase <strong>Row Level Security (RLS)</strong> may block anonymous writes, or the table was initially empty. Run this in your Supabase <strong>SQL Editor</strong>:
-              </p>
               <pre className="bg-slate-900 text-amber-300 p-2 rounded-lg text-[10px] font-mono overflow-x-auto select-all">
 {`ALTER TABLE public.assessments DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.remedial_plans DISABLE ROW LEVEL SECURITY;
@@ -1077,62 +1485,12 @@ GRANT ALL ON TABLE public.remedial_plans TO anon, authenticated, service_role;`}
               </pre>
             </div>
 
-            {/* Step-by-Step Instructions */}
-            <div className="space-y-3 text-xs text-slate-700 leading-relaxed">
-              <h4 className="font-bold text-slate-900 text-sm">
-                Steps to Connect Supabase (प्रक्रिया व पायऱ्या):
-              </h4>
-
-              <div className="space-y-2">
-                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
-                  <span className="font-bold text-indigo-950 block">पायरी १: Supabase मध्ये मोफत प्रोजेक्ट तयार करा</span>
-                  <p className="text-slate-600 mt-0.5">
-                    1. <a href="https://supabase.com" target="_blank" rel="noreferrer" className="text-brand-600 underline font-semibold">supabase.com</a> वर जा आणि नवीन प्रोजेक्ट तयार करा (उदा. <code>learngap-ai</code>).
-                  </p>
-                </div>
-
-                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
-                  <span className="font-bold text-indigo-950 block">पायरी २: SQL Schema चालवा (Run Schema)</span>
-                  <p className="text-slate-600 mt-0.5">
-                    2. Supabase डॅशबोर्डमध्ये <strong>SQL Editor</strong> उघडा. आपल्या रिपॉझिटरीमधील <code>supabase/schema.sql</code> फाइलची संपूर्ण संहिता कॉपी करून SQL Editor मध्ये पेस्ट करा आणि <strong>Run</strong> बटनावर क्लिक करा.
-                  </p>
-                </div>
-
-                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
-                  <span className="font-bold text-indigo-950 block">पायरी ३: API Credentials कॉपी करा</span>
-                  <p className="text-slate-600 mt-0.5">
-                    3. <strong>Project Settings &gt; API</strong> मध्ये जा आणि खालील माहिती कॉपी करा:
-                    <br />• <strong>Project URL</strong> (उदा. <code>https://xyz.supabase.co</code>)
-                    <br />• <strong>anon public API Key</strong>
-                  </p>
-                </div>
-
-                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
-                  <span className="font-bold text-indigo-950 block">पायरी ४: .env फाइलमध्ये कीज भरा</span>
-                  <p className="text-slate-600 mt-0.5">
-                    4. प्रोजेक्टच्या मुख्य डिरेक्टरीमधील <code>.env</code> फाइल उघडा आणि या व्हॅल्यूज भरा:
-                  </p>
-                  <pre className="bg-slate-900 text-emerald-400 p-2 rounded-lg mt-1 text-[11px] font-mono overflow-x-auto">
-{`VITE_SUPABASE_URL=https://your-project.supabase.co
-VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5c...`}
-                  </pre>
-                </div>
-
-                <div className="p-3 bg-indigo-50/60 rounded-xl border border-indigo-100">
-                  <span className="font-bold text-indigo-950 block">पायरी ५: लाइव्ह रिअल-टाइम सिंक सुरू करा</span>
-                  <p className="text-slate-600 mt-0.5">
-                    5. प्रोजेक्ट रीस्टार्ट करा (<code>npm run dev</code>). सर्व गुण बदल, नवीन नोंदी आणि उपचारात्मक योजना थेट Supabase मध्ये रिअल-टाइम सिंक होतील!
-                  </p>
-                </div>
-              </div>
-            </div>
-
             <div className="flex justify-end pt-2 border-t border-slate-100">
               <button
                 onClick={() => setIsDbGuideOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs"
+                className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs cursor-pointer"
               >
-                समजले (Got it)
+                Close (बंद करा)
               </button>
             </div>
           </div>

@@ -18,6 +18,9 @@ class Settings:
     HOST: str = os.getenv("HOST", "0.0.0.0")
     PORT: int = int(os.getenv("PORT", "8000"))
     
+    # Redis Configuration (Temporary buffer & rate limiter)
+    REDIS_URL: str = os.getenv("REDIS_URL", "redis://localhost:6379/0")
+    
     # School context (Kopargaon taluka, Ahilyanagar)
     DEFAULT_SCHOOL_ID: str = "ZP-KPG-01"
     DEFAULT_SCHOOL_NAME: str = "जि. प. प्राथमिक शाळा, कोपरगाव"

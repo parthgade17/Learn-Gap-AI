@@ -19,7 +19,7 @@ export const NipunBharatBadge: React.FC<NipunBharatBadgeProps> = ({
 
   return (
     <div
-      className={`inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-linear-to-r from-amber-50 via-orange-50 to-emerald-50 shadow-2xs ${
+      className={`inline-flex items-center gap-2 rounded-lg border border-amber-200 bg-gradient-to-r from-amber-50 via-orange-50 to-emerald-50 shadow-2xs ${
         isSm ? 'px-2 py-1' : isLg ? 'px-3.5 py-2' : 'px-2.5 py-1.5'
       } ${className}`}
       title="निपुण भारत मिशन • राष्ट्रीय पायाभूत साक्षरता व संख्याज्ञान अभियान (NIPUN Bharat & FLN)"
@@ -27,7 +27,7 @@ export const NipunBharatBadge: React.FC<NipunBharatBadgeProps> = ({
       {/* Tricolor Emblem Circle */}
       <div className="relative w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white border border-slate-200 flex items-center justify-center shrink-0 shadow-2xs overflow-hidden">
         {/* Tricolor background arcs */}
-        <div className="absolute inset-0 bg-linear-to-b from-[#FF9933] via-white to-[#138808] opacity-25" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#FF9933] via-white to-[#138808] opacity-25" />
         {/* Open Book & Sun Vector */}
         <svg
           viewBox="0 0 24 24"

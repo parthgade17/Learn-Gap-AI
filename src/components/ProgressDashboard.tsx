@@ -266,24 +266,24 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           2. Head Teacher (Entire School Class-Wise & Student Wise)
       ========================================================================= */}
       {userRole === 'teacher' ? (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 sm:p-5 rounded-2xl flex flex-col md:flex-row md:items-center justify-between gap-4 text-xs">
-          <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-            <span className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs font-black text-sm tracking-wide self-start sm:self-auto">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-xs">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
+            <span className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs font-black text-sm tracking-wide shrink-0">
               Grade {activeGrade}-A
             </span>
-            <div>
-              <p className="font-bold text-blue-950 text-sm">
+            <div className="min-w-0">
+              <p className="font-bold text-blue-950 text-sm whitespace-nowrap">
                 Classroom Teacher Command Center
               </p>
-              <p className="text-blue-700 text-[11px] mt-0.5">
+              <p className="text-blue-700 text-[11px] mt-0.5 truncate">
                 Class Section: Grade {activeGrade}-A • {filteredStudents.length} Students • 7 Core Subjects • Continuous Remedial Tracking
               </p>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-2.5">
+          <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
             {/* Drag down option for selecting class: 5th A, 6th A, 7th A, 8th A */}
-            <div className="flex items-center gap-2 bg-white px-3 py-1.5 rounded-xl border border-blue-200 shadow-2xs">
+            <div className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-blue-200 shadow-2xs shrink-0">
               <Filter className="w-3.5 h-3.5 text-blue-700 shrink-0" />
               <label htmlFor="teacher-class-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
                 Select Class:
@@ -292,31 +292,33 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 id="teacher-class-select"
                 value={activeGrade}
                 onChange={(e) => handleClassSelect(e.target.value)}
-                className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2.5 bg-white text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs"
+                className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs whitespace-nowrap"
               >
-                <option value="5">Class 5th - A (इयत्ता ५ वी - अ)</option>
-                <option value="6">Class 6th - A (इयत्ता ६ वी - अ)</option>
-                <option value="7">Class 7th - A (इयत्ता ७ वी - अ)</option>
-                <option value="8">Class 8th - A (इयत्ता ८ वी - अ)</option>
+                <option value="5">Class 5th - A</option>
+                <option value="6">Class 6th - A</option>
+                <option value="7">Class 7th - A</option>
+                <option value="8">Class 8th - A</option>
               </select>
             </div>
 
-            {onNavigateToAssessment && (
-              <button
-                onClick={onNavigateToAssessment}
-                className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-700 font-semibold hover:bg-blue-100 transition shadow-xs text-xs"
-              >
-                + Edit Marks
-              </button>
-            )}
-            {onNavigateToPlanner && (
-              <button
-                onClick={onNavigateToPlanner}
-                className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition shadow-xs text-xs"
-              >
-                Open Remedial Plan
-              </button>
-            )}
+            <div className="flex items-center gap-2 shrink-0">
+              {onNavigateToAssessment && (
+                <button
+                  onClick={onNavigateToAssessment}
+                  className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-700 font-bold hover:bg-blue-100 transition shadow-xs text-xs whitespace-nowrap cursor-pointer"
+                >
+                  + Edit Marks
+                </button>
+              )}
+              {onNavigateToPlanner && (
+                <button
+                  onClick={onNavigateToPlanner}
+                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-xs text-xs whitespace-nowrap cursor-pointer"
+                >
+                  Open Remedial Plan
+                </button>
+              )}
+            </div>
           </div>
         </div>
       ) : (
@@ -502,52 +504,52 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
       {/* =========================================================================
           STATIC DATASET DOWNLOADS (5th A, 6th A, 7th A, 8th A)
       ========================================================================= */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-sm space-y-3 border border-indigo-900/50">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div>
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-sm border border-indigo-900/50">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
+          <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-indigo-500/30 text-indigo-300 rounded-lg">
+              <span className="p-1.5 bg-indigo-500/30 text-indigo-300 rounded-lg shrink-0">
                 <FileSpreadsheet className="w-4 h-4" />
               </span>
-              <h4 className="font-bold text-sm text-white">
-                School Static Marksheet Datasets (5th A, 6th A, 7th A, 8th A)
+              <h4 className="font-bold text-sm text-white whitespace-nowrap">
+                School Static Marksheet Datasets (Classes 5 to 8)
               </h4>
             </div>
-            <p className="text-xs text-indigo-200/80 mt-1">
+            <p className="text-xs text-indigo-200/80 mt-1 line-clamp-1">
               Download complete, deterministic CSV datasets with 10 learners per class, 7 core subjects, baseline and follow-up scores.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 shrink-0">
             <a
               href="/datasets/class_5th_A_marksheet.csv"
               download="class_5th_A_marksheet.csv"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
               <span>5th A (.csv)</span>
             </a>
             <a
               href="/datasets/class_6th_A_marksheet.csv"
               download="class_6th_A_marksheet.csv"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
               <span>6th A (.csv)</span>
             </a>
             <a
               href="/datasets/class_7th_A_marksheet.csv"
               download="class_7th_A_marksheet.csv"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
               <span>7th A (.csv)</span>
             </a>
             <a
               href="/datasets/class_8th_A_marksheet.csv"
               download="class_8th_A_marksheet.csv"
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300" />
+              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
               <span>8th A (.csv)</span>
             </a>
           </div>

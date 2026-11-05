@@ -41,12 +41,12 @@ export const GovAccessibilityToolbar: React.FC<GovAccessibilityToolbarProps> = (
       <div className="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-1.5 flex flex-wrap items-center justify-between gap-y-1.5 gap-x-3">
         
         {/* Left: Official Bilingual Government Title */}
-        <div className="flex items-center gap-2 text-slate-200 font-medium">
+        <div className="flex items-center gap-2 text-slate-200 font-medium whitespace-nowrap">
           <span className="font-semibold text-white tracking-wide">
             {t('gov.goi') || 'भारत सरकार | Government of India'}
           </span>
-          <span className="text-slate-400 hidden md:inline">•</span>
-          <span className="hidden md:inline text-slate-300">
+          <span className="text-slate-400 hidden xl:inline">•</span>
+          <span className="hidden xl:inline text-slate-300">
             {t('gov.stateGov') || 'शालेय शिक्षण व क्रीडा विभाग, महाराष्ट्र शासन'}
           </span>
         </div>

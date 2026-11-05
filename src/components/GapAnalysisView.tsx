@@ -88,7 +88,7 @@ export const GapAnalysisView: React.FC<GapAnalysisViewProps> = ({
           <div className="flex items-center gap-1.5 bg-slate-100 px-2.5 py-1.5 rounded-xl border border-slate-200">
             <Filter className="w-3.5 h-3.5 text-slate-600 shrink-0" />
             <label htmlFor="gap-class-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
-              {t('dashboard.selectClass')}
+              {t('dashboard.selectClass') || 'Select Class'}
             </label>
             <select
               id="gap-class-select"

@@ -91,7 +91,7 @@ export const Navigation: React.FC<NavigationProps> = ({
                   )}
                   {/* Active Tricolor Bottom Accent Strip */}
                   {isActive && (
-                    <div className="absolute -bottom-2 left-2 right-2 h-0.5 rounded-full bg-linear-to-r from-[#FF9933] via-white to-[#138808]" />
+                    <div className="absolute bottom-0 left-3 right-3 h-1 rounded-t-sm bg-gradient-to-r from-[#FF9933] via-white to-[#138808]" />
                   )}
                 </button>
               );

@@ -39,7 +39,7 @@ export const InstallAppBanner: React.FC<InstallAppBannerProps> = ({
   };
 
   return (
-    <div className="no-print bg-gradient-to-r from-emerald-800 via-teal-800 to-brand-800 text-white px-3 sm:px-4 py-2 sm:py-2.5 shadow-md sticky top-16 sm:top-20 z-20">
+    <div className="no-print bg-gradient-to-r from-emerald-800 via-teal-800 to-brand-800 text-white px-3 sm:px-4 py-2 sm:py-2.5 shadow-xs border-b border-emerald-900/40">
       <div className="max-w-7xl mx-auto flex items-center justify-between gap-2 sm:gap-4 text-xs sm:text-sm">
         
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">

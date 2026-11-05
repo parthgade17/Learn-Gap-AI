@@ -1,6 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { ClipboardList, Sparkles, FileText, BarChart3, ShieldCheck } from 'lucide-react';
+import { UserRole } from '../types';
 
 export type ActiveTab = 'assessment' | 'gaps' | 'planner' | 'dashboard' | 'privacy';
 
@@ -8,16 +9,19 @@ interface NavigationProps {
   activeTab: ActiveTab;
   onTabChange: (tab: ActiveTab) => void;
   urgentGapsCount: number;
+  userRole?: UserRole;
 }
 
 export const Navigation: React.FC<NavigationProps> = ({
   activeTab,
   onTabChange,
   urgentGapsCount,
+  userRole = 'teacher',
 }) => {
   const { t } = useTranslation();
+  const isHeadTeacher = userRole === 'head_teacher';
 
-  const navItems = [
+  const allNavItems = [
     {
       id: 'assessment' as ActiveTab,
       label: t('nav.assessment'),
@@ -39,7 +43,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     },
     {
       id: 'dashboard' as ActiveTab,
-      label: t('nav.dashboard'),
+      label: isHeadTeacher ? 'शाळा प्रगती डॅशबोर्ड (Progress Dashboard)' : t('nav.dashboard'),
       mobileLabel: 'प्रगती / Progress',
       icon: BarChart3,
     },
@@ -50,6 +54,11 @@ export const Navigation: React.FC<NavigationProps> = ({
       icon: ShieldCheck,
     },
   ];
+
+  // For Head Teacher: ONLY Progress Dashboard is visible, no other dashboards
+  const navItems = isHeadTeacher
+    ? allNavItems.filter((item) => item.id === 'dashboard')
+    : allNavItems;
 
   return (
     <>
@@ -106,7 +115,10 @@ export const Navigation: React.FC<NavigationProps> = ({
         role="navigation"
         aria-label="Mobile Bottom Navigation"
       >
-        <div className="grid grid-cols-5 gap-1" role="tablist">
+        <div
+          className={`grid gap-1 ${isHeadTeacher ? 'grid-cols-1 max-w-xs mx-auto' : 'grid-cols-5'}`}
+          role="tablist"
+        >
           {navItems.map((item) => {
             const Icon = item.icon;
             const isActive = activeTab === item.id;

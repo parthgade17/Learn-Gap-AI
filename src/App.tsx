@@ -102,10 +102,20 @@ export const App: React.FC = () => {
 
   const handleRoleChange = (role: UserRole) => {
     setCurrentRole(role);
-    if (role === 'teacher' && selectedClassGrade === 'ALL') {
+    if (role === 'head_teacher') {
+      setActiveTab('dashboard');
+      setSelectedClassGrade('ALL');
+    } else if (role === 'teacher' && selectedClassGrade === 'ALL') {
       setSelectedClassGrade('6');
     }
   };
+
+  // Guard: when logged in as Head Teacher, strictly ensure ONLY the Progress Dashboard is active
+  useEffect(() => {
+    if (currentRole === 'head_teacher' && activeTab !== 'dashboard') {
+      setActiveTab('dashboard');
+    }
+  }, [currentRole, activeTab]);
 
   // Initialize Dexie.js offline DB, PWA install prompts, and Realtime Supabase listeners
   useEffect(() => {
@@ -298,8 +308,15 @@ export const App: React.FC = () => {
       {/* 3. Responsive Institutional Navigation Tabs */}
       <Navigation
         activeTab={activeTab}
-        onTabChange={setActiveTab}
+        onTabChange={(tab) => {
+          if (currentRole === 'head_teacher') {
+            setActiveTab('dashboard');
+          } else {
+            setActiveTab(tab);
+          }
+        }}
         urgentGapsCount={urgentGapsCount}
+        userRole={currentRole}
       />
 
       {/* 4. One-Tap PWA Install App Banner */}
@@ -341,7 +358,21 @@ export const App: React.FC = () => {
               setCurrentRole('head_teacher');
             }}
           />
+        ) : currentRole === 'head_teacher' ? (
+          /* For Head Teacher: ONLY Progress Dashboard is visible, no other dashboards */
+          <HeadTeacherDashboard
+            students={students}
+            competencies={competencies}
+            assessments={assessments}
+            plans={plans}
+            userRole={currentRole}
+            onOpenFacultyProfile={(fid) => {
+              setActiveFacultyProfileId(fid);
+              window.location.hash = `#faculty/${fid}`;
+            }}
+          />
         ) : (
+          /* For Classroom Teacher: All standard workflow dashboards available */
           <>
             {activeTab === 'assessment' && (
               <AssessmentManager
@@ -384,33 +415,17 @@ export const App: React.FC = () => {
             )}
 
             {activeTab === 'dashboard' && (
-              currentRole === 'head_teacher' ? (
-                <HeadTeacherDashboard
-                  students={students}
-                  competencies={competencies}
-                  assessments={assessments}
-                  plans={plans}
-                  userRole={currentRole}
-                  onOpenFacultyProfile={(fid) => {
-                    setActiveFacultyProfileId(fid);
-                    window.location.hash = `#faculty/${fid}`;
-                  }}
-                  onNavigateToAssessment={() => setActiveTab('assessment')}
-                  onNavigateToPlanner={() => setActiveTab('planner')}
-                />
-              ) : (
-                <ProgressDashboard
-                  students={students}
-                  competencies={competencies}
-                  assessments={assessments}
-                  plans={plans}
-                  userRole={currentRole}
-                  selectedClassGrade={selectedClassGrade}
-                  onClassGradeChange={setSelectedClassGrade}
-                  onNavigateToAssessment={() => setActiveTab('assessment')}
-                  onNavigateToPlanner={() => setActiveTab('planner')}
-                />
-              )
+              <ProgressDashboard
+                students={students}
+                competencies={competencies}
+                assessments={assessments}
+                plans={plans}
+                userRole={currentRole}
+                selectedClassGrade={selectedClassGrade}
+                onClassGradeChange={setSelectedClassGrade}
+                onNavigateToAssessment={() => setActiveTab('assessment')}
+                onNavigateToPlanner={() => setActiveTab('planner')}
+              />
             )}
 
             {activeTab === 'privacy' && (

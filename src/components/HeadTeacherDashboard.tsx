@@ -17,8 +17,6 @@ interface HeadTeacherDashboardProps {
   plans: RemedialPlan[];
   userRole?: UserRole;
   onOpenFacultyProfile: (facultyId: string) => void;
-  onNavigateToAssessment?: () => void;
-  onNavigateToPlanner?: () => void;
 }
 
 export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
@@ -31,7 +29,7 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
   const { i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
 
-  const [activeTab, setActiveTab] = useState<'faculty' | 'entire_progress'>('faculty');
+  const [activeTab, setActiveTab] = useState<'entire_progress' | 'faculty'>('entire_progress');
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSubject, setFilterSubject] = useState<string>('ALL');
   const [filterGrade, setFilterGrade] = useState<string>('ALL');
@@ -194,25 +192,25 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
         {/* View Switcher Tabs */}
         <div className="flex items-center gap-2 pt-2 border-t border-white/10 overflow-x-auto text-xs">
           <button
-            onClick={() => setActiveTab('faculty')}
-            className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap ${
-              activeTab === 'faculty'
-                ? 'bg-white text-green-950 shadow-md'
-                : 'bg-white/10 text-white hover:bg-white/20'
-            }`}
-          >
-            <span>1. Available Faculty &amp; Subjects ({flattenedCards.length} Subject Cards)</span>
-          </button>
-
-          <button
             onClick={() => setActiveTab('entire_progress')}
-            className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap cursor-pointer ${
               activeTab === 'entire_progress'
                 ? 'bg-white text-green-950 shadow-md'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
-            <span>2. Entire School Progress Dashboard</span>
+            <span>1. Entire School Progress Dashboard (सर्व शाळा प्रगती डॅशबोर्ड)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('faculty')}
+            className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap cursor-pointer ${
+              activeTab === 'faculty'
+                ? 'bg-white text-green-950 shadow-md'
+                : 'bg-white/10 text-white hover:bg-white/20'
+            }`}
+          >
+            <span>2. Available Faculty &amp; Subject Roster ({flattenedCards.length} Subject Cards)</span>
           </button>
         </div>
       </div>

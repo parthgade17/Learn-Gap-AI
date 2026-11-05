@@ -1,9 +1,9 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
-import { ClipboardList, Sparkles, FileText, BarChart3, ShieldCheck } from 'lucide-react';
+import { ClipboardList, Sparkles, FileText, BarChart3, ShieldCheck, UserCheck } from 'lucide-react';
 import { UserRole } from '../types';
 
-export type ActiveTab = 'assessment' | 'gaps' | 'planner' | 'dashboard' | 'privacy';
+export type ActiveTab = 'assessment' | 'gaps' | 'planner' | 'dashboard' | 'privacy' | 'student_progress';
 
 interface NavigationProps {
   activeTab: ActiveTab;
@@ -43,7 +43,7 @@ export const Navigation: React.FC<NavigationProps> = ({
     },
     {
       id: 'dashboard' as ActiveTab,
-      label: isHeadTeacher ? 'शाळा प्रगती डॅशबोर्ड (Progress Dashboard)' : t('nav.dashboard'),
+      label: t('nav.dashboard'),
       mobileLabel: 'प्रगती / Progress',
       icon: BarChart3,
     },
@@ -55,10 +55,29 @@ export const Navigation: React.FC<NavigationProps> = ({
     },
   ];
 
-  // For Head Teacher: ONLY Progress Dashboard is visible, no other dashboards
-  const navItems = isHeadTeacher
-    ? allNavItems.filter((item) => item.id === 'dashboard')
-    : allNavItems;
+  // For Head Teacher: ONLY Student Progress and School Progress dashboards are visible
+  const headTeacherNavItems: Array<{
+    id: ActiveTab;
+    label: string;
+    mobileLabel: string;
+    icon: React.ComponentType<{ className?: string }>;
+    badge?: number;
+  }> = [
+    {
+      id: 'student_progress' as ActiveTab,
+      label: 'विद्यार्थी प्रगती (Student Progress)',
+      mobileLabel: 'विद्यार्थी / Student',
+      icon: UserCheck,
+    },
+    {
+      id: 'dashboard' as ActiveTab,
+      label: 'शाळा प्रगती डॅशबोर्ड (School Progress)',
+      mobileLabel: 'शाळा / School',
+      icon: BarChart3,
+    },
+  ];
+
+  const navItems = isHeadTeacher ? headTeacherNavItems : allNavItems;
 
   return (
     <>
@@ -116,7 +135,7 @@ export const Navigation: React.FC<NavigationProps> = ({
         aria-label="Mobile Bottom Navigation"
       >
         <div
-          className={`grid gap-1 ${isHeadTeacher ? 'grid-cols-1 max-w-xs mx-auto' : 'grid-cols-5'}`}
+          className={`grid gap-1 ${isHeadTeacher ? 'grid-cols-2 max-w-sm mx-auto' : 'grid-cols-5'}`}
           role="tablist"
         >
           {navItems.map((item) => {

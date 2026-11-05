@@ -103,17 +103,18 @@ export const App: React.FC = () => {
   const handleRoleChange = (role: UserRole) => {
     setCurrentRole(role);
     if (role === 'head_teacher') {
-      setActiveTab('dashboard');
+      setActiveTab('student_progress');
       setSelectedClassGrade('ALL');
     } else if (role === 'teacher' && selectedClassGrade === 'ALL') {
       setSelectedClassGrade('6');
+      setActiveTab('dashboard');
     }
   };
 
-  // Guard: when logged in as Head Teacher, strictly ensure ONLY the Progress Dashboard is active
+  // Guard: when logged in as Head Teacher, strictly ensure ONLY the Student Progress or School Progress Dashboard is active
   useEffect(() => {
-    if (currentRole === 'head_teacher' && activeTab !== 'dashboard') {
-      setActiveTab('dashboard');
+    if (currentRole === 'head_teacher' && activeTab !== 'dashboard' && activeTab !== 'student_progress') {
+      setActiveTab('student_progress');
     }
   }, [currentRole, activeTab]);
 
@@ -310,7 +311,9 @@ export const App: React.FC = () => {
         activeTab={activeTab}
         onTabChange={(tab) => {
           if (currentRole === 'head_teacher') {
-            setActiveTab('dashboard');
+            if (tab === 'student_progress' || tab === 'dashboard') {
+              setActiveTab(tab);
+            }
           } else {
             setActiveTab(tab);
           }
@@ -359,13 +362,21 @@ export const App: React.FC = () => {
             }}
           />
         ) : currentRole === 'head_teacher' ? (
-          /* For Head Teacher: ONLY Progress Dashboard is visible, no other dashboards */
+          /* For Head Teacher: ONLY Student Progress and School Progress dashboards are visible */
           <HeadTeacherDashboard
             students={students}
             competencies={competencies}
             assessments={assessments}
             plans={plans}
             userRole={currentRole}
+            activeSubTab={activeTab === 'dashboard' ? 'entire_progress' : 'student_progress'}
+            onSubTabChange={(subTab) => {
+              if (subTab === 'student_progress') {
+                setActiveTab('student_progress');
+              } else {
+                setActiveTab('dashboard');
+              }
+            }}
             onOpenFacultyProfile={(fid) => {
               setActiveFacultyProfileId(fid);
               window.location.hash = `#faculty/${fid}`;

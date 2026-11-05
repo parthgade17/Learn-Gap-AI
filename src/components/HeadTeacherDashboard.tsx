@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Search,
@@ -9,6 +9,7 @@ import { UserRole, Student, Competency, AssessmentRecord, RemedialPlan } from '.
 import { SCHOOL_FACULTY, FacultyProfile, FacultyAssignment } from '../data/facultyData';
 import { getSubjectName, formatClassDisplay, ALL_SUBJECTS } from '../data/curriculumData';
 import { calculateRemediationMetrics } from '../engine/gapEngine';
+import { HeadTeacherStudentProgressView } from './HeadTeacherStudentProgressView';
 
 interface HeadTeacherDashboardProps {
   students: Student[];
@@ -16,6 +17,8 @@ interface HeadTeacherDashboardProps {
   assessments: AssessmentRecord[];
   plans: RemedialPlan[];
   userRole?: UserRole;
+  activeSubTab?: 'student_progress' | 'entire_progress' | 'faculty';
+  onSubTabChange?: (tab: 'student_progress' | 'entire_progress' | 'faculty') => void;
   onOpenFacultyProfile: (facultyId: string) => void;
 }
 
@@ -24,12 +27,28 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
   competencies,
   assessments,
   plans,
+  activeSubTab,
+  onSubTabChange,
   onOpenFacultyProfile,
 }) => {
   const { i18n } = useTranslation();
   const currentLang = i18n.language || 'en';
 
-  const [activeTab, setActiveTab] = useState<'entire_progress' | 'faculty'>('entire_progress');
+  const [internalTab, setInternalTab] = useState<'student_progress' | 'entire_progress' | 'faculty'>(
+    activeSubTab || 'student_progress'
+  );
+
+  useEffect(() => {
+    if (activeSubTab) {
+      setInternalTab(activeSubTab);
+    }
+  }, [activeSubTab]);
+
+  const activeTab = activeSubTab || internalTab;
+  const handleTabChange = (tab: 'student_progress' | 'entire_progress' | 'faculty') => {
+    setInternalTab(tab);
+    onSubTabChange?.(tab);
+  };
   const [searchQuery, setSearchQuery] = useState('');
   const [filterSubject, setFilterSubject] = useState<string>('ALL');
   const [filterGrade, setFilterGrade] = useState<string>('ALL');
@@ -192,31 +211,54 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
         {/* View Switcher Tabs */}
         <div className="flex items-center gap-2 pt-2 border-t border-white/10 overflow-x-auto text-xs">
           <button
-            onClick={() => setActiveTab('entire_progress')}
+            onClick={() => handleTabChange('student_progress')}
+            className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap cursor-pointer ${
+              activeTab === 'student_progress'
+                ? 'bg-white text-green-950 shadow-md'
+                : 'bg-white/10 text-white hover:bg-white/20'
+            }`}
+          >
+            <span>१. विद्यार्थी प्रगती डॅशबोर्ड (Student Progress)</span>
+          </button>
+
+          <button
+            onClick={() => handleTabChange('entire_progress')}
             className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap cursor-pointer ${
               activeTab === 'entire_progress'
                 ? 'bg-white text-green-950 shadow-md'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
-            <span>1. Entire School Progress Dashboard (सर्व शाळा प्रगती डॅशबोर्ड)</span>
+            <span>२. सर्व शाळा प्रगती डॅशबोर्ड (Entire School Progress)</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('faculty')}
+            onClick={() => handleTabChange('faculty')}
             className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap cursor-pointer ${
               activeTab === 'faculty'
                 ? 'bg-white text-green-950 shadow-md'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
-            <span>2. Available Faculty &amp; Subject Roster ({flattenedCards.length} Subject Cards)</span>
+            <span>३. शिक्षक व विषय यादी ({flattenedCards.length} Subject Cards)</span>
           </button>
         </div>
       </div>
 
       {/* =========================================================================
-          VIEW 1: AVAILABLE FACULTY IN SCHOOL (SEPARATE CARD PER SUBJECT)
+          VIEW 1: STUDENT PROGRESS DASHBOARD (CLASS SELECTION, STUDENT ROSTER, ALL SUBJECTS REPORT)
+      ========================================================================= */}
+      {activeTab === 'student_progress' && (
+        <HeadTeacherStudentProgressView
+          students={students}
+          competencies={competencies}
+          assessments={assessments}
+          plans={plans}
+        />
+      )}
+
+      {/* =========================================================================
+          VIEW 2: AVAILABLE FACULTY IN SCHOOL (SEPARATE CARD PER SUBJECT)
       ========================================================================= */}
       {activeTab === 'faculty' && (
         <div className="space-y-6">

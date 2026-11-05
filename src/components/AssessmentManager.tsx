@@ -646,7 +646,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               {/* Select Class */}
               <div>
                 <label className="block text-xs font-semibold text-slate-700 mb-1">
-                  {t('dashboard.selectClass')}
+                  {t('dashboard.selectClass') || 'Select Class'}
                 </label>
                 <select
                   value={formClassGrade}

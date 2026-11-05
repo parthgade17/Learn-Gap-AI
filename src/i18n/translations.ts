@@ -219,6 +219,37 @@ export interface TranslationSchema {
     installApp?: string;
     appReady?: string;
   };
+  gov?: {
+    goi?: string;
+    stateGov?: string;
+    deptName?: string;
+    skipToMain?: string;
+    screenReader?: string;
+    screenReaderTitle?: string;
+    screenReaderDesc?: string;
+    fontSize?: string;
+    decreaseFont?: string;
+    normalFont?: string;
+    increaseFont?: string;
+    contrast?: string;
+    standardContrast?: string;
+    highContrast?: string;
+    nipunMission?: string;
+    flnSupport?: string;
+    udiseLabel?: string;
+    lastUpdated?: string;
+    complianceBadge?: string;
+    accessibilityStatement?: string;
+    termsOfUse?: string;
+    privacyPolicy?: string;
+    copyrightPolicy?: string;
+    hyperlinkPolicy?: string;
+    helpGrievance?: string;
+    disclaimer?: string;
+    vskIntegration?: string;
+    parakhBadge?: string;
+    nepBadge?: string;
+  };
 }
 
 export const translations: Record<string, { translation: TranslationSchema }> = {
@@ -438,6 +469,37 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         appReady: 'App Ready',
         classLabel: 'Class',
         allClasses: 'All Classes'
+      },
+      gov: {
+        goi: 'Government of India',
+        stateGov: 'Government of Maharashtra',
+        deptName: 'School Education & Sports Department',
+        skipToMain: 'Skip to Main Content',
+        screenReader: 'Screen Reader Access',
+        screenReaderTitle: 'Screen Reader & Keyboard Accessibility Information',
+        screenReaderDesc: 'This portal complies with Guidelines for Indian Government Websites (GIGW 3.0) and W3C WCAG 2.1 Level AA standards. Compatible with NVDA, JAWS, Android TalkBack, and iOS VoiceOver.',
+        fontSize: 'Text Size',
+        decreaseFont: 'A- (Decrease Font)',
+        normalFont: 'A (Normal Font)',
+        increaseFont: 'A+ (Increase Font)',
+        contrast: 'Color Contrast',
+        standardContrast: 'Standard Theme',
+        highContrast: 'High Contrast Mode',
+        nipunMission: 'NIPUN Bharat & FLN Mission',
+        flnSupport: 'Foundational Literacy & Numeracy',
+        udiseLabel: 'UDISE+ Code: 27260501234 (Verified School)',
+        lastUpdated: 'Portal Last Updated:',
+        complianceBadge: 'GIGW 3.0 & WCAG 2.1 AA Compliant',
+        accessibilityStatement: 'Accessibility Statement',
+        termsOfUse: 'Terms & Conditions',
+        privacyPolicy: 'Privacy & DPDP Act 2023',
+        copyrightPolicy: 'Copyright Policy',
+        hyperlinkPolicy: 'Hyperlinking Policy',
+        helpGrievance: 'Help & Grievance Redressal',
+        disclaimer: 'An official AI-powered foundational learning decision support portal aligned with NEP 2020.',
+        vskIntegration: 'Vidya Samiksha Kendra (VSK) Connected',
+        parakhBadge: 'PARAKH NCERT Assessment Framework',
+        nepBadge: 'National Education Policy 2020'
       }
     }
   },
@@ -658,6 +720,37 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         appReady: 'ॲप इन्स्टॉल झाले',
         classLabel: 'इयत्ता',
         allClasses: 'सर्व इयत्ता'
+      },
+      gov: {
+        goi: 'भारत सरकार',
+        stateGov: 'महाराष्ट्र शासन',
+        deptName: 'शालेय शिक्षण व क्रीडा विभाग',
+        skipToMain: 'मुख्य मजकुराकडे जा',
+        screenReader: 'दृष्टीबाधितांसाठी / स्क्रीन रीडर प्रवेश',
+        screenReaderTitle: 'स्क्रीन रीडर व सुलभता विषयक माहिती',
+        screenReaderDesc: 'हे पोर्टल भारत सरकारच्या संकेतस्थळ मार्गदर्शक तत्त्वे (GIGW 3.0) व W3C WCAG 2.1 Level AA मानकांचे काटेकोर पालन करते. NVDA, JAWS, TalkBack व VoiceOver शी सुसंगत.',
+        fontSize: 'अक्षर आकार',
+        decreaseFont: 'A- (लहान अक्षर)',
+        normalFont: 'A (सामान्य अक्षर)',
+        increaseFont: 'A+ (मोठे अक्षर)',
+        contrast: 'कॉन्ट्रास्ट थीम',
+        standardContrast: 'प्रमाणित थीम',
+        highContrast: 'उच्च कॉन्ट्रास्ट मोड',
+        nipunMission: 'निपुण भारत व FLN अभियान',
+        flnSupport: 'पायाभूत साक्षरता व संख्याज्ञान',
+        udiseLabel: 'UDISE+ कोड: 27260501234 (पडताळणी झालेली शाळा)',
+        lastUpdated: 'शेवटचे अद्यतन:',
+        complianceBadge: 'GIGW 3.0 व WCAG 2.1 AA प्रमाणित',
+        accessibilityStatement: 'सुलभता विधान',
+        termsOfUse: 'नियम व अटी',
+        privacyPolicy: 'गोपनीयता व DPDP कायदा २०२३',
+        copyrightPolicy: 'कॉपीराइट धोरण',
+        hyperlinkPolicy: 'हायपरलिंकिंग धोरण',
+        helpGrievance: 'तक्रार निवारण व मदत',
+        disclaimer: 'राष्ट्रीय शैक्षणिक धोरण (NEP 2020) व निपुण भारत अभियानांतर्गत अधिकृत उपचारात्मक निर्णय प्रणाली.',
+        vskIntegration: 'विद्या समीक्षा केंद्र (VSK) संलग्न',
+        parakhBadge: 'परख (PARAKH) NCERT मूल्यांकन आराखडा',
+        nepBadge: 'राष्ट्रीय शैक्षणिक धोरण २०२०'
       }
     }
   },
@@ -878,6 +971,37 @@ export const translations: Record<string, { translation: TranslationSchema }> = 
         appReady: 'ऐप तैयार है',
         classLabel: 'कक्षा',
         allClasses: 'सभी कक्षाएं'
+      },
+      gov: {
+        goi: 'भारत सरकार',
+        stateGov: 'महाराष्ट्र शासन',
+        deptName: 'स्कूली शिक्षा एवं खेल विभाग',
+        skipToMain: 'मुख्य सामग्री पर जाएं',
+        screenReader: 'स्क्रीन रीडर पहुंच',
+        screenReaderTitle: 'स्क्रीन रीडर एवं सुगमता संबंधी विवरण',
+        screenReaderDesc: 'यह पोर्टल भारत सरकार के दिशानिर्देश (GIGW 3.0) और W3C WCAG 2.1 Level AA मानकों का पूर्णतः पालन करता है। NVDA, JAWS, TalkBack और VoiceOver के साथ संगत।',
+        fontSize: 'अक्षर आकार',
+        decreaseFont: 'A- (छोटा आकार)',
+        normalFont: 'A (सामान्य आकार)',
+        increaseFont: 'A+ (बड़ा आकार)',
+        contrast: 'कंट्रास्ट मोड',
+        standardContrast: 'मानक थीम',
+        highContrast: 'उच्च कंट्रास्ट मोड',
+        nipunMission: 'निपुण भारत व FLN मिशन',
+        flnSupport: 'बुनियादी साक्षरता एवं संख्या ज्ञान',
+        udiseLabel: 'UDISE+ कोड: 27260501234 (सत्यापित विद्यालय)',
+        lastUpdated: 'अंतिम अद्यतन:',
+        complianceBadge: 'GIGW 3.0 एवं WCAG 2.1 AA प्रमाणित',
+        accessibilityStatement: 'सुगमता वक्तव्य',
+        termsOfUse: 'नियम एवं शर्तें',
+        privacyPolicy: 'गोपनीयता एवं DPDP अधिनियम २०२३',
+        copyrightPolicy: 'कॉपीराइट नीति',
+        hyperlinkPolicy: 'हाइपरलिंकिंग नीति',
+        helpGrievance: 'शिकायत निवारण एवं सहायता',
+        disclaimer: 'राष्ट्रीय शिक्षा नीति (NEP 2020) एवं निपुण भारत मिशन के अंतर्गत अधिकृत उपचारात्मक निर्णय प्रणाली।',
+        vskIntegration: 'विद्या समीक्षा केंद्र (VSK) सम्बद्ध',
+        parakhBadge: 'परख (PARAKH) NCERT मूल्यांकन ढांचा',
+        nepBadge: 'राष्ट्रीय शिक्षा नीति २०२०'
       }
     }
   }

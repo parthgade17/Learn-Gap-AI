@@ -13,6 +13,10 @@ import { HeadTeacherDashboard } from './components/HeadTeacherDashboard';
 import { FacultyProfileSubpage } from './components/FacultyProfileSubpage';
 import { DPDPComplianceModal } from './components/DPDPComplianceModal';
 import { PWAInstallModal } from './components/PWAInstallModal';
+import { GovAccessibilityToolbar } from './components/GovAccessibilityToolbar';
+import { GovAccessibilityModal } from './components/GovAccessibilityModal';
+import { GovFooter } from './components/GovFooter';
+import { LanguageSelectorModal } from './components/LanguageSelectorModal';
 import { UserRole, StudentGroup, AssessmentRecord, RemedialPlan } from './types';
 import { diagnoseGaps } from './engine/gapEngine';
 import {
@@ -23,7 +27,7 @@ import {
   syncRemedialPlan,
   subscribeToRealtimeChanges
 } from './lib/supabaseClient';
-import { WifiOff, Sparkles, CheckCircle2 } from 'lucide-react';
+import { WifiOff, Sparkles } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -46,6 +50,34 @@ export const App: React.FC = () => {
 
   // Dedicated Faculty Subpage Route State (#faculty/:id)
   const [activeFacultyProfileId, setActiveFacultyProfileId] = useState<string | null>(null);
+
+  // GIGW 3.0 Mandatory Accessibility States
+  const [fontScale, setFontScale] = useState<'sm' | 'normal' | 'lg'>(() => {
+    return (localStorage.getItem('gov_font_scale') as 'sm' | 'normal' | 'lg') || 'normal';
+  });
+  const [highContrast, setHighContrast] = useState<boolean>(() => {
+    return localStorage.getItem('gov_high_contrast') === 'true';
+  });
+  const [isAccessibilityModalOpen, setIsAccessibilityModalOpen] = useState<boolean>(false);
+  const [isToolbarLangModalOpen, setIsToolbarLangModalOpen] = useState<boolean>(false);
+
+  // Synchronize font scale & high contrast theme to root <html> element
+  useEffect(() => {
+    const root = document.documentElement;
+    root.classList.remove('font-scale-sm', 'font-scale-normal', 'font-scale-lg');
+    root.classList.add(`font-scale-${fontScale}`);
+    localStorage.setItem('gov_font_scale', fontScale);
+  }, [fontScale]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    if (highContrast) {
+      root.classList.add('high-contrast');
+    } else {
+      root.classList.remove('high-contrast');
+    }
+    localStorage.setItem('gov_high_contrast', String(highContrast));
+  }, [highContrast]);
 
   // Hash URL listener for deep-linking & Principal search redirection
   useEffect(() => {
@@ -236,7 +268,22 @@ export const App: React.FC = () => {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans">
       
-      {/* Header */}
+      {/* 0. GIGW 3.0 Mandatory Skip to Main Content Link (Keyboard Focused) */}
+      <a href="#main-content" className="skip-to-main-link">
+        {t('gov.skipToMain') || 'Skip to Main Content'}
+      </a>
+
+      {/* 1. GIGW 3.0 Mandatory Top Accessibility & Government Identification Toolbar */}
+      <GovAccessibilityToolbar
+        fontScale={fontScale}
+        onFontScaleChange={setFontScale}
+        highContrast={highContrast}
+        onToggleHighContrast={() => setHighContrast((prev) => !prev)}
+        onOpenAccessibilityModal={() => setIsAccessibilityModalOpen(true)}
+        onOpenLanguageModal={() => setIsToolbarLangModalOpen(true)}
+      />
+
+      {/* 2. Official Institutional Government Header */}
       <Header
         currentRole={currentRole}
         onRoleChange={handleRoleChange}
@@ -248,14 +295,14 @@ export const App: React.FC = () => {
         isInstalled={isInstalled}
       />
 
-      {/* Responsive Navigation Tabs */}
+      {/* 3. Responsive Institutional Navigation Tabs */}
       <Navigation
         activeTab={activeTab}
         onTabChange={setActiveTab}
         urgentGapsCount={urgentGapsCount}
       />
 
-      {/* One-Tap PWA Install App Banner */}
+      {/* 4. One-Tap PWA Install App Banner */}
       <InstallAppBanner
         onOpenModal={() => setIsInstallModalOpen(true)}
         installPrompt={installPrompt}
@@ -270,8 +317,14 @@ export const App: React.FC = () => {
         </div>
       )}
 
-      {/* Main Tab Content */}
-      <main className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 pb-24 sm:pb-8">
+      {/* 5. Main Tab Content (Accessible Main Landmark) */}
+      <main
+        id="main-content"
+        tabIndex={-1}
+        role="main"
+        aria-label="Portal Main Content"
+        className="flex-1 max-w-7xl w-full mx-auto p-3 sm:p-6 lg:p-8 pb-24 sm:pb-8 focus:outline-hidden"
+      >
         {activeFacultyProfileId ? (
           <FacultyProfileSubpage
             facultyId={activeFacultyProfileId}
@@ -399,18 +452,20 @@ export const App: React.FC = () => {
         isInstalled={isInstalled}
       />
 
-      {/* Footer */}
-      <footer className="no-print bg-white border-t border-slate-200 py-4 px-4 text-center text-xs text-slate-500">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>
-            {t('appName')} • {t('competitionBadge')} • {t('schoolName')}
-          </span>
-          <span className="flex items-center gap-1 text-emerald-700 font-medium">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            NIPUN Bharat &amp; PARAKH Compliant PWA
-          </span>
-        </div>
-      </footer>
+      {/* GIGW 3.0 Mandatory Institutional Government Footer */}
+      <GovFooter />
+
+      {/* GIGW 3.0 Accessibility Guide Modal */}
+      <GovAccessibilityModal
+        isOpen={isAccessibilityModalOpen}
+        onClose={() => setIsAccessibilityModalOpen(false)}
+      />
+
+      {/* Language Selector Modal (Triggered from Top Toolbar) */}
+      <LanguageSelectorModal
+        isOpen={isToolbarLangModalOpen}
+        onClose={() => setIsToolbarLangModalOpen(false)}
+      />
 
     </div>
   );

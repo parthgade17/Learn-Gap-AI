@@ -3,7 +3,7 @@ import React from 'react';
 interface EmblemOfIndiaProps {
   className?: string;
   size?: number;
-  variant?: 'gold' | 'monochrome' | 'navy';
+  variant?: 'gold' | 'monochrome' | 'navy' | 'green';
 }
 
 /**
@@ -14,12 +14,24 @@ interface EmblemOfIndiaProps {
 export const EmblemOfIndia: React.FC<EmblemOfIndiaProps> = ({
   className = '',
   size = 48,
-  variant = 'navy'
+  variant = 'green'
 }) => {
   const primaryColor =
-    variant === 'gold' ? '#B45309' : variant === 'monochrome' ? 'currentColor' : '#0B2545';
+    variant === 'gold'
+      ? '#B45309'
+      : variant === 'green'
+      ? '#064E3B'
+      : variant === 'monochrome'
+      ? 'currentColor'
+      : '#0B2545';
   const secondaryColor =
-    variant === 'gold' ? '#D97706' : variant === 'monochrome' ? 'currentColor' : '#133E87';
+    variant === 'gold'
+      ? '#D97706'
+      : variant === 'green'
+      ? '#15803D'
+      : variant === 'monochrome'
+      ? 'currentColor'
+      : '#133E87';
 
   return (
     <svg

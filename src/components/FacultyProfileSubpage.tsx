@@ -3,13 +3,8 @@ import { useTranslation } from 'react-i18next';
 import {
   ShieldAlert,
   ArrowLeft,
-  GraduationCap,
-  Mail,
-  Phone,
-  TrendingUp,
   Copy,
-  Check,
-  Lock
+  Check
 } from 'lucide-react';
 import { UserRole, Student, Competency, AssessmentRecord, RemedialPlan } from '../types';
 import { SCHOOL_FACULTY } from '../data/facultyData';
@@ -44,30 +39,29 @@ export const FacultyProfileSubpage: React.FC<FacultyProfileSubpageProps> = ({
   // "the condition must that this should only happen if the logged user is only and only principle"
   if (userRole !== 'head_teacher') {
     return (
-      <div className="max-w-3xl mx-auto my-12 p-6 sm:p-8 bg-white rounded-3xl border-2 border-rose-200 shadow-xl text-center space-y-6">
-        <div className="w-16 h-16 rounded-2xl bg-rose-100 text-rose-700 flex items-center justify-center mx-auto shadow-inner">
+      <div className="max-w-3xl mx-auto my-12 p-6 sm:p-8 bg-white rounded-3xl border-2 border-orange-300 shadow-xl text-center space-y-6">
+        <div className="w-16 h-16 rounded-2xl bg-orange-100 text-orange-800 flex items-center justify-center mx-auto shadow-xs">
           <ShieldAlert className="w-9 h-9" />
         </div>
         <div className="space-y-2">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-rose-100 text-rose-800 border border-rose-300">
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-orange-100 text-orange-950 border border-orange-300">
             RESTRICTED ACCESS • PRINCIPAL AUTHORIZATION REQUIRED
           </span>
-          <h2 className="text-2xl font-black text-slate-900 tracking-tight">
-            Security & Privacy Restriction
+          <h2 className="text-2xl font-black text-stone-900 tracking-tight">
+            Security &amp; Privacy Restriction
           </h2>
-          <p className="text-sm text-slate-600 max-w-lg mx-auto leading-relaxed">
+          <p className="text-sm text-stone-600 max-w-lg mx-auto leading-relaxed">
             Faculty evaluation dossiers and comprehensive staff teaching trajectories can{' '}
-            <strong className="text-rose-900">only and only be inspected by the School Principal / Head Teacher (मुख्याध्यापक)</strong>.
+            <strong className="text-orange-950">only and only be inspected by the School Principal / Head Teacher (मुख्याध्यापक)</strong>.
             Under DPDP Act and staff governance guidelines, teacher-level accounts are restricted from accessing supervisory faculty profiles.
           </p>
         </div>
 
-        <div className="bg-slate-50 border border-slate-200 rounded-2xl p-4 text-xs text-slate-700 text-left space-y-2 max-w-md mx-auto">
-          <div className="flex items-center gap-2 font-bold text-slate-900">
-            <Lock className="w-4 h-4 text-slate-500" />
+        <div className="bg-stone-50 border border-stone-200 rounded-2xl p-4 text-xs text-stone-700 text-left space-y-2 max-w-md mx-auto">
+          <div className="font-bold text-stone-900">
             <span>Target Faculty URL Route:</span>
           </div>
-          <code className="block bg-white p-2 rounded-lg border border-slate-200 text-slate-800 font-mono text-[11px] truncate">
+          <code className="block bg-white p-2 rounded-lg border border-stone-200 text-stone-800 font-mono text-[11px] truncate">
             {typeof window !== 'undefined' ? `${window.location.origin}${window.location.pathname}#faculty/${facultyId}` : `#faculty/${facultyId}`}
           </code>
         </div>
@@ -75,7 +69,7 @@ export const FacultyProfileSubpage: React.FC<FacultyProfileSubpageProps> = ({
         <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
           <button
             onClick={onBack}
-            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-800 text-xs font-bold transition shadow-xs"
+            className="flex items-center gap-2 px-5 py-2.5 rounded-xl border border-stone-300 bg-white hover:bg-stone-100 text-stone-800 text-xs font-bold transition shadow-xs cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Return to Application</span>
@@ -83,7 +77,7 @@ export const FacultyProfileSubpage: React.FC<FacultyProfileSubpageProps> = ({
           {onSwitchToHeadTeacher && (
             <button
               onClick={onSwitchToHeadTeacher}
-              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition shadow-md shadow-emerald-600/20"
+              className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-green-700 hover:bg-green-800 text-white text-xs font-bold transition shadow-xs cursor-pointer"
             >
               <span>Switch to Principal (Head Teacher) Role</span>
             </button>
@@ -123,30 +117,30 @@ export const FacultyProfileSubpage: React.FC<FacultyProfileSubpageProps> = ({
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-indigo-100 text-indigo-900 border border-indigo-200">
+              <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-green-100 text-green-950 border border-green-200">
                 Principal Supervisory Dossier
               </span>
-              <span className="text-xs text-slate-500 font-mono">
+              <span className="text-xs text-stone-500 font-mono">
                 {faculty.teacher_id}
               </span>
             </div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 mt-0.5">
+            <h1 className="text-xl sm:text-2xl font-black text-stone-900 mt-0.5">
               {currentLang === 'mr' ? faculty.name_mr : (currentLang === 'hi' ? faculty.name_hi : faculty.name)}
             </h1>
           </div>
         </div>
 
         {/* Shareable Deep Link Box */}
-        <div className="flex items-center gap-2 bg-slate-100 p-1.5 rounded-xl border border-slate-200 max-w-md w-full md:w-auto">
-          <span className="text-[11px] font-mono text-slate-600 truncate pl-2 flex-1">
+        <div className="flex items-center gap-2 bg-stone-100 p-1.5 rounded-xl border border-stone-200 max-w-md w-full md:w-auto">
+          <span className="text-[11px] font-mono text-stone-600 truncate pl-2 flex-1">
             {profileUrl}
           </span>
           <button
             onClick={handleCopyUrl}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 ${
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-bold transition shrink-0 cursor-pointer ${
               copiedUrl
-                ? 'bg-emerald-600 text-white'
-                : 'bg-white text-slate-800 hover:bg-slate-50 border border-slate-300 shadow-2xs'
+                ? 'bg-green-700 text-white'
+                : 'bg-orange-500 hover:bg-orange-600 text-white shadow-2xs'
             }`}
             title="Copy Direct Principal Dossier URL"
           >
@@ -157,7 +151,7 @@ export const FacultyProfileSubpage: React.FC<FacultyProfileSubpageProps> = ({
       </div>
 
       {/* Faculty Profile Overview Card */}
-      <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-3xl border border-stone-200 shadow-xs overflow-hidden">
         <div className={`h-24 sm:h-32 bg-gradient-to-r ${faculty.avatar_bg} relative`}>
           <div className="absolute -bottom-8 left-6 sm:left-8 flex items-end gap-4">
             <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl bg-white p-1.5 shadow-lg border-2 border-white">
@@ -169,59 +163,50 @@ export const FacultyProfileSubpage: React.FC<FacultyProfileSubpageProps> = ({
         </div>
 
         <div className="pt-12 p-6 sm:p-8 space-y-6">
-          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-100 pb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-stone-100 pb-6">
             <div>
-              <h2 className="text-2xl font-black text-slate-900">
+              <h2 className="text-2xl font-black text-stone-900">
                 {faculty.name}
               </h2>
-              <p className="text-sm font-semibold text-brand-700 mt-0.5">
+              <p className="text-sm font-semibold text-green-900 mt-0.5">
                 {faculty.designation}
               </p>
-              <p className="text-xs text-slate-500 mt-1 max-w-xl">
+              <p className="text-xs text-stone-500 mt-1 max-w-xl">
                 {currentLang === 'mr' ? faculty.bio_mr : faculty.bio_en}
               </p>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 self-start md:self-auto text-xs">
-              <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
-                <span className="text-slate-500 block text-[10px]">Teaching Exp.</span>
-                <span className="font-black text-slate-900 text-sm">{faculty.experience_years} Years</span>
+              <div className="bg-stone-50 border border-stone-200 p-2.5 rounded-xl">
+                <span className="text-stone-500 block text-[10px]">Teaching Exp.</span>
+                <span className="font-black text-stone-900 text-sm">{faculty.experience_years} Years</span>
               </div>
-              <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl">
-                <span className="text-slate-500 block text-[10px]">Subject Assignments</span>
-                <span className="font-black text-indigo-700 text-sm">{faculty.assignments.length} Subjects</span>
+              <div className="bg-stone-50 border border-stone-200 p-2.5 rounded-xl">
+                <span className="text-stone-500 block text-[10px]">Subject Assignments</span>
+                <span className="font-black text-orange-950 text-sm">{faculty.assignments.length} Subjects</span>
               </div>
-              <div className="bg-slate-50 border border-slate-200 p-2.5 rounded-xl col-span-2 sm:col-span-1">
-                <span className="text-slate-500 block text-[10px]">Active Plans</span>
-                <span className="font-black text-emerald-700 text-sm">{facultyPlans.length} Approved</span>
+              <div className="bg-stone-50 border border-stone-200 p-2.5 rounded-xl col-span-2 sm:col-span-1">
+                <span className="text-stone-500 block text-[10px]">Active Plans</span>
+                <span className="font-black text-emerald-800 text-sm">{facultyPlans.length} Approved</span>
               </div>
             </div>
           </div>
 
           {/* Credentials and Contact Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <GraduationCap className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-slate-500 block text-[10px] font-semibold">Educational Qualifications</span>
-                <span className="font-bold text-slate-900">{faculty.qualification}</span>
-              </div>
+            <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">
+              <span className="text-stone-500 block text-[10px] font-semibold">Educational Qualifications</span>
+              <span className="font-bold text-stone-900 text-xs mt-0.5 block">{faculty.qualification}</span>
             </div>
 
-            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <Mail className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-slate-500 block text-[10px] font-semibold">Official Gov Email</span>
-                <span className="font-bold text-slate-900 font-mono">{faculty.email}</span>
-              </div>
+            <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">
+              <span className="text-stone-500 block text-[10px] font-semibold">Official Gov Email</span>
+              <span className="font-bold text-stone-900 font-mono text-xs mt-0.5 block">{faculty.email}</span>
             </div>
 
-            <div className="flex items-start gap-3 p-3.5 rounded-xl bg-slate-50 border border-slate-200">
-              <Phone className="w-5 h-5 text-emerald-600 shrink-0 mt-0.5" />
-              <div>
-                <span className="text-slate-500 block text-[10px] font-semibold">Verified Phone / SMS</span>
-                <span className="font-bold text-slate-900 font-mono">{faculty.phone}</span>
-              </div>
+            <div className="p-3.5 rounded-xl bg-stone-50 border border-stone-200">
+              <span className="text-stone-500 block text-[10px] font-semibold">Verified Phone / SMS</span>
+              <span className="font-bold text-stone-900 font-mono text-xs mt-0.5 block">{faculty.phone}</span>
             </div>
           </div>
         </div>
@@ -287,19 +272,18 @@ export const FacultyProfileSubpage: React.FC<FacultyProfileSubpageProps> = ({
                 </p>
 
                 {/* Progress Gauges */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-100 text-center text-xs">
+                <div className="grid grid-cols-3 gap-2 bg-stone-50 p-3 rounded-xl border border-stone-100 text-center text-xs">
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Baseline Pass</span>
-                    <span className="text-base font-black text-slate-800">{baselineAvg}%</span>
+                    <span className="text-[10px] text-stone-500 block">Baseline Pass</span>
+                    <span className="text-base font-black text-stone-800">{baselineAvg}%</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Post-Remedial</span>
-                    <span className="text-base font-black text-indigo-700">{followupAvg}%</span>
+                    <span className="text-[10px] text-stone-500 block">Post-Remedial</span>
+                    <span className="text-base font-black text-orange-950">{followupAvg}%</span>
                   </div>
                   <div>
-                    <span className="text-[10px] text-slate-500 block">Net Gain</span>
-                    <span className="text-base font-black text-emerald-700 flex items-center justify-center gap-0.5">
-                      <TrendingUp className="w-3.5 h-3.5" />
+                    <span className="text-[10px] text-stone-500 block">Net Gain</span>
+                    <span className="text-base font-black text-emerald-800">
                       +{netGain}%
                     </span>
                   </div>

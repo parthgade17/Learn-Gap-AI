@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Scale } from 'lucide-react';
+import { X } from 'lucide-react';
 
 export type GovPolicyType = 'terms' | 'privacy' | 'copyright' | 'hyperlink' | 'accessibility';
 
@@ -27,24 +27,19 @@ export const GovPolicyModal: React.FC<GovPolicyModalProps> = ({
     >
       <div className="bg-white rounded-2xl max-w-3xl w-full border border-slate-300 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
         
-        {/* Header */}
-        <div className="bg-[#0B2545] text-white p-4 sm:p-5 flex items-center justify-between border-b border-slate-700">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-400/40 flex items-center justify-center text-amber-400">
-              <Scale className="w-5 h-5" />
-            </div>
-            <div>
-              <h2 id="gov-policy-modal-title" className="text-base sm:text-lg font-bold">
-                वैधानिक धोरणे व मार्गदर्शक तत्त्वे • Legal &amp; Compliance Policies
-              </h2>
-              <p className="text-xs text-slate-300">
-                Guidelines for Indian Government Websites (GIGW 3.0) &amp; DPDP Act 2023
-              </p>
-            </div>
+        {/* Header - Deep National Green */}
+        <div className="bg-[#064E3B] text-white p-4 sm:p-5 flex items-center justify-between border-b border-green-800">
+          <div>
+            <h2 id="gov-policy-modal-title" className="text-base sm:text-lg font-bold">
+              वैधानिक धोरणे व मार्गदर्शक तत्त्वे • Legal &amp; Compliance Policies
+            </h2>
+            <p className="text-xs text-emerald-200">
+              Guidelines for Indian Government Websites (GIGW 3.0) &amp; DPDP Act 2023
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            className="p-1.5 rounded-lg text-emerald-200 hover:text-white hover:bg-green-800 transition cursor-pointer"
             aria-label="Close policy dialog"
           >
             <X className="w-5 h-5" />
@@ -52,13 +47,13 @@ export const GovPolicyModal: React.FC<GovPolicyModalProps> = ({
         </div>
 
         {/* Tab Strip */}
-        <div className="bg-slate-100 border-b border-slate-200 px-4 flex space-x-2 overflow-x-auto text-xs font-semibold py-2">
+        <div className="bg-stone-100 border-b border-stone-200 px-4 flex space-x-2 overflow-x-auto text-xs font-semibold py-2">
           <button
             onClick={() => setActiveTab('terms')}
             className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
               activeTab === 'terms'
-                ? 'bg-white text-[#0B2545] shadow-xs border border-slate-200 font-bold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                ? 'bg-white text-green-950 shadow-xs border border-green-300 font-bold'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
             }`}
           >
             नियम व अटी (Terms)
@@ -67,8 +62,8 @@ export const GovPolicyModal: React.FC<GovPolicyModalProps> = ({
             onClick={() => setActiveTab('privacy')}
             className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
               activeTab === 'privacy'
-                ? 'bg-white text-[#0B2545] shadow-xs border border-slate-200 font-bold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                ? 'bg-white text-green-950 shadow-xs border border-green-300 font-bold'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
             }`}
           >
             गोपनीयता (DPDP 2023)
@@ -77,8 +72,8 @@ export const GovPolicyModal: React.FC<GovPolicyModalProps> = ({
             onClick={() => setActiveTab('copyright')}
             className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
               activeTab === 'copyright'
-                ? 'bg-white text-[#0B2545] shadow-xs border border-slate-200 font-bold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                ? 'bg-white text-green-950 shadow-xs border border-green-300 font-bold'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
             }`}
           >
             कॉपीराइट (Copyright)
@@ -87,8 +82,8 @@ export const GovPolicyModal: React.FC<GovPolicyModalProps> = ({
             onClick={() => setActiveTab('hyperlink')}
             className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
               activeTab === 'hyperlink'
-                ? 'bg-white text-[#0B2545] shadow-xs border border-slate-200 font-bold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                ? 'bg-white text-green-950 shadow-xs border border-green-300 font-bold'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
             }`}
           >
             हायपरलिंकिंग (Hyperlinking)
@@ -97,8 +92,8 @@ export const GovPolicyModal: React.FC<GovPolicyModalProps> = ({
             onClick={() => setActiveTab('accessibility')}
             className={`px-3 py-1.5 rounded-lg transition whitespace-nowrap ${
               activeTab === 'accessibility'
-                ? 'bg-white text-[#0B2545] shadow-xs border border-slate-200 font-bold'
-                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
+                ? 'bg-white text-green-950 shadow-xs border border-green-300 font-bold'
+                : 'text-stone-600 hover:text-stone-900 hover:bg-stone-200/60'
             }`}
           >
             सुलभता (Accessibility)
@@ -183,10 +178,10 @@ export const GovPolicyModal: React.FC<GovPolicyModalProps> = ({
         </div>
 
         {/* Footer */}
-        <div className="bg-slate-50 px-4 sm:px-6 py-3 border-t border-slate-200 flex justify-end">
+        <div className="bg-stone-50 px-4 sm:px-6 py-3 border-t border-stone-200 flex justify-end">
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-[#0B2545] hover:bg-[#133E87] text-white font-semibold text-xs transition"
+            className="px-5 py-2 rounded-xl bg-green-800 hover:bg-green-900 text-white font-bold text-xs transition cursor-pointer"
           >
             समजले / Close
           </button>

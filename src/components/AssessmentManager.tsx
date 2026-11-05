@@ -2,24 +2,15 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
   Upload,
-  PlusCircle,
   CheckCircle2,
   AlertTriangle,
   Download,
   Trash2,
   Edit2,
-  Database,
-  HelpCircle,
   X,
   Save,
   Copy,
-  Check,
-  Zap,
-  ShieldCheck,
-  Users,
-  BookOpen,
-  Layers,
-  ChevronRight
+  Check
 } from 'lucide-react';
 import { Student, Competency, AssessmentRecord, AssessmentType } from '../types';
 import { validateAssessmentRecord } from '../engine/gapEngine';
@@ -507,10 +498,10 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
       {/* Module Title Banner */}
       <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
+          <h2 className="text-xl sm:text-2xl font-black text-stone-900 tracking-tight">
             {t('assessment.title')}
           </h2>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+          <p className="text-xs sm:text-sm text-stone-500 mt-1">
             Deduplicated Student Roster • All-Subject Assessment Modal • Automated Background Synchronization
           </p>
         </div>
@@ -519,9 +510,8 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         <div className="flex flex-wrap items-center gap-2 self-start md:self-auto">
           <button
             onClick={() => setIsDbGuideOpen(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 transition shadow-2xs cursor-pointer"
+            className="flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold bg-green-50 border border-green-300 text-green-950 hover:bg-green-100 transition shadow-2xs cursor-pointer"
           >
-            <HelpCircle className="w-3.5 h-3.5" />
             <span>Database Setup Guide</span>
           </button>
         </div>
@@ -529,14 +519,13 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
       {/* Redis Buffer Notification Alert */}
       {redisNotice && (
-        <div className="p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-sm bg-amber-50 text-amber-950 border border-amber-300 animate-in fade-in">
+        <div className="p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-xs bg-orange-50 text-orange-950 border border-orange-300 animate-in fade-in">
           <div className="flex items-center gap-2">
-            <Zap className="w-4 h-4 text-amber-600 shrink-0" />
             <span>{redisNotice}</span>
           </div>
           <button
             onClick={() => setRedisNotice(null)}
-            className="p-1 rounded hover:bg-amber-200/50 text-amber-700"
+            className="p-1 rounded hover:bg-orange-200/50 text-orange-800"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -546,23 +535,23 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
       {/* Sync Status Toast Alert */}
       {syncNotice && (
         <div
-          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-sm transition animate-in fade-in ${
+          className={`p-3.5 rounded-2xl flex items-center justify-between text-xs font-bold shadow-xs transition animate-in fade-in ${
             syncNotice.type === 'success'
-              ? 'bg-emerald-50 text-emerald-900 border border-emerald-200'
-              : 'bg-rose-50 text-rose-900 border border-rose-200'
+              ? 'bg-emerald-50 text-emerald-950 border border-emerald-300'
+              : 'bg-rose-50 text-rose-950 border border-rose-300'
           }`}
         >
           <div className="flex items-center gap-2">
             {syncNotice.type === 'success' ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-4 h-4 text-emerald-700 shrink-0" />
             ) : (
-              <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+              <AlertTriangle className="w-4 h-4 text-rose-700 shrink-0" />
             )}
             <span>{syncNotice.message}</span>
           </div>
           <button
             onClick={() => setSyncNotice(null)}
-            className="p-1 rounded hover:bg-slate-200/50 text-slate-500"
+            className="p-1 rounded hover:bg-stone-200/50 text-stone-600"
           >
             <X className="w-3.5 h-3.5" />
           </button>
@@ -571,21 +560,18 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
       {/* =========================================================================
           STUDENT DROPDOWN SELECTOR BAR FOR ALL-SUBJECT ASSESSMENT MODAL
-          (Fulfills: "implement a dropdown for every student when the teacher clicks on drop down all the students must be visible and when teacher clicks on student name then his all subject assesment manager must be opened")
+          (National Tricolor Scheme: Green, White, Orange)
       ========================================================================= */}
-      <div className="bg-gradient-to-r from-brand-50 via-indigo-50 to-purple-50 p-4 sm:p-5 rounded-2xl border-2 border-brand-200 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-orange-50/60 p-4 sm:p-5 rounded-2xl border-2 border-green-300 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div className="flex items-start sm:items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-brand-600 text-white flex items-center justify-center shrink-0 shadow-md shadow-brand-600/20">
-            <Users className="w-5 h-5" />
-          </div>
           <div>
-            <h3 className="font-black text-slate-900 text-sm sm:text-base flex items-center gap-2">
+            <h3 className="font-black text-green-950 text-sm sm:text-base flex items-center gap-2">
               <span>All-Subject Assessment Manager</span>
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-brand-200 text-brand-900 uppercase">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 text-orange-950 border border-orange-300 uppercase">
                 7 Subjects
               </span>
             </h3>
-            <p className="text-xs text-slate-600 mt-0.5">
+            <p className="text-xs text-stone-600 mt-0.5">
               Click the dropdown to view all students. Selecting a student opens their full 7-subject mark assessment sheet.
             </p>
           </div>
@@ -601,7 +587,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                 const std = students.find(s => s.id === stdId);
                 if (std) setSelectedStudentForModal(std);
               }}
-              className="w-full sm:w-auto min-w-[260px] rounded-xl border-2 border-brand-300 bg-white py-2.5 px-3 text-xs font-bold text-slate-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer"
+              className="w-full sm:w-auto min-w-[260px] rounded-xl border-2 border-green-400 bg-white py-2.5 px-3 text-xs font-bold text-stone-900 shadow-xs focus:outline-none focus:ring-2 focus:ring-green-600 cursor-pointer"
             >
               <option value="" disabled>-- Select Student from Dropdown --</option>
               {classFilteredStudents.map((s) => (
@@ -619,9 +605,8 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               if (std) setSelectedStudentForModal(std);
             }}
             disabled={classFilteredStudents.length === 0}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-bold text-xs shadow-md shadow-brand-600/20 transition active:scale-95 cursor-pointer disabled:opacity-50 whitespace-nowrap"
+            className="flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-green-700 hover:bg-green-800 text-white font-bold text-xs shadow-xs transition active:scale-95 cursor-pointer disabled:opacity-50 whitespace-nowrap"
           >
-            <BookOpen className="w-4 h-4" />
             <span>Open All Subjects Sheet</span>
           </button>
         </div>
@@ -633,10 +618,9 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
         <div className="lg:col-span-5 space-y-6">
           
           {/* Quick Manual Entry Card */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
-            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-slate-100">
-              <PlusCircle className="w-5 h-5 text-brand-600" />
-              <h3 className="font-bold text-slate-900 text-sm">
+          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs">
+            <div className="flex items-center gap-2 mb-4 pb-2 border-b border-stone-100">
+              <h3 className="font-bold text-stone-900 text-sm">
                 Add / Record Single Competency Mark
               </h3>
             </div>
@@ -708,8 +692,8 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                     onClick={() => setAssessmentType('baseline')}
                     className={`py-2 px-3 text-xs font-semibold rounded-xl border transition ${
                       assessmentType === 'baseline'
-                        ? 'bg-blue-50 border-blue-400 text-blue-700 shadow-2xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-orange-100 border-orange-400 text-orange-950 font-bold shadow-2xs'
+                        : 'border-stone-200 text-stone-600 hover:bg-stone-50'
                     }`}
                   >
                     Baseline (आरंभिक)
@@ -719,8 +703,8 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                     onClick={() => setAssessmentType('follow_up')}
                     className={`py-2 px-3 text-xs font-semibold rounded-xl border transition ${
                       assessmentType === 'follow_up'
-                        ? 'bg-emerald-50 border-emerald-400 text-emerald-700 shadow-2xs'
-                        : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                        ? 'bg-emerald-100 border-emerald-400 text-emerald-950 font-bold shadow-2xs'
+                        : 'border-stone-200 text-stone-600 hover:bg-stone-50'
                     }`}
                   >
                     Follow-Up (उपचारात्मक)
@@ -731,7 +715,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               {/* Score and Total Marks */}
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
                     Score Obtained
                   </label>
                   <input
@@ -741,12 +725,12 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                     max={totalMarks}
                     value={score}
                     onChange={(e) => setScore(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-xl border border-stone-200 p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:ring-2 focus:ring-green-500"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-stone-700 mb-1">
                     Total Marks
                   </label>
                   <input
@@ -754,16 +738,16 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                     min="1"
                     value={totalMarks}
                     onChange={(e) => setTotalMarks(e.target.value)}
-                    className="w-full rounded-xl border border-slate-200 p-2.5 text-xs font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500"
+                    className="w-full rounded-xl border border-stone-200 p-2.5 text-xs font-semibold text-stone-800 focus:outline-none focus:ring-2 focus:ring-green-500"
                     required
                   />
                 </div>
               </div>
 
               {/* Calculated Real-Time Percentage Preview */}
-              <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-between text-xs">
-                <span className="text-slate-500">Calculated Percentage:</span>
-                <span className={`font-black text-sm ${currentPct >= 60 ? 'text-emerald-700' : 'text-rose-600'}`}>
+              <div className="p-3 bg-stone-50 rounded-xl border border-stone-200 flex items-center justify-between text-xs">
+                <span className="text-stone-500">Calculated Percentage:</span>
+                <span className={`font-black text-sm ${currentPct >= 60 ? 'text-emerald-700' : 'text-orange-700'}`}>
                   {currentPct}% {currentPct >= 60 ? '(Mastered)' : '(Learning Gap)'}
                 </span>
               </div>
@@ -787,7 +771,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               <button
                 type="submit"
                 disabled={!validation.isValid}
-                className="w-full py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 disabled:bg-slate-300 text-white font-bold text-xs shadow-xs transition cursor-pointer"
+                className="w-full py-2.5 rounded-xl bg-green-700 hover:bg-green-800 disabled:bg-stone-300 text-white font-bold text-xs shadow-xs transition cursor-pointer"
               >
                 Save Record
               </button>
@@ -795,28 +779,28 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
           </div>
 
           {/* Bulk CSV Upload Card */}
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div className="flex items-center justify-between pb-2 border-b border-slate-100">
-              <h3 className="font-bold text-slate-900 text-sm">
+          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-3">
+            <div className="flex items-center justify-between pb-2 border-b border-stone-100">
+              <h3 className="font-bold text-stone-900 text-sm">
                 Bulk CSV Marksheet Import
               </h3>
               <button
                 type="button"
                 onClick={downloadSampleCSV}
-                className="inline-flex items-center gap-1 text-xs text-brand-700 hover:text-brand-800 font-semibold"
+                className="inline-flex items-center gap-1 text-xs text-orange-700 hover:text-orange-800 font-bold"
               >
                 <Download className="w-3.5 h-3.5" />
                 <span>Sample CSV</span>
               </button>
             </div>
 
-            <div className="border-2 border-dashed border-slate-200 hover:border-brand-400 rounded-2xl p-4 text-center cursor-pointer transition">
-              <Upload className="w-7 h-7 text-slate-400 mx-auto mb-1.5" />
+            <div className="border-2 border-dashed border-stone-300 hover:border-orange-400 rounded-2xl p-4 text-center cursor-pointer transition">
+              <Upload className="w-7 h-7 text-orange-500 mx-auto mb-1.5" />
               <label className="cursor-pointer block">
-                <span className="text-xs font-bold text-brand-600 hover:text-brand-700">
+                <span className="text-xs font-bold text-orange-700 hover:text-orange-800">
                   Select school CSV marksheet
                 </span>
-                <span className="text-[11px] text-slate-400 block mt-0.5">
+                <span className="text-[11px] text-stone-400 block mt-0.5">
                   Automated offline validation for all 7 subjects
                 </span>
                 <input
@@ -891,22 +875,22 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
         {/* Right Column: Deduplicated Student Roster & Live Audit Records (7 cols) */}
         <div className="lg:col-span-7 space-y-4">
-          <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-4">
+          <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-xs space-y-4">
             
             {/* Header with Mode Toggle & Filters */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
               <div>
-                <h3 className="font-bold text-slate-900 text-sm flex items-center gap-2">
+                <h3 className="font-bold text-stone-900 text-sm flex items-center gap-2">
                   <span>
                     {tableMode === 'roster'
                       ? `Student Roster (${studentRosterData.length} Students)`
                       : `Raw Assessment Entries (${filteredAssessments.length})`}
                   </span>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold">
+                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">
                     {tableMode === 'roster' ? 'Deduplicated' : 'Audit Trail'}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-500">
                   {tableMode === 'roster'
                     ? 'Every student is shown once. Click "Open All Subjects" to inspect or edit marks across all 7 subjects.'
                     : 'Individual competency assessment records and audit timestamps.'}
@@ -914,31 +898,29 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               </div>
 
               {/* View Mode Toggle Button */}
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
+              <div className="flex items-center gap-1 bg-stone-100 p-1 rounded-xl shrink-0">
                 <button
                   type="button"
                   onClick={() => setTableMode('roster')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                     tableMode === 'roster'
-                      ? 'bg-white text-brand-700 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-green-950 shadow-2xs font-bold'
+                      : 'text-stone-600 hover:text-stone-900'
                   }`}
                   title="Deduplicated list showing each student once"
                 >
-                  <Users className="w-3.5 h-3.5" />
                   <span>Student Roster</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setTableMode('records')}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1.5 ${
+                  className={`px-3 py-1 rounded-lg text-xs font-bold transition ${
                     tableMode === 'records'
-                      ? 'bg-white text-brand-700 shadow-2xs'
-                      : 'text-slate-600 hover:text-slate-900'
+                      ? 'bg-white text-green-950 shadow-2xs font-bold'
+                      : 'text-stone-600 hover:text-stone-900'
                   }`}
                   title="View individual raw records"
                 >
-                  <Layers className="w-3.5 h-3.5" />
                   <span>Audit Entries</span>
                 </button>
               </div>
@@ -946,14 +928,14 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
 
             {/* Filter Bar */}
             <div className="flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-1 text-xs text-slate-500 font-medium">
+              <div className="flex items-center gap-1 text-xs text-stone-500 font-medium">
                 <span>Filter:</span>
               </div>
 
               <select
                 value={filterClassGrade}
                 onChange={(e) => handleTableClassChange(e.target.value)}
-                className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-bold text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer"
+                className="text-xs rounded-xl border border-stone-200 py-1.5 px-2 bg-stone-50 font-bold text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500 cursor-pointer"
               >
                 <option value="ALL">{formatClassDisplay('ALL', currentLang)}</option>
                 <option value="5">{formatClassDisplay('5', currentLang)}</option>
@@ -970,7 +952,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                       setFilterSubject(e.target.value);
                       setFilterCompetency('ALL');
                     }}
-                    className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="text-xs rounded-xl border border-stone-200 py-1.5 px-2 bg-stone-50 font-medium text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500"
                   >
                     <option value="ALL">{t('subjects.all')}</option>
                     {ALL_SUBJECTS.map((sub) => (
@@ -981,7 +963,7 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                   <select
                     value={filterCompetency}
                     onChange={(e) => setFilterCompetency(e.target.value)}
-                    className="text-xs rounded-xl border border-slate-200 py-1.5 px-2 bg-slate-50 font-medium text-slate-700 focus:outline-none focus:ring-1 focus:ring-brand-500 max-w-[130px] truncate"
+                    className="text-xs rounded-xl border border-stone-200 py-1.5 px-2 bg-stone-50 font-medium text-stone-700 focus:outline-none focus:ring-1 focus:ring-green-500 max-w-[130px] truncate"
                   >
                     <option value="ALL">All Competencies</option>
                     {competencies
@@ -997,15 +979,13 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
             </div>
 
             {/* Architecture Info Banner on Rate Limiting */}
-            <div className="flex flex-wrap items-center justify-between text-[11px] bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-slate-600 gap-2">
-              <div className="flex items-center gap-1.5">
-                <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <div className="flex flex-wrap items-center justify-between text-[11px] bg-green-50/70 border border-green-200 rounded-xl px-3 py-2 text-green-950 gap-2">
+              <div>
                 <span>
                   Rate Limiters: <strong>120 writes/min (Redis)</strong> • <strong>30 flushes/min (Supabase)</strong>
                 </span>
               </div>
-              <div className="flex items-center gap-1 text-emerald-700 font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5" />
+              <div className="text-emerald-800 font-semibold">
                 <span>Redis cache auto-clears on DB commit</span>
               </div>
             </div>
@@ -1015,8 +995,8 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
             =============================================================== */}
             {tableMode === 'roster' && (
               <div className="overflow-x-auto">
-                <table className="w-full text-left text-xs text-slate-600">
-                  <thead className="bg-slate-50 text-slate-700 font-bold uppercase tracking-wider border-b border-slate-200">
+                <table className="w-full text-left text-xs text-stone-600">
+                  <thead className="bg-green-50/70 text-green-950 font-bold uppercase tracking-wider border-b border-green-200">
                     <tr>
                       <th className="py-2.5 px-3">Roll &amp; Student</th>
                       <th className="py-2.5 px-3">Subject Progress (7 Subjects)</th>
@@ -1025,10 +1005,10 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                       <th className="py-2.5 px-3 text-right">All-Subject Action</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100">
+                  <tbody className="divide-y divide-stone-100">
                     {studentRosterData.length === 0 ? (
                       <tr>
-                        <td colSpan={5} className="py-8 text-center text-slate-400">
+                        <td colSpan={5} className="py-8 text-center text-stone-400">
                           No students found for this class grade filter.
                         </td>
                       </tr>
@@ -1037,25 +1017,25 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                         const isPassing = avgPct !== null && avgPct >= 60;
 
                         return (
-                          <tr key={student.id} className="hover:bg-slate-50/80 transition">
-                            <td className="py-2.5 px-3 font-medium text-slate-900 whitespace-nowrap">
-                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-slate-100 font-mono font-bold mr-1.5 text-slate-700">
+                          <tr key={student.id} className="hover:bg-stone-50/80 transition">
+                            <td className="py-2.5 px-3 font-medium text-stone-900 whitespace-nowrap">
+                              <span className="px-1.5 py-0.5 rounded text-[10px] bg-stone-100 font-mono font-bold mr-1.5 text-stone-700">
                                 {student.grade}th-A
                               </span>
-                              <span className="font-bold text-slate-700 mr-1">#{student.roll_number}</span>
-                              <span className="font-bold text-slate-900">
+                              <span className="font-bold text-stone-700 mr-1">#{student.roll_number}</span>
+                              <span className="font-bold text-stone-900">
                                 {formatStudentDisplay(student, currentLang)}
                               </span>
                             </td>
 
                             <td className="py-2.5 px-3 whitespace-nowrap">
                               <div className="flex items-center gap-2">
-                                <span className="font-bold text-slate-800">
+                                <span className="font-bold text-stone-800">
                                   {assessedSubjectCount} / {totalSubjects} Subjects
                                 </span>
-                                <div className="w-16 bg-slate-200 h-2 rounded-full overflow-hidden">
+                                <div className="w-16 bg-stone-200 h-2 rounded-full overflow-hidden">
                                   <div
-                                    className={`h-full ${assessedSubjectCount === totalSubjects ? 'bg-emerald-500' : 'bg-brand-500'}`}
+                                    className={`h-full ${assessedSubjectCount === totalSubjects ? 'bg-emerald-500' : 'bg-green-600'}`}
                                     style={{ width: `${(assessedSubjectCount / totalSubjects) * 100}%` }}
                                   />
                                 </div>
@@ -1067,23 +1047,23 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                                 <span
                                   className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                     isPassing
-                                      ? 'bg-emerald-100 text-emerald-800'
-                                      : 'bg-rose-100 text-rose-800'
+                                      ? 'bg-emerald-100 text-emerald-900 border border-emerald-200'
+                                      : 'bg-orange-100 text-orange-950 border border-orange-200'
                                   }`}
                                 >
                                   {avgPct}% {isPassing ? 'Mastered' : 'Needs Support'}
                                 </span>
                               ) : (
-                                <span className="text-slate-400 text-[10px] italic">Not Assessed Yet</span>
+                                <span className="text-stone-400 text-[10px] italic">Not Assessed Yet</span>
                               )}
                             </td>
 
                             <td className="py-2.5 px-3 whitespace-nowrap">
                               <div className="flex items-center gap-1.5 text-[10px] font-semibold">
-                                <span className="px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 border border-blue-200">
+                                <span className="px-1.5 py-0.5 rounded bg-stone-100 text-stone-800 border border-stone-200">
                                   Base: {baselineCount}
                                 </span>
-                                <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-700 border border-emerald-200">
+                                <span className="px-1.5 py-0.5 rounded bg-emerald-50 text-emerald-900 border border-emerald-200">
                                   Follow-up: {followupCount}
                                 </span>
                               </div>
@@ -1092,11 +1072,9 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                             <td className="py-2.5 px-3 text-right whitespace-nowrap">
                               <button
                                 onClick={() => setSelectedStudentForModal(student)}
-                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-brand-50 hover:bg-brand-100 text-brand-700 font-bold text-xs border border-brand-200 transition shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
+                                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-xl bg-green-50 hover:bg-green-100 text-green-950 font-bold text-xs border border-green-300 transition shadow-2xs hover:shadow-xs active:scale-95 cursor-pointer"
                               >
-                                <BookOpen className="w-3.5 h-3.5 text-brand-600" />
                                 <span>Open All Subjects</span>
-                                <ChevronRight className="w-3 h-3 text-brand-400" />
                               </button>
                             </td>
                           </tr>
@@ -1349,39 +1327,37 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
       ========================================================================= */}
       {isDbGuideOpen && (
         <div className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-slate-200 space-y-4 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-              <div className="flex items-center gap-2">
-                <Database className="w-5 h-5 text-indigo-600" />
-                <h3 className="font-bold text-slate-900 text-base">
+          <div className="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl border border-stone-200 space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+              <div>
+                <h3 className="font-bold text-stone-900 text-base">
                   Supabase &amp; Redis Middleman Buffer Architecture
                 </h3>
               </div>
               <button
                 onClick={() => setIsDbGuideOpen(false)}
-                className="text-slate-400 hover:text-slate-600 p-1 cursor-pointer"
+                className="text-stone-400 hover:text-stone-600 p-1 cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             {/* Redis & DB Live Test Box */}
-            <div className="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3 text-xs">
+            <div className="bg-stone-50 p-4 rounded-xl border border-stone-200 space-y-3 text-xs">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-slate-800">Connection Status:</span>
+                <span className="font-bold text-stone-800">Connection Status:</span>
                 <div className="flex items-center gap-2">
                   <button
                     onClick={handleFlushRedisNow}
                     disabled={isFlushingRedis}
-                    className="px-3 py-1 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-bold text-[11px] flex items-center gap-1 shadow-2xs cursor-pointer"
+                    className="px-3 py-1 rounded-lg bg-orange-600 hover:bg-orange-700 text-white font-bold text-[11px] shadow-2xs cursor-pointer"
                   >
-                    <Zap className="w-3 h-3" />
                     <span>{isFlushingRedis ? 'Syncing...' : 'Flush Redis Buffer'}</span>
                   </button>
                   <button
                     onClick={handleTestDatabase}
                     disabled={testingDb}
-                    className="px-3 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-[11px] cursor-pointer"
+                    className="px-3 py-1 rounded-lg bg-green-700 hover:bg-green-800 text-white font-bold text-[11px] cursor-pointer"
                   >
                     {testingDb ? 'Testing...' : 'Test DB Connection'}
                   </button>
@@ -1389,47 +1365,47 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
               </div>
 
               {/* Status Display */}
-              <div className="p-3 bg-white rounded-lg border border-slate-200 space-y-1.5">
+              <div className="p-3 bg-white rounded-lg border border-stone-200 space-y-1.5">
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Redis Temporary Queue:</span>
-                  <span className="font-mono font-bold text-amber-700">
+                  <span className="text-stone-600">Redis Temporary Queue:</span>
+                  <span className="font-mono font-bold text-orange-700">
                     {redisStatus?.buffered_marks_count ?? 0} marks pending
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Redis Rate Limiter:</span>
+                  <span className="text-stone-600">Redis Rate Limiter:</span>
                   <span className="font-bold text-emerald-700">120 requests/minute max</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Supabase Rate Limiter:</span>
+                  <span className="text-stone-600">Supabase Rate Limiter:</span>
                   <span className="font-bold text-emerald-700">30 batch syncs/minute max</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Auto-Sync Cycle:</span>
-                  <span className="font-bold text-indigo-700">Every 10-15 seconds (12s interval)</span>
+                  <span className="text-stone-600">Auto-Sync Cycle:</span>
+                  <span className="font-bold text-green-800">Every 10-15 seconds (12s interval)</span>
                 </div>
                 <div className="flex items-center justify-between">
-                  <span className="text-slate-600">Cache Invalidation:</span>
-                  <span className="font-bold text-slate-900">Automatically cleared from Redis upon DB commit</span>
+                  <span className="text-stone-600">Cache Invalidation:</span>
+                  <span className="font-bold text-stone-900">Automatically cleared from Redis upon DB commit</span>
                 </div>
               </div>
 
               {dbStatus && (
                 <div className={`p-2.5 rounded-lg border text-xs ${
                   dbStatus.connected
-                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900'
-                    : 'bg-amber-50 border-amber-200 text-amber-900'
+                    ? 'bg-emerald-50 border-emerald-200 text-emerald-900 font-bold'
+                    : 'bg-orange-50 border-orange-200 text-orange-950 font-bold'
                 }`}>
-                  <p className="font-bold">{dbStatus.message}</p>
+                  <p>{dbStatus.message}</p>
                 </div>
               )}
             </div>
 
             {/* RLS Troubleshooting Box */}
-            <div className="p-3.5 bg-amber-50/80 rounded-xl border border-amber-200 text-xs space-y-2">
+            <div className="p-3.5 bg-orange-50/80 rounded-xl border border-orange-200 text-xs space-y-2">
               <div className="flex items-center justify-between">
-                <span className="font-bold text-amber-950 flex items-center gap-1.5">
-                  <AlertTriangle className="w-4 h-4 text-amber-600" />
+                <span className="font-bold text-orange-950 flex items-center gap-1.5">
+                  <AlertTriangle className="w-4 h-4 text-orange-600" />
                   Supabase RLS Policy Configuration:
                 </span>
                 <button
@@ -1440,13 +1416,13 @@ export const AssessmentManager: React.FC<AssessmentManagerProps> = ({
                     setCopiedSql(true);
                     setTimeout(() => setCopiedSql(false), 2500);
                   }}
-                  className="flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-200 hover:bg-amber-300 text-amber-900 font-bold text-[10px] transition cursor-pointer"
+                  className="flex items-center gap-1 px-2.5 py-1 rounded-md bg-orange-200 hover:bg-orange-300 text-orange-950 font-bold text-[10px] transition cursor-pointer"
                 >
                   {copiedSql ? <Check className="w-3 h-3 text-emerald-700" /> : <Copy className="w-3 h-3" />}
                   <span>{copiedSql ? 'Copied!' : 'Copy SQL Fix'}</span>
                 </button>
               </div>
-              <pre className="bg-slate-900 text-amber-300 p-2 rounded-lg text-[10px] font-mono overflow-x-auto select-all">
+              <pre className="bg-stone-900 text-orange-300 p-2.5 rounded-lg text-[10px] font-mono overflow-x-auto select-all">
 {`ALTER TABLE public.assessments DISABLE ROW LEVEL SECURITY;
 ALTER TABLE public.remedial_plans DISABLE ROW LEVEL SECURITY;
 GRANT ALL ON TABLE public.assessments TO anon, authenticated, service_role;
@@ -1454,10 +1430,10 @@ GRANT ALL ON TABLE public.remedial_plans TO anon, authenticated, service_role;`}
               </pre>
             </div>
 
-            <div className="flex justify-end pt-2 border-t border-slate-100">
+            <div className="flex justify-end pt-2 border-t border-stone-100">
               <button
                 onClick={() => setIsDbGuideOpen(false)}
-                className="px-4 py-2 rounded-xl bg-slate-900 text-white font-bold text-xs cursor-pointer"
+                className="px-4 py-2 rounded-xl bg-green-800 hover:bg-green-900 text-white font-bold text-xs cursor-pointer"
               >
                 Close (बंद करा)
               </button>

@@ -24,21 +24,21 @@ export const CircularGauge: React.FC<CircularGaugeProps> = ({
   const circumference = 2 * Math.PI * radius;
   const strokeDashoffset = circumference - (clampedPct / 100) * circumference;
 
-  let strokeColor = '#3b82f6'; // default blue
-  let bgColor = '#e2e8f0';
+  let strokeColor = '#16a34a'; // India Green default
+  let bgColor = '#f5f5f4'; // soft stone-100
 
   if (colorScheme === 'auto') {
-    if (clampedPct >= 65) strokeColor = '#10b981'; // emerald
-    else if (clampedPct >= 50) strokeColor = '#f59e0b'; // amber
-    else strokeColor = '#ef4444'; // rose
+    if (clampedPct >= 65) strokeColor = '#16a34a'; // emerald / green
+    else if (clampedPct >= 50) strokeColor = '#ea580c'; // saffron / orange
+    else strokeColor = '#dc2626'; // rose / alert
   } else if (colorScheme === 'emerald') {
-    strokeColor = '#10b981';
+    strokeColor = '#16a34a'; // National Green
   } else if (colorScheme === 'amber') {
-    strokeColor = '#f59e0b';
+    strokeColor = '#ea580c'; // Saffron Orange
   } else if (colorScheme === 'rose') {
-    strokeColor = '#ef4444';
+    strokeColor = '#dc2626';
   } else if (colorScheme === 'brand') {
-    strokeColor = '#4f46e5';
+    strokeColor = '#15803d'; // Deep Green
   }
 
   return (

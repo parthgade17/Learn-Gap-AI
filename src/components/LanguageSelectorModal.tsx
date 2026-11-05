@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Search, Globe, X, Check, Trees } from 'lucide-react';
+import { Search, X, Check } from 'lucide-react';
 import { SUPPORTED_LANGUAGES, LanguageMeta } from '../i18n/languages';
 
 interface LanguageSelectorModalProps {
@@ -51,15 +51,12 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
         </button>
 
         {/* Modal Header */}
-        <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-          <div className="p-2.5 rounded-xl bg-brand-100 text-brand-700">
-            <Globe className="w-6 h-6" />
-          </div>
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
           <div>
-            <h3 className="text-lg font-bold text-slate-900">
+            <h3 className="text-lg font-bold text-stone-900">
               {t('selectLanguage')} / Choose Language
             </h3>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs text-stone-500">
               Select any Indian regional, state, or Adivasi / indigenous tribal language
             </p>
           </div>
@@ -67,47 +64,46 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
 
         {/* Search Bar */}
         <div className="relative mt-4">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('searchLanguages')}
-            className="w-full text-xs sm:text-sm pl-9 pr-3 py-2 rounded-xl border border-slate-300 focus:outline-none focus:ring-2 focus:ring-brand-500 bg-slate-50 focus:bg-white transition"
+            className="w-full text-xs sm:text-sm pl-9 pr-3 py-2 rounded-xl border border-stone-300 focus:outline-none focus:ring-2 focus:ring-green-500 bg-stone-50 focus:bg-white transition"
           />
         </div>
 
         {/* Category Tabs */}
-        <div className="flex items-center gap-2 mt-3 pb-2 border-b border-slate-100 overflow-x-auto text-xs">
+        <div className="flex items-center gap-2 mt-3 pb-2 border-b border-stone-100 overflow-x-auto text-xs">
           <button
             onClick={() => setCategoryFilter('all')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap cursor-pointer ${
               categoryFilter === 'all'
-                ? 'bg-slate-900 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-green-700 text-white'
+                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
             }`}
           >
             {t('allLanguages')} ({SUPPORTED_LANGUAGES.length})
           </button>
           <button
             onClick={() => setCategoryFilter('regional')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap cursor-pointer ${
               categoryFilter === 'regional'
-                ? 'bg-brand-600 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-green-700 text-white'
+                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
             }`}
           >
             {t('regionalCategory')} ({regionalCount})
           </button>
           <button
             onClick={() => setCategoryFilter('tribal_adivasi')}
-            className={`px-3 py-1.5 rounded-lg font-semibold transition whitespace-nowrap flex items-center gap-1 ${
+            className={`px-3 py-1.5 rounded-lg font-bold transition whitespace-nowrap cursor-pointer ${
               categoryFilter === 'tribal_adivasi'
-                ? 'bg-amber-600 text-white'
-                : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                ? 'bg-orange-600 text-white'
+                : 'bg-stone-100 text-stone-600 hover:bg-stone-200'
             }`}
           >
-            <Trees className="w-3.5 h-3.5" />
             <span>{t('tribalCategory')} ({tribalCount})</span>
           </button>
         </div>
@@ -122,19 +118,19 @@ export const LanguageSelectorModal: React.FC<LanguageSelectorModalProps> = ({ is
               <button
                 key={lang.code}
                 onClick={() => selectLanguage(lang.code)}
-                className={`p-2.5 rounded-xl border text-left flex items-start justify-between transition ${
+                className={`p-2.5 rounded-xl border text-left flex items-start justify-between transition cursor-pointer ${
                   isSelected
-                    ? 'border-brand-600 bg-brand-50/80 ring-2 ring-brand-500/30'
-                    : 'border-slate-200 hover:border-brand-300 hover:bg-slate-50'
+                    ? 'border-green-600 bg-green-50 ring-2 ring-green-500/30'
+                    : 'border-stone-200 hover:border-green-300 hover:bg-stone-50'
                 }`}
               >
                 <div>
                   <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-slate-900">
+                    <span className="font-bold text-sm text-stone-900">
                       {lang.nativeName}
                     </span>
                     {isSelected && (
-                      <Check className="w-4 h-4 text-brand-600 shrink-0" />
+                      <Check className="w-4 h-4 text-green-700 shrink-0" />
                     )}
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">

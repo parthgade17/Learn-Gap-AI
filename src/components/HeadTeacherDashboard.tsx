@@ -1,12 +1,8 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  School,
   Search,
-  Users,
-  TrendingUp,
   Filter,
-  BarChart3,
   ExternalLink
 } from 'lucide-react';
 import { UserRole, Student, Competency, AssessmentRecord, RemedialPlan } from '../types';
@@ -136,29 +132,24 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
   return (
     <div className="space-y-6 pb-12">
       
-      {/* Principal Command Center Banner */}
-      <div className="bg-gradient-to-r from-emerald-900 via-teal-900 to-slate-900 text-white p-6 sm:p-8 rounded-3xl shadow-xl space-y-6">
+      {/* Principal Command Center Banner - National Tricolor Theme */}
+      <div className="bg-gradient-to-r from-green-950 via-emerald-950 to-green-900 border border-green-800 text-white p-6 sm:p-8 rounded-3xl shadow-xl space-y-6">
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <div className="w-14 h-14 rounded-2xl bg-white/10 backdrop-blur-md flex items-center justify-center text-emerald-300 border border-white/20 shadow-inner">
-              <School className="w-8 h-8" />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-orange-500/20 text-orange-300 border border-orange-400/30">
+                Principal Supervisory Command
+              </span>
+              <span className="text-xs text-emerald-200">
+                UDISE: 27260501234
+              </span>
             </div>
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-full text-xs font-bold bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                  Principal Supervisory Command
-                </span>
-                <span className="text-xs text-emerald-200">
-                  UDISE: 27260501234
-                </span>
-              </div>
-              <h1 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
-                Z.P. Primary School, Kopargaon (Ahilyanagar)
-              </h1>
-              <p className="text-xs text-emerald-100/80 mt-0.5">
-                Head Teacher Supervisory Portal • Multi-Subject Faculty Roster & School-Wide Student Progress
-              </p>
-            </div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight mt-1">
+              Z.P. Primary School, Kopargaon (Ahilyanagar)
+            </h1>
+            <p className="text-xs text-emerald-100/80 mt-0.5">
+              Head Teacher Supervisory Portal • Multi-Subject Faculty Roster &amp; School-Wide Student Progress
+            </p>
           </div>
 
           {/* Quick Metrics Pills */}
@@ -169,7 +160,7 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
             </div>
             <div className="bg-white/10 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-white/10 text-center">
               <span className="text-[10px] text-emerald-200 block">Subject Cards</span>
-              <span className="font-black text-lg text-emerald-300">{flattenedCards.length} Assigned</span>
+              <span className="font-black text-lg text-orange-300">{flattenedCards.length} Assigned</span>
             </div>
             <div className="bg-white/10 backdrop-blur-sm px-3.5 py-2 rounded-xl border border-white/10 text-center">
               <span className="text-[10px] text-emerald-200 block">Total Students</span>
@@ -190,11 +181,11 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search faculty name, subject, or paste URL (e.g. #faculty/TCH-02)..."
-            className="w-full text-xs sm:text-sm pl-11 pr-24 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-emerald-200/60 focus:outline-none focus:ring-2 focus:ring-emerald-400 focus:bg-white/15 transition backdrop-blur-md"
+            className="w-full text-xs sm:text-sm pl-11 pr-28 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-emerald-200/60 focus:outline-none focus:ring-2 focus:ring-green-400 focus:bg-white/15 transition backdrop-blur-md"
           />
           <button
             type="submit"
-            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-emerald-950 text-xs font-black transition shadow-xs"
+            className="absolute right-2 top-1/2 -translate-y-1/2 px-4 py-1.5 rounded-xl bg-orange-500 hover:bg-orange-600 text-white text-xs font-black transition shadow-xs cursor-pointer"
           >
             Go to Profile
           </button>
@@ -204,25 +195,23 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
         <div className="flex items-center gap-2 pt-2 border-t border-white/10 overflow-x-auto text-xs">
           <button
             onClick={() => setActiveTab('faculty')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap ${
               activeTab === 'faculty'
-                ? 'bg-white text-emerald-950 shadow-md'
+                ? 'bg-white text-green-950 shadow-md'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
-            <Users className="w-4 h-4" />
-            <span>1. Available Faculty & Subjects ({flattenedCards.length} Subject Cards)</span>
+            <span>1. Available Faculty &amp; Subjects ({flattenedCards.length} Subject Cards)</span>
           </button>
 
           <button
             onClick={() => setActiveTab('entire_progress')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold transition whitespace-nowrap ${
+            className={`px-4 py-2 rounded-xl font-bold transition whitespace-nowrap ${
               activeTab === 'entire_progress'
-                ? 'bg-white text-emerald-950 shadow-md'
+                ? 'bg-white text-green-950 shadow-md'
                 : 'bg-white/10 text-white hover:bg-white/20'
             }`}
           >
-            <BarChart3 className="w-4 h-4" />
             <span>2. Entire School Progress Dashboard</span>
           </button>
         </div>
@@ -349,13 +338,12 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
                         <span className="font-bold text-slate-800">{bAvg}%</span>
                       </div>
                       <div>
-                        <span className="text-[9px] text-slate-500 block">Post-Remedial</span>
-                        <span className="font-bold text-indigo-700">{fAvg}%</span>
+                        <span className="text-[9px] text-stone-500 block">Post-Remedial</span>
+                        <span className="font-bold text-orange-900">{fAvg}%</span>
                       </div>
                       <div>
-                        <span className="text-[9px] text-slate-500 block">Net Gain</span>
-                        <span className="font-bold text-emerald-700 flex items-center justify-center gap-0.5">
-                          <TrendingUp className="w-3 h-3" />
+                        <span className="text-[9px] text-stone-500 block">Net Gain</span>
+                        <span className="font-bold text-emerald-800">
                           +{gain}%
                         </span>
                       </div>
@@ -364,16 +352,16 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
                     {/* Student Mastery Ratio */}
                     <div className="space-y-1 text-xs">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="text-slate-600 font-medium">{classStudents.length} Students in Subject</span>
-                        <span className="font-bold text-emerald-700">{masteredCount} Mastered (60%+)</span>
+                        <span className="text-stone-600 font-medium">{classStudents.length} Students in Subject</span>
+                        <span className="font-bold text-emerald-800">{masteredCount} Mastered (60%+)</span>
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden flex">
+                      <div className="w-full bg-stone-100 rounded-full h-2 overflow-hidden flex">
                         <div
                           className="bg-emerald-500 h-full transition-all"
                           style={{ width: `${(masteredCount / Math.max(1, classStudents.length)) * 100}%` }}
                         />
                         <div
-                          className="bg-amber-400 h-full transition-all"
+                          className="bg-orange-400 h-full transition-all"
                           style={{ width: `${(supportCount / Math.max(1, classStudents.length)) * 100}%` }}
                         />
                       </div>
@@ -382,10 +370,10 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
                   </div>
 
                   {/* Actions: View Subpage Dossier with URL */}
-                  <div className="pt-3 border-t border-slate-100 flex items-center gap-2">
+                  <div className="pt-3 border-t border-stone-100 flex items-center gap-2">
                     <button
                       onClick={() => onOpenFacultyProfile(faculty.id)}
-                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition shadow-xs"
+                      className="flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-green-700 hover:bg-green-800 text-white text-xs font-bold transition shadow-xs cursor-pointer"
                     >
                       <span>View Faculty Profile</span>
                       <ExternalLink className="w-3.5 h-3.5" />
@@ -407,13 +395,13 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
         <div className="space-y-6">
           
           {/* School-Wide Class Breakdown Table */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm space-y-4">
+          <div className="bg-white rounded-2xl border border-stone-200 p-5 shadow-xs space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="text-base font-bold text-slate-900">
+                <h3 className="text-base font-bold text-stone-900">
                   School-Wide Class-by-Class Comparative Trajectory
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-500">
                   Real-time baseline diagnostic vs post-remedial outcome comparison across Grades 5 to 8
                 </p>
               </div>
@@ -421,7 +409,7 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 border-y border-slate-200 text-slate-600 font-bold uppercase text-[10px] tracking-wider">
+                <thead className="bg-green-50/70 border-y border-green-200 text-green-950 font-bold uppercase text-[10px] tracking-wider">
                   <tr>
                     <th className="py-2.5 px-3">Class / Section</th>
                     <th className="py-2.5 px-3">Lead Faculty</th>
@@ -433,39 +421,38 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
                     <th className="py-2.5 px-3 text-right">Dossier</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-800">
+                <tbody className="divide-y divide-stone-100 font-medium text-stone-800">
                   {gradeBreakdown.map((row) => (
-                    <tr key={row.grade} className="hover:bg-slate-50/80 transition">
-                      <td className="py-3 px-3 font-bold text-slate-900 whitespace-nowrap">
+                    <tr key={row.grade} className="hover:bg-stone-50/80 transition">
+                      <td className="py-3 px-3 font-bold text-stone-900 whitespace-nowrap">
                         {formatClassDisplay(row.grade, currentLang)}
                       </td>
-                      <td className="py-3 px-3 font-semibold text-brand-800 whitespace-nowrap">
+                      <td className="py-3 px-3 font-semibold text-green-900 whitespace-nowrap">
                         {row.facultyName}
                       </td>
                       <td className="py-3 px-3 text-center font-bold">
                         {row.classStudents.length}
                       </td>
-                      <td className="py-3 px-3 text-center font-bold text-slate-700">
+                      <td className="py-3 px-3 text-center font-bold text-stone-700">
                         {row.baselineAvg}%
                       </td>
-                      <td className="py-3 px-3 text-center font-bold text-indigo-700">
+                      <td className="py-3 px-3 text-center font-bold text-orange-900">
                         {row.followupAvg}%
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <span className="inline-flex items-center gap-0.5 px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-800">
-                          <TrendingUp className="w-3 h-3" />
+                        <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[11px] font-black bg-emerald-100 text-emerald-900 border border-emerald-300">
                           +{row.netGain}%
                         </span>
                       </td>
                       <td className="py-3 px-3 text-center">
-                        <span className="px-2 py-0.5 rounded bg-slate-100 text-slate-700 font-bold">
+                        <span className="px-2 py-0.5 rounded bg-stone-100 text-stone-800 font-bold">
                           {row.activePlans} Plans
                         </span>
                       </td>
                       <td className="py-3 px-3 text-right">
                         <button
                           onClick={() => onOpenFacultyProfile(row.facultyId)}
-                          className="px-2.5 py-1 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-100 font-bold text-[11px] transition"
+                          className="px-2.5 py-1 rounded-lg border border-stone-300 text-stone-800 hover:bg-orange-50 hover:border-orange-300 hover:text-orange-950 font-bold text-[11px] transition cursor-pointer"
                         >
                           Dossier
                         </button>
@@ -505,9 +492,9 @@ export const HeadTeacherDashboard: React.FC<HeadTeacherDashboardProps> = ({
                       <span className="text-[11px] text-emerald-700">+{folP - baseP}% Gain</span>
                     </div>
 
-                    <div className="flex items-center justify-between text-slate-500 text-[11px]">
+                    <div className="flex items-center justify-between text-stone-500 text-[11px]">
                       <span>Baseline: {baseP}%</span>
-                      <span className="font-bold text-indigo-700">Post: {folP}%</span>
+                      <span className="font-bold text-orange-900">Post: {folP}%</span>
                     </div>
 
                     <div className="w-full bg-slate-200 rounded-full h-1.5 overflow-hidden">

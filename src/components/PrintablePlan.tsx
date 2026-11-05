@@ -1,7 +1,7 @@
 import React from 'react';
 import { useTranslation } from 'react-i18next';
 import { Competency, RemedialActivity, Student, RemedialPlan } from '../types';
-import { CheckCircle2, Calendar, Clock, School, UserCheck } from 'lucide-react';
+import { CheckCircle2, Calendar, Clock } from 'lucide-react';
 import {
   getCompetencyTitle,
   getCompetencyDescription,
@@ -37,26 +37,23 @@ export const PrintablePlan: React.FC<PrintablePlanProps> = ({
       style={{ minHeight: '842px', width: '100%' }}
     >
       {/* Official Header */}
-      <div className="border-b-2 border-slate-900 pb-3 mb-4">
+      <div className="border-b-2 border-green-950 pb-3 mb-4">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-emerald-800 text-white flex items-center justify-center font-bold text-xl">
-              <School className="w-7 h-7" />
-            </div>
             <div>
-              <h1 className="text-base sm:text-lg font-black tracking-tight text-slate-900 uppercase">
+              <h1 className="text-base sm:text-lg font-black tracking-tight text-stone-900 uppercase">
                 {t('printable.officialHeading')}
               </h1>
-              <p className="text-xs text-slate-600 font-medium">
+              <p className="text-xs text-stone-600 font-medium">
                 {t('printable.planSubtitle')}
               </p>
             </div>
           </div>
           <div className="text-right text-xs">
-            <span className="inline-block px-2 py-0.5 rounded bg-emerald-100 text-emerald-900 font-bold border border-emerald-300">
+            <span className="inline-block px-2.5 py-0.5 rounded bg-green-100 text-green-950 font-bold border border-green-300">
               {t('printable.competitionHeader')}
             </span>
-            <p className="text-slate-500 text-[10px] mt-1">{t('printable.udiseCode')}</p>
+            <p className="text-stone-500 text-[10px] mt-1">{t('printable.udiseCode')}</p>
           </div>
         </div>
 
@@ -186,21 +183,18 @@ export const PrintablePlan: React.FC<PrintablePlanProps> = ({
       )}
 
       {/* Teacher-in-the-Loop Verification Sign-off Box */}
-      <div className="mt-auto pt-4 border-t-2 border-slate-800 grid grid-cols-2 gap-4 text-xs">
-        <div className="flex items-center gap-2">
-          <UserCheck className="w-6 h-6 text-emerald-700 shrink-0" />
-          <div>
-            <p className="font-bold text-slate-900">{t('printable.signOffTitle')}</p>
-            <p className="text-[10px] text-slate-500">
-              {t('printable.signOffDeclaration')}
-            </p>
-          </div>
+      <div className="mt-auto pt-4 border-t-2 border-stone-800 grid grid-cols-2 gap-4 text-xs">
+        <div>
+          <p className="font-bold text-stone-900">{t('printable.signOffTitle')}</p>
+          <p className="text-[10px] text-stone-500">
+            {t('printable.signOffDeclaration')}
+          </p>
         </div>
 
         <div className="text-right">
-          <div className="inline-block border-b border-slate-400 w-36 mb-1"></div>
-          <p className="font-bold text-slate-800">{t('printable.teacherSignatureLabel')}</p>
-          <p className="text-[10px] text-slate-500">{t('printable.dateLabel')} {plan.plan_date}</p>
+          <div className="inline-block border-b border-stone-400 w-36 mb-1"></div>
+          <p className="font-bold text-stone-800">{t('printable.teacherSignatureLabel')}</p>
+          <p className="text-[10px] text-stone-500">{t('printable.dateLabel')} {plan.plan_date}</p>
         </div>
       </div>
 

@@ -1,15 +1,11 @@
 import React, { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  Smartphone,
   Download,
   Share2,
   PlusSquare,
   CheckCircle2,
-  X,
-  WifiOff,
-  Zap,
-  HardDrive
+  X
 } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
@@ -51,23 +47,18 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
       <div className="bg-white rounded-3xl max-w-lg w-full p-6 shadow-2xl border border-slate-100 space-y-5 overflow-hidden">
         
         {/* Header */}
-        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-emerald-500 to-teal-700 text-white flex items-center justify-center shadow-md shadow-emerald-500/20">
-              <Smartphone className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-black text-slate-900 text-base">
-                {isMarathi ? 'LearnGap AI मोबाईल ॲप (PWA)' : 'Install LearnGap AI (Mobile App)'}
-              </h3>
-              <p className="text-xs text-slate-500">
-                {isMarathi ? 'प्रोग्रेसिव्ह वेब ॲप (PWA) • फोन व कॉम्प्युटरवर वापरा' : 'Progressive Web App • Install on Phone, Tablet & Desktop'}
-              </p>
-            </div>
+        <div className="flex items-center justify-between pb-3 border-b border-stone-100">
+          <div>
+            <h3 className="font-black text-stone-900 text-base">
+              {isMarathi ? 'LearnGap AI मोबाईल ॲप (PWA)' : 'Install LearnGap AI (Mobile App)'}
+            </h3>
+            <p className="text-xs text-stone-500">
+              {isMarathi ? 'प्रोग्रेसिव्ह वेब ॲप (PWA) • फोन व कॉम्प्युटरवर वापरा' : 'Progressive Web App • Install on Phone, Tablet & Desktop'}
+            </p>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition"
+            className="p-1.5 rounded-xl text-stone-400 hover:text-stone-700 hover:bg-stone-100 transition cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -75,20 +66,17 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
 
         {/* Benefits Pill Row */}
         <div className="grid grid-cols-3 gap-2 text-center text-xs">
-          <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-900">
-            <WifiOff className="w-4 h-4 mx-auto mb-1 text-emerald-700" />
+          <div className="p-2.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-950">
             <span className="font-bold block text-[11px]">100% Offline</span>
-            <span className="text-[10px] text-emerald-700 opacity-80">Works without net</span>
+            <span className="text-[10px] text-emerald-800 opacity-90">Works without net</span>
           </div>
-          <div className="p-2.5 rounded-2xl bg-indigo-50 border border-indigo-100 text-indigo-900">
-            <Zap className="w-4 h-4 mx-auto mb-1 text-indigo-700" />
+          <div className="p-2.5 rounded-2xl bg-orange-50 border border-orange-200 text-orange-950">
             <span className="font-bold block text-[11px]">Fast Launch</span>
-            <span className="text-[10px] text-indigo-700 opacity-80">1-tap from screen</span>
+            <span className="text-[10px] text-orange-800 opacity-90">1-tap from screen</span>
           </div>
-          <div className="p-2.5 rounded-2xl bg-amber-50 border border-amber-100 text-amber-900">
-            <HardDrive className="w-4 h-4 mx-auto mb-1 text-amber-700" />
+          <div className="p-2.5 rounded-2xl bg-stone-50 border border-stone-200 text-stone-900">
             <span className="font-bold block text-[11px]">Local Store</span>
-            <span className="text-[10px] text-amber-700 opacity-80">DPDP compliant</span>
+            <span className="text-[10px] text-stone-600 opacity-90">DPDP compliant</span>
           </div>
         </div>
 
@@ -96,7 +84,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
         {installPrompt && !isInstalled && (
           <button
             onClick={handleNativeInstall}
-            className="w-full py-3 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-black text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/25 transition"
+            className="w-full py-3 rounded-2xl bg-orange-500 hover:bg-orange-600 text-white font-black text-sm flex items-center justify-center gap-2 shadow-xs transition cursor-pointer"
           >
             <Download className="w-4 h-4" />
             <span>{isMarathi ? 'आताच फोनवर इन्स्टॉल करा (1-Click Install)' : 'Install to Home Screen Now'}</span>
@@ -105,16 +93,16 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
 
         {/* Device Switcher Tabs */}
         <div>
-          <span className="text-xs font-bold text-slate-700 block mb-2">
+          <span className="text-xs font-bold text-stone-700 block mb-2">
             {isMarathi ? 'तुमचे डिव्हाइस निवडा:' : 'Step-by-step installation instructions for your device:'}
           </span>
-          <div className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-2xl text-xs font-bold">
+          <div className="grid grid-cols-3 gap-1.5 p-1 bg-stone-100 rounded-2xl text-xs font-bold">
             <button
               onClick={() => setActivePlatform('android')}
               className={`py-1.5 rounded-xl transition ${
                 activePlatform === 'android'
-                  ? 'bg-white text-emerald-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-green-700 text-white shadow-2xs font-bold'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               Android (Phone)
@@ -123,8 +111,8 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
               onClick={() => setActivePlatform('ios')}
               className={`py-1.5 rounded-xl transition ${
                 activePlatform === 'ios'
-                  ? 'bg-white text-emerald-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-green-700 text-white shadow-2xs font-bold'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               iPhone / iPad
@@ -133,8 +121,8 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
               onClick={() => setActivePlatform('desktop')}
               className={`py-1.5 rounded-xl transition ${
                 activePlatform === 'desktop'
-                  ? 'bg-white text-emerald-800 shadow-2xs'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-green-700 text-white shadow-2xs font-bold'
+                  : 'text-stone-600 hover:text-stone-900'
               }`}
             >
               PC / Laptop
@@ -208,7 +196,7 @@ export const PWAInstallModal: React.FC<PWAInstallModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs transition"
+            className="px-5 py-2 rounded-xl bg-green-700 hover:bg-green-800 text-white font-bold text-xs transition cursor-pointer"
           >
             {isMarathi ? 'समजले (Close)' : 'Done'}
           </button>

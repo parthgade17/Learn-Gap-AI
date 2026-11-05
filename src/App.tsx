@@ -27,7 +27,7 @@ import {
   syncRemedialPlan,
   subscribeToRealtimeChanges
 } from './lib/supabaseClient';
-import { WifiOff, Sparkles } from 'lucide-react';
+import { WifiOff } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   prompt: () => Promise<void>;
@@ -414,19 +414,18 @@ export const App: React.FC = () => {
             )}
 
             {activeTab === 'privacy' && (
-              <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-                <div className="flex items-center gap-2 pb-3 border-b border-slate-100">
-                  <Sparkles className="w-5 h-5 text-emerald-600" />
-                  <h2 className="text-xl font-bold text-slate-900">
+              <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+                <div className="pb-3 border-b border-stone-100">
+                  <h2 className="text-xl font-black text-stone-900">
                     {t('dpdp.title')}
                   </h2>
                 </div>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-stone-600">
                   {t('dpdp.subtitle')}
                 </p>
                 <button
                   onClick={() => setIsPrivacyOpen(true)}
-                  className="px-4 py-2.5 rounded-lg bg-emerald-600 text-white text-xs font-semibold hover:bg-emerald-700 transition"
+                  className="px-5 py-2.5 rounded-xl bg-green-700 text-white text-xs font-bold hover:bg-green-800 transition shadow-xs cursor-pointer"
                 >
                   {t('dpdp.consentRegisterTitle')}
                 </button>

@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import {
-  TrendingUp,
-  Award,
-  BarChart3,
-  User,
-  Users,
-  Brain,
-  Sparkles,
-  School,
   ChevronRight,
   Filter,
   CheckCircle2,
   AlertTriangle,
-  Download,
-  FileSpreadsheet
+  Download
 } from 'lucide-react';
 import { Student, Competency, AssessmentRecord, RemedialPlan, UserRole, SubjectType } from '../types';
 import {
@@ -214,77 +205,66 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
     <div className="space-y-6">
       
       {/* Top Banner: Title & Primary Scope Toggle */}
-      <div className="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+      <div className="bg-white p-5 rounded-2xl border border-green-200/80 shadow-xs flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <div className="flex items-center gap-2">
-            <div className="p-2.5 rounded-xl bg-indigo-50 text-indigo-600 border border-indigo-100">
-              <BarChart3 className="w-6 h-6" />
-            </div>
-            <div>
-              <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight">
-                {t('dashboard.title')}
-              </h2>
-              <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-                {userRole === 'head_teacher'
-                  ? 'Head Teacher (मुख्याध्यापक / CRC) Supervisory Portal • Entire School Class-Wise & Individual Records'
-                  : 'Classroom Teacher Command Center • Grade 6-A Diagnostic Radar & Individual Learner Trajectory'}
-              </p>
-            </div>
-          </div>
+          <h2 className="text-xl sm:text-2xl font-black text-green-950 tracking-tight">
+            {t('dashboard.title')}
+          </h2>
+          <p className="text-xs sm:text-sm text-stone-600 mt-0.5">
+            {userRole === 'head_teacher'
+              ? 'Head Teacher (मुख्याध्यापक / CRC) Supervisory Portal • Entire School Class-Wise & Individual Records'
+              : 'Classroom Teacher Command Center • Grade 6-A Diagnostic Radar & Individual Learner Trajectory'}
+          </p>
         </div>
 
         {/* View Switcher: Overall Students Record vs Individual Student Record */}
-        <div className="flex items-center gap-2 self-start md:self-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div className="flex items-center gap-1.5 self-start md:self-auto bg-stone-100 p-1 rounded-xl border border-stone-200">
           <button
             onClick={() => setViewScope('overall')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               viewScope === 'overall'
-                ? 'bg-white text-brand-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-green-700 text-white shadow-xs'
+                : 'text-stone-700 hover:text-green-950'
             }`}
           >
-            <Users className="w-4 h-4" />
             <span>Overall Students Record</span>
           </button>
           <button
             onClick={() => setViewScope('individual')}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition ${
+            className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition cursor-pointer ${
               viewScope === 'individual'
-                ? 'bg-white text-brand-700 shadow-xs'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-green-700 text-white shadow-xs'
+                : 'text-stone-700 hover:text-green-950'
             }`}
           >
-            <User className="w-4 h-4" />
             <span>Individual Student Record</span>
           </button>
         </div>
       </div>
 
       {/* =========================================================================
-          ROLE HIGHLIGHT & CLASS SELECTOR
-          1. Class Teacher (Drag-down selection for 5th A, 6th A, 7th A, 8th A)
-          2. Head Teacher (Entire School Class-Wise & Student Wise)
+          ROLE HIGHLIGHT & CLASS SELECTOR (TRICOLOR: GREEN, WHITE, ORANGE)
       ========================================================================= */}
       {userRole === 'teacher' ? (
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200/80 p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-xs">
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-orange-50/50 border border-green-200 p-4 sm:p-5 rounded-2xl flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-xs">
           <div className="flex flex-col sm:flex-row sm:items-center gap-3 min-w-0">
-            <span className="p-2.5 bg-blue-600 text-white rounded-xl shadow-xs font-black text-sm tracking-wide shrink-0">
+            <span className="p-2.5 bg-green-700 text-white rounded-xl shadow-xs font-black text-sm tracking-wide shrink-0">
               Grade {activeGrade}-A
             </span>
             <div className="min-w-0">
-              <p className="font-bold text-blue-950 text-sm whitespace-nowrap">
+              <p className="font-bold text-green-950 text-sm whitespace-nowrap">
                 Classroom Teacher Command Center
               </p>
-              <p className="text-blue-700 text-[11px] mt-0.5 truncate">
+              <p className="text-green-800 text-[11px] mt-0.5 truncate">
                 Class Section: Grade {activeGrade}-A • {filteredStudents.length} Students • 7 Core Subjects • Continuous Remedial Tracking
               </p>
             </div>
           </div>
 
           <div className="flex flex-wrap sm:flex-nowrap items-center gap-2.5 shrink-0">
-            {/* Drag down option for selecting class: 5th A, 6th A, 7th A, 8th A */}
-            <div className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-blue-200 shadow-2xs shrink-0">
-              <Filter className="w-3.5 h-3.5 text-blue-700 shrink-0" />
+            {/* Drag down option for selecting class */}
+            <div className="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-xl border border-green-300 shadow-2xs shrink-0">
+              <Filter className="w-3.5 h-3.5 text-green-700 shrink-0" />
               <label htmlFor="teacher-class-select" className="text-xs font-bold text-slate-700 whitespace-nowrap">
                 Select Class:
               </label>
@@ -292,7 +272,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 id="teacher-class-select"
                 value={activeGrade}
                 onChange={(e) => handleClassSelect(e.target.value)}
-                className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-blue-500 cursor-pointer shadow-2xs whitespace-nowrap"
+                className="text-xs font-bold rounded-lg border border-stone-300 py-1 px-2 bg-white text-slate-900 focus:outline-hidden focus:ring-2 focus:ring-green-600 cursor-pointer shadow-2xs whitespace-nowrap"
               >
                 <option value="5">Class 5th - A</option>
                 <option value="6">Class 6th - A</option>
@@ -305,7 +285,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               {onNavigateToAssessment && (
                 <button
                   onClick={onNavigateToAssessment}
-                  className="px-3 py-1.5 rounded-lg bg-white border border-blue-200 text-blue-700 font-bold hover:bg-blue-100 transition shadow-xs text-xs whitespace-nowrap cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-white border border-green-300 text-green-800 font-bold hover:bg-green-50 transition shadow-xs text-xs whitespace-nowrap cursor-pointer"
                 >
                   + Edit Marks
                 </button>
@@ -313,7 +293,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               {onNavigateToPlanner && (
                 <button
                   onClick={onNavigateToPlanner}
-                  className="px-3 py-1.5 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition shadow-xs text-xs whitespace-nowrap cursor-pointer"
+                  className="px-3 py-1.5 rounded-lg bg-orange-600 text-white font-bold hover:bg-orange-700 transition shadow-xs text-xs whitespace-nowrap cursor-pointer"
                 >
                   Open Remedial Plan
                 </button>
@@ -323,25 +303,20 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
         </div>
       ) : (
         /* Head Teacher (मुख्याध्यापक) Portal */
-        <div className="bg-gradient-to-r from-emerald-50 via-teal-50 to-indigo-50 border border-emerald-200 p-5 rounded-2xl space-y-4">
+        <div className="bg-gradient-to-r from-green-50 via-emerald-50 to-orange-50/50 border border-green-300 p-5 rounded-2xl space-y-4">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-            <div className="flex items-center gap-3">
-              <div className="p-2.5 bg-emerald-600 text-white rounded-xl shadow-sm">
-                <School className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="font-black text-emerald-950 text-base">
-                  Head Teacher (मुख्याध्यापक) School Supervisory Dashboard
-                </h3>
-                <p className="text-xs text-emerald-800">
-                  Zilla Parishad Primary School (UDISE: 27260501234) • All Classes (Grade 5 to 8)
-                </p>
-              </div>
+            <div>
+              <h3 className="font-black text-green-950 text-base">
+                Head Teacher (मुख्याध्यापक) School Supervisory Dashboard
+              </h3>
+              <p className="text-xs text-green-800">
+                Zilla Parishad Primary School (UDISE: 27260501234) • All Classes (Grade 5 to 8)
+              </p>
             </div>
 
             {/* Class Filter Bar for Head Teacher */}
-            <div className="flex items-center gap-2 bg-white/90 p-1.5 rounded-xl border border-emerald-200 shadow-2xs self-start sm:self-auto">
-              <Filter className="w-3.5 h-3.5 text-emerald-700 ml-1 shrink-0" />
+            <div className="flex items-center gap-2 bg-white p-1.5 rounded-xl border border-green-300 shadow-2xs self-start sm:self-auto">
+              <Filter className="w-3.5 h-3.5 text-green-700 ml-1 shrink-0" />
               <label htmlFor="head-teacher-class-select" className="text-xs font-bold text-slate-700">
                 Inspect Scope:
               </label>
@@ -349,7 +324,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 id="head-teacher-class-select"
                 value={selectedClassGrade}
                 onChange={(e) => handleClassSelect(e.target.value)}
-                className="text-xs font-bold rounded-lg border border-slate-300 py-1 px-2.5 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+                className="text-xs font-bold rounded-lg border border-stone-300 py-1 px-2.5 bg-white text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-green-600 cursor-pointer"
               >
                 <option value="ALL">Entire School (सर्व वर्ग - All Classes)</option>
                 <option value="5">Class 5th - A (इयत्ता ५ वी)</option>
@@ -361,28 +336,28 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-4 gap-3 pt-1 text-xs">
-            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+            <div className="bg-white p-3.5 rounded-xl border border-green-200 shadow-2xs">
               <span className="text-[11px] text-slate-500 font-medium">Total Enrolled Learners</span>
-              <p className="text-lg font-black text-slate-900 mt-0.5">
-                {totalStudents} <span className="text-[11px] text-slate-400 font-normal">Students in selected scope</span>
+              <p className="text-lg font-black text-green-950 mt-0.5">
+                {totalStudents} <span className="text-[11px] text-slate-400 font-normal">Students in scope</span>
               </p>
             </div>
-            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+            <div className="bg-white p-3.5 rounded-xl border border-green-200 shadow-2xs">
               <span className="text-[11px] text-slate-500 font-medium">Remedial Plan Compliance</span>
-              <p className="text-lg font-black text-emerald-700 mt-0.5">
-                88% <span className="text-[10px] text-emerald-600 font-bold">&#10003; Compliant (&ge;80%)</span>
+              <p className="text-lg font-black text-green-700 mt-0.5">
+                88% <span className="text-[10px] text-green-600 font-bold">&#10003; Compliant (&ge;80%)</span>
               </p>
             </div>
-            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+            <div className="bg-white p-3.5 rounded-xl border border-green-200 shadow-2xs">
               <span className="text-[11px] text-slate-500 font-medium">Persistent Gaps Flagged</span>
-              <p className="text-lg font-black text-amber-700 mt-0.5">
-                {totalPersistent} <span className="text-[10px] text-slate-400 font-normal">Requires Tier-3 Support</span>
+              <p className="text-lg font-black text-orange-700 mt-0.5">
+                {totalPersistent} <span className="text-[10px] text-slate-400 font-normal">Requires Tier-3</span>
               </p>
             </div>
-            <div className="bg-white p-3.5 rounded-xl border border-emerald-100 shadow-2xs">
+            <div className="bg-white p-3.5 rounded-xl border border-green-200 shadow-2xs">
               <span className="text-[11px] text-slate-500 font-medium">School Diagnostic Coverage</span>
-              <p className="text-lg font-black text-blue-700 mt-0.5">
-                {coveragePct}% <span className="text-[10px] text-blue-600 font-semibold">100% Target Met</span>
+              <p className="text-lg font-black text-green-700 mt-0.5">
+                {coveragePct}% <span className="text-[10px] text-green-600 font-semibold">100% Target Met</span>
               </p>
             </div>
           </div>
@@ -502,20 +477,15 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
       )}
 
       {/* =========================================================================
-          STATIC DATASET DOWNLOADS (5th A, 6th A, 7th A, 8th A)
+          STATIC DATASET DOWNLOADS (5th A, 6th A, 7th A, 8th A) - TRICOLOR THEME
       ========================================================================= */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white p-4 sm:p-5 rounded-2xl shadow-sm border border-indigo-900/50">
+      <div className="bg-gradient-to-r from-green-950 via-emerald-950 to-green-900 text-white p-4 sm:p-5 rounded-2xl shadow-xs border border-green-800">
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4">
           <div className="min-w-0">
-            <div className="flex items-center gap-2">
-              <span className="p-1.5 bg-indigo-500/30 text-indigo-300 rounded-lg shrink-0">
-                <FileSpreadsheet className="w-4 h-4" />
-              </span>
-              <h4 className="font-bold text-sm text-white whitespace-nowrap">
-                School Static Marksheet Datasets (Classes 5 to 8)
-              </h4>
-            </div>
-            <p className="text-xs text-indigo-200/80 mt-1 line-clamp-1">
+            <h4 className="font-black text-sm text-white whitespace-nowrap">
+              School Static Marksheet Datasets (Classes 5 to 8)
+            </h4>
+            <p className="text-xs text-emerald-100/90 mt-1 line-clamp-1">
               Download complete, deterministic CSV datasets with 10 learners per class, 7 core subjects, baseline and follow-up scores.
             </p>
           </div>
@@ -523,33 +493,33 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             <a
               href="/datasets/class_5th_A_marksheet.csv"
               download="class_5th_A_marksheet.csv"
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-orange-600 text-white text-xs font-bold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+              <Download className="w-3.5 h-3.5 text-orange-300 shrink-0" />
               <span>5th A (.csv)</span>
             </a>
             <a
               href="/datasets/class_6th_A_marksheet.csv"
               download="class_6th_A_marksheet.csv"
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-orange-600 text-white text-xs font-bold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+              <Download className="w-3.5 h-3.5 text-orange-300 shrink-0" />
               <span>6th A (.csv)</span>
             </a>
             <a
               href="/datasets/class_7th_A_marksheet.csv"
               download="class_7th_A_marksheet.csv"
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-orange-600 text-white text-xs font-bold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+              <Download className="w-3.5 h-3.5 text-orange-300 shrink-0" />
               <span>7th A (.csv)</span>
             </a>
             <a
               href="/datasets/class_8th_A_marksheet.csv"
               download="class_8th_A_marksheet.csv"
-              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-semibold border border-white/20 transition shadow-2xs whitespace-nowrap"
+              className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-orange-600 text-white text-xs font-bold border border-white/20 transition shadow-2xs whitespace-nowrap"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-300 shrink-0" />
+              <Download className="w-3.5 h-3.5 text-orange-300 shrink-0" />
               <span>8th A (.csv)</span>
             </a>
           </div>
@@ -563,30 +533,29 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
         <div className="space-y-6">
           
           {/* Main KPI Circular Gauges Row */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+          <div className="bg-white p-6 rounded-2xl border border-green-200/80 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-green-100">
               <div>
-                <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
+                <h3 className="font-black text-green-950 text-base flex items-center gap-2">
                   <span>Circular Performance Indicators</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-brand-50 text-brand-700 border border-brand-200 font-bold uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-green-50 text-green-800 border border-green-200 font-bold uppercase tracking-wider">
                     {selectedClassGrade === 'ALL'
                       ? `Entire School (${totalStudents} Learners across 4 Classes)`
                       : `Class ${selectedClassGrade}th - A (${totalStudents} Learners)`}
                   </span>
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-500">
                   Closed-loop circular recovery analytics across baseline and follow-up milestones
                 </p>
               </div>
-              <div className="flex items-center gap-2 text-xs font-bold text-emerald-700 bg-emerald-50 px-3 py-1 rounded-xl border border-emerald-200">
-                <TrendingUp className="w-3.5 h-3.5" />
+              <div className="flex items-center gap-1 text-xs font-bold text-green-800 bg-green-50 px-3 py-1 rounded-xl border border-green-300">
                 <span>Net Gain: +{netGain}%</span>
               </div>
             </div>
 
             {/* Circular Gauges Grid */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6 pt-2">
-              <div className="flex flex-col items-center bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+              <div className="flex flex-col items-center bg-green-50/40 p-4 rounded-xl border border-green-100">
                 <CircularGauge
                   percentage={coveragePct}
                   size={110}
@@ -595,12 +564,12 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                   colorScheme="brand"
                   label="Diagnostic Coverage"
                 />
-                <span className="text-[11px] text-slate-400 mt-1 font-medium">
+                <span className="text-[11px] text-stone-500 mt-1 font-medium">
                   {assessedStudentsCount} of {totalStudents} learners
                 </span>
               </div>
 
-              <div className="flex flex-col items-center bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+              <div className="flex flex-col items-center bg-orange-50/40 p-4 rounded-xl border border-orange-100">
                 <CircularGauge
                   percentage={avgBaselinePass}
                   size={110}
@@ -609,12 +578,12 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                   colorScheme="amber"
                   label="Baseline Pass Rate"
                 />
-                <span className="text-[11px] text-slate-400 mt-1 font-medium">
+                <span className="text-[11px] text-stone-500 mt-1 font-medium">
                   Initial Diagnostic Average
                 </span>
               </div>
 
-              <div className="flex flex-col items-center bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+              <div className="flex flex-col items-center bg-green-50/40 p-4 rounded-xl border border-green-100">
                 <CircularGauge
                   percentage={avgFollowupPass}
                   size={110}
@@ -623,21 +592,21 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                   colorScheme="emerald"
                   label="Follow-Up Pass Rate"
                 />
-                <span className="text-[11px] text-emerald-600 mt-1 font-bold">
+                <span className="text-[11px] text-green-700 mt-1 font-bold">
                   +{netGain}% post-remediation
                 </span>
               </div>
 
-              <div className="flex flex-col items-center bg-slate-50/70 p-4 rounded-xl border border-slate-100">
+              <div className="flex flex-col items-center bg-orange-50/40 p-4 rounded-xl border border-orange-100">
                 <CircularGauge
                   percentage={gapsReceivingPlanPct}
                   size={110}
                   strokeWidth={9}
                   sublabel="Action"
-                  colorScheme="brand"
+                  colorScheme="amber"
                   label="Gaps with Plan"
                 />
-                <span className="text-[11px] text-slate-400 mt-1 font-medium">
+                <span className="text-[11px] text-stone-500 mt-1 font-medium">
                   {filteredPlans.length} active teacher plans
                 </span>
               </div>
@@ -645,17 +614,19 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </div>
 
           {/* 7 Subjects Circular Graph Grid */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="bg-white p-6 rounded-2xl border border-green-200/80 shadow-xs space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-green-100">
               <div>
-                <h3 className="font-black text-slate-900 text-base">
+                <h3 className="font-black text-green-950 text-base">
                   Subject-Wise Circular Mastery Gauges (7 Core Subjects)
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-500">
                   Real-time mastery percentage per subject across English, Mathematics, Social Science, Physics, Chemistry, Marathi, and Hindi
                 </p>
               </div>
-              <span className="text-xs font-semibold text-slate-500">Benchmark: 60%</span>
+              <span className="text-xs font-bold text-orange-700 bg-orange-50 px-2 py-0.5 rounded border border-orange-200">
+                Benchmark: 60%
+              </span>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-7 gap-4 pt-2">
@@ -669,7 +640,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 return (
                   <div
                     key={subject}
-                    className="flex flex-col items-center bg-slate-50/80 p-3.5 rounded-xl border border-slate-200/80 hover:border-brand-300 hover:shadow-xs transition"
+                    className="flex flex-col items-center bg-stone-50/80 p-3.5 rounded-xl border border-stone-200 hover:border-green-400 hover:shadow-2xs transition"
                   >
                     <CircularGauge
                       percentage={current}
@@ -678,10 +649,10 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                       sublabel={isPassing ? 'Master' : 'Gap'}
                       colorScheme={isPassing ? 'emerald' : current >= 45 ? 'amber' : 'rose'}
                     />
-                    <span className="text-xs font-bold text-slate-800 mt-2 text-center truncate max-w-full">
+                    <span className="text-xs font-bold text-stone-900 mt-2 text-center truncate max-w-full">
                       {subject}
                     </span>
-                    <span className="text-[10px] text-slate-400 font-medium mt-0.5">
+                    <span className="text-[10px] text-stone-400 font-medium mt-0.5">
                       Base: {baseline}%
                     </span>
                   </div>
@@ -690,30 +661,25 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
             </div>
           </div>
 
-          {/* AI-Based Cohort Prediction Engine Card */}
-          <div className="bg-gradient-to-br from-indigo-950 via-slate-900 to-indigo-900 text-white p-6 rounded-2xl shadow-md space-y-4">
+          {/* AI-Based Cohort Prediction Engine Card - National Tricolor Theme */}
+          <div className="bg-gradient-to-br from-green-950 via-emerald-950 to-green-900 text-white p-6 rounded-2xl shadow-xs space-y-4 border border-green-800">
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-white/10 pb-4">
-              <div className="flex items-center gap-2.5">
-                <div className="p-2 bg-indigo-500/20 border border-indigo-400/30 rounded-xl text-indigo-300">
-                  <Brain className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-black text-lg text-white tracking-tight flex items-center gap-2">
-                    <span>LearnGap AI Cohort Predictive Engine</span>
-                    <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30">
-                      Hybrid Rule + ML
-                    </span>
-                  </h4>
-                  <p className="text-xs text-indigo-200/80">
-                    Continuous learning curve forecasting for {selectedClassGrade === 'ALL' ? 'Entire School' : `Class ${selectedClassGrade}th`}
-                  </p>
-                </div>
+              <div>
+                <h4 className="font-black text-lg text-white tracking-tight flex items-center gap-2">
+                  <span>LearnGap AI Cohort Predictive Engine</span>
+                  <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-300 border border-orange-400/40">
+                    Hybrid Rule + ML
+                  </span>
+                </h4>
+                <p className="text-xs text-emerald-200/90 mt-0.5">
+                  Continuous learning curve forecasting for {selectedClassGrade === 'ALL' ? 'Entire School' : `Class ${selectedClassGrade}th`}
+                </p>
               </div>
 
-              <div className="flex items-center gap-3 text-xs bg-white/5 px-3 py-1.5 rounded-xl border border-white/10 self-start sm:self-auto">
+              <div className="flex items-center gap-3 text-xs bg-white/5 px-3.5 py-1.5 rounded-xl border border-white/10 self-start sm:self-auto">
                 <div>
-                  <span className="text-slate-400 block text-[10px]">Predicted Pass Rate</span>
-                  <span className="text-lg font-black text-emerald-400">
+                  <span className="text-stone-300 block text-[10px]">Predicted Pass Rate</span>
+                  <span className="text-xl font-black text-orange-400">
                     {cohortPrediction.projected_class_pass_rate}%
                   </span>
                 </div>
@@ -722,48 +688,47 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
-                <span className="text-xs text-indigo-300 block">Stagnation Risk</span>
-                <span className="text-xl font-black text-amber-400 mt-1 block">
+                <span className="text-xs text-orange-200 block">Stagnation Risk</span>
+                <span className="text-xl font-black text-orange-400 mt-1 block">
                   {cohortPrediction.stagnation_risk_pct}%
                 </span>
-                <span className="text-[10px] text-slate-400">Students at high friction</span>
+                <span className="text-[10px] text-stone-300">Students at friction</span>
               </div>
 
               <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
-                <span className="text-xs text-indigo-300 block">Time to Benchmark</span>
-                <span className="text-xl font-black text-emerald-400 mt-1 block">
+                <span className="text-xs text-emerald-200 block">Time to Benchmark</span>
+                <span className="text-xl font-black text-emerald-300 mt-1 block">
                   ~{cohortPrediction.estimated_weeks_to_goal} Weeks
                 </span>
-                <span className="text-[10px] text-slate-400">At current learning velocity</span>
+                <span className="text-[10px] text-stone-300">Current velocity</span>
               </div>
 
               <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
-                <span className="text-xs text-indigo-300 block">Highest Need Subject</span>
-                <span className="text-base font-black text-rose-300 mt-1 block truncate">
+                <span className="text-xs text-orange-200 block">Highest Need Subject</span>
+                <span className="text-base font-black text-orange-300 mt-1 block truncate">
                   {cohortPrediction.most_vulnerable_subject}
                 </span>
-                <span className="text-[10px] text-slate-400">Requires daily intervention</span>
+                <span className="text-[10px] text-stone-300">Intervention needed</span>
               </div>
 
               <div className="bg-white/5 border border-white/10 p-3.5 rounded-xl">
-                <span className="text-xs text-indigo-300 block">Strongest Foundation</span>
-                <span className="text-base font-black text-teal-300 mt-1 block truncate">
+                <span className="text-xs text-emerald-200 block">Strongest Foundation</span>
+                <span className="text-base font-black text-emerald-300 mt-1 block truncate">
                   {cohortPrediction.strongest_subject}
                 </span>
-                <span className="text-[10px] text-slate-400">Can act as scaffolding base</span>
+                <span className="text-[10px] text-stone-300">Scaffolding base</span>
               </div>
             </div>
 
             {/* Bilingual AI Insights */}
             <div className="bg-black/25 border border-white/10 p-4 rounded-xl space-y-2">
-              <span className="text-xs uppercase tracking-wider font-bold text-indigo-300 flex items-center gap-1.5">
-                <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+              <span className="text-xs uppercase tracking-wider font-bold text-orange-300 block">
                 AI Pedagogical Cohort Insights (एआय अंतर्दृष्टी)
               </span>
-              <ul className="text-xs space-y-1.5 text-slate-200">
+              <ul className="text-xs space-y-1.5 text-stone-200">
                 {(currentLang === 'mr' ? cohortPrediction.ai_insights_mr : cohortPrediction.ai_insights_en).map((insight, idx) => (
                   <li key={idx} className="flex items-start gap-2">
-                    <span className="text-indigo-400 font-bold">&#8226;</span>
+                    <span className="text-orange-400 font-bold">&#8226;</span>
                     <span>{insight}</span>
                   </li>
                 ))}
@@ -862,8 +827,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                         </td>
                         <td className="py-3 px-3">
                           {hasFollowup ? (
-                            <span className="inline-flex items-center gap-1 font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                              <Award className="w-3 h-3 text-emerald-600" />
+                            <span className="inline-flex items-center gap-1 font-semibold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                               {m.remediatedCount} {t('dashboard.recoveredBadge')}
                             </span>
                           ) : (
@@ -874,8 +838,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                           {hasFollowup ? (
                             <span className={`inline-flex items-center gap-1 text-[11px] font-semibold px-2 py-0.5 rounded ${
                               m.persistentGapCount > 0
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-slate-100 text-slate-700'
+                                ? 'bg-orange-100 text-orange-900 border border-orange-200'
+                                : 'bg-stone-100 text-stone-700'
                             }`}>
                               {m.persistentGapCount > 0 ? `${m.persistentGapCount} ${t('dashboard.persistentBadge')}` : t('dashboard.noneBadge')}
                             </span>
@@ -894,29 +858,28 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           {/* =========================================================================
               CLASS STUDENT MARKSHEET & PERFORMANCE ROSTER (SHOWS DATA OF SELECTED CLASS)
           ========================================================================= */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-slate-100">
+          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-100">
               <div>
-                <h3 className="font-black text-slate-900 text-base flex items-center gap-2">
+                <h3 className="font-black text-stone-900 text-base flex items-center gap-2">
                   <span>Class {activeGrade === 'ALL' ? 'All Classes' : `${activeGrade}th - Section A`} Student Performance Roster</span>
-                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold uppercase tracking-wider">
+                  <span className="px-2 py-0.5 rounded-full text-[10px] bg-emerald-50 text-emerald-900 border border-emerald-300 font-bold uppercase tracking-wider">
                     {filteredStudents.length} Learners Active
                   </span>
                 </h3>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-500">
                   Comprehensive student-by-student marksheet data, baseline &amp; follow-up averages, net gains, and AI learning velocity for {activeGrade === 'ALL' ? 'the entire school' : `Class ${activeGrade}th - A`}
                 </p>
               </div>
 
-              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200 self-start sm:self-auto">
-                <Users className="w-3.5 h-3.5 text-brand-600" />
+              <div className="flex items-center gap-2 text-xs font-bold text-green-950 bg-green-50 px-3 py-1.5 rounded-xl border border-green-200 self-start sm:self-auto">
                 <span>Active Scope: {activeGrade === 'ALL' ? 'All 40 Students' : `Class ${activeGrade}th - A (${filteredStudents.length} Students)`}</span>
               </div>
             </div>
 
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs">
-                <thead className="bg-slate-50 uppercase tracking-wider text-slate-700 font-bold border-b border-slate-200">
+                <thead className="bg-green-50/70 uppercase tracking-wider text-green-950 font-bold border-b border-green-200">
                   <tr>
                     <th className="py-3 px-3">Roll # &amp; Student Alias</th>
                     <th className="py-3 px-3">Class</th>
@@ -965,7 +928,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                           +{gain}%
                         </td>
                         <td className="py-3 px-3">
-                          <span className="inline-flex items-center gap-1 font-semibold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
+                          <span className="inline-flex items-center gap-1 font-semibold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-300">
                             +{pred.learning_velocity}%/wk
                           </span>
                         </td>
@@ -974,8 +937,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                             pred.risk_level === 'critical' || pred.risk_level === 'high'
                               ? 'bg-rose-100 text-rose-800'
                               : pred.risk_level === 'medium'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-emerald-100 text-emerald-800'
+                              ? 'bg-orange-100 text-orange-900 border border-orange-200'
+                              : 'bg-emerald-100 text-emerald-900 border border-emerald-200'
                           }`}>
                             {pred.risk_level.toUpperCase()}
                           </span>
@@ -986,7 +949,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                               setSelectedStudentId(std.id);
                               setViewScope('individual');
                             }}
-                            className="px-3 py-1 rounded-lg text-xs font-bold bg-brand-50 border border-brand-200 text-brand-700 hover:bg-brand-100 transition shadow-2xs"
+                            className="px-3 py-1 rounded-lg text-xs font-bold bg-orange-50 border border-orange-200 text-orange-900 hover:bg-orange-100 transition shadow-2xs"
                           >
                             Inspect Student &rarr;
                           </button>
@@ -1010,18 +973,18 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
         <div className="space-y-6">
           
           {/* Student Picker Selector Bar */}
-          <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="bg-white p-4 rounded-2xl border border-stone-200 shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-brand-100 text-brand-700 flex items-center justify-center font-black text-sm">
+              <div className="w-10 h-10 rounded-xl bg-green-100 text-green-900 border border-green-300 flex items-center justify-center font-black text-sm">
                 #{selectedStudent?.roll_number}
               </div>
               <div>
-                <span className="text-xs font-semibold text-slate-400 block uppercase tracking-wider">
+                <span className="text-xs font-semibold text-stone-500 block uppercase tracking-wider">
                   Select Individual Learner {userRole === 'head_teacher' ? '(School-Wide Drilldown)' : `(Class ${activeGrade}th - A)`}
                 </span>
-                <span className="font-black text-slate-900 text-base">
+                <span className="font-black text-stone-900 text-base">
                   {selectedStudent ? formatStudentDisplay(selectedStudent, currentLang) : 'Learner'}
-                  <span className="ml-2 text-xs font-bold text-slate-500 bg-slate-100 px-2 py-0.5 rounded-md">
+                  <span className="ml-2 text-xs font-bold text-stone-600 bg-stone-100 px-2 py-0.5 rounded-md">
                     Class {selectedStudent?.grade}th - {selectedStudent?.section}
                   </span>
                 </span>
@@ -1030,12 +993,12 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
 
             <div className="flex flex-col sm:flex-row sm:items-center gap-2">
               {/* Class Filter Drag-Down Menu */}
-              <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-xl">
-                <span className="text-[11px] font-bold text-slate-500 whitespace-nowrap">Class:</span>
+              <div className="flex items-center gap-1.5 bg-stone-50 border border-stone-200 px-2.5 py-1 rounded-xl">
+                <span className="text-[11px] font-bold text-stone-600 whitespace-nowrap">Class:</span>
                 <select
                   value={activeGrade}
                   onChange={(e) => handleClassSelect(e.target.value)}
-                  className="text-xs font-bold rounded-lg border-0 bg-transparent py-1 px-1 text-slate-800 focus:outline-none cursor-pointer"
+                  className="text-xs font-bold rounded-lg border-0 bg-transparent py-1 px-1 text-stone-800 focus:outline-none cursor-pointer"
                 >
                   {userRole === 'head_teacher' && (
                     <option value="ALL">Entire School (सर्व वर्ग)</option>
@@ -1051,7 +1014,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 id="student-picker"
                 value={selectedStudentId}
                 onChange={(e) => setSelectedStudentId(e.target.value)}
-                className="text-xs font-semibold rounded-xl border border-slate-300 py-2 px-3 bg-white text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-500 shadow-xs"
+                className="text-xs font-semibold rounded-xl border border-stone-300 py-2 px-3 bg-white text-stone-800 focus:outline-none focus:ring-2 focus:ring-green-500 shadow-2xs"
               >
                 {filteredStudents.map((std) => (
                   <option key={std.id} value={std.id}>
@@ -1066,8 +1029,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           <div className="grid grid-cols-1 md:grid-cols-12 gap-6">
             
             {/* Left: Overall Circular Mastery & Risk Gauge (4 cols) */}
-            <div className="md:col-span-4 bg-white p-6 rounded-2xl border border-slate-200 shadow-sm flex flex-col items-center justify-center text-center space-y-4">
-              <span className="text-xs uppercase tracking-wider font-bold text-slate-400">
+            <div className="md:col-span-4 bg-white p-6 rounded-2xl border border-stone-200 shadow-xs flex flex-col items-center justify-center text-center space-y-4">
+              <span className="text-xs uppercase tracking-wider font-bold text-stone-500">
                 Current Individual Proficiency
               </span>
 
@@ -1082,74 +1045,73 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
               <div className="space-y-1">
                 <span className={`inline-block px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${
                   studentPrediction.risk_level === 'low'
-                    ? 'bg-emerald-100 text-emerald-800'
+                    ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
                     : studentPrediction.risk_level === 'medium'
-                    ? 'bg-amber-100 text-amber-800'
+                    ? 'bg-orange-100 text-orange-900 border border-orange-300'
                     : 'bg-rose-100 text-rose-800'
                 }`}>
                   {studentPrediction.risk_level} Risk Level
                 </span>
-                <p className="text-xs text-slate-500">
+                <p className="text-xs text-stone-500">
                   Roll #{studentPrediction.roll_number} • Section {selectedStudent?.section} • Class {selectedStudent?.grade}th
                 </p>
               </div>
 
-              <div className="w-full pt-3 border-t border-slate-100 grid grid-cols-2 gap-2 text-center text-xs">
-                <div className="p-2 bg-slate-50 rounded-xl">
-                  <span className="text-slate-400 text-[10px] block">Confidence</span>
-                  <span className="font-bold text-slate-800">{studentPrediction.confidence_score}%</span>
+              <div className="w-full pt-3 border-t border-stone-100 grid grid-cols-2 gap-2 text-center text-xs">
+                <div className="p-2 bg-stone-50 rounded-xl">
+                  <span className="text-stone-400 text-[10px] block">Confidence</span>
+                  <span className="font-bold text-stone-800">{studentPrediction.confidence_score}%</span>
                 </div>
-                <div className="p-2 bg-slate-50 rounded-xl">
-                  <span className="text-slate-400 text-[10px] block">Learning Speed</span>
+                <div className="p-2 bg-stone-50 rounded-xl">
+                  <span className="text-stone-400 text-[10px] block">Learning Speed</span>
                   <span className="font-bold text-emerald-700">+{studentPrediction.learning_velocity}%/wk</span>
                 </div>
               </div>
             </div>
 
-            {/* Right: AI Trajectory & Next-Best Action (8 cols) */}
-            <div className="md:col-span-8 bg-gradient-to-br from-slate-900 to-indigo-950 text-white p-6 rounded-2xl shadow-sm flex flex-col justify-between space-y-5">
+            {/* Right: AI Trajectory & Next-Best Action (8 cols) - National Tricolor Theme */}
+            <div className="md:col-span-8 bg-gradient-to-br from-green-950 via-emerald-950 to-green-900 border border-green-800 text-white p-6 rounded-2xl shadow-xs flex flex-col justify-between space-y-5">
               <div>
                 <div className="flex items-center justify-between pb-3 border-b border-white/10">
-                  <div className="flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-amber-300" />
+                  <div>
                     <h4 className="font-bold text-base text-white">
                       Individual AI Predictive Trajectory
                     </h4>
                   </div>
-                  <span className="text-[11px] font-semibold text-indigo-300 bg-white/10 px-2.5 py-1 rounded-lg">
+                  <span className="text-[11px] font-semibold text-orange-300 bg-white/10 px-2.5 py-1 rounded-lg border border-orange-400/30">
                     Estimated Recovery: ~{studentPrediction.recovery_velocity_days} Days
                   </span>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3 mt-4">
                   <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-                    <span className="text-[11px] text-slate-400 block">Current Score</span>
+                    <span className="text-[11px] text-stone-300 block">Current Score</span>
                     <span className="text-xl font-black text-white mt-1 block">
                       {studentPrediction.current_overall_pct}%
                     </span>
                   </div>
 
                   <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-                    <span className="text-[11px] text-slate-400 block">Predicted Mastery</span>
-                    <span className="text-xl font-black text-emerald-400 mt-1 block">
+                    <span className="text-[11px] text-emerald-300 block">Predicted Mastery</span>
+                    <span className="text-xl font-black text-emerald-300 mt-1 block">
                       {studentPrediction.predicted_mastery_pct}%
                     </span>
                   </div>
 
                   <div className="bg-white/5 p-3 rounded-xl border border-white/10">
-                    <span className="text-[11px] text-slate-400 block">Projected Gain</span>
-                    <span className="text-xl font-black text-indigo-300 mt-1 block">
+                    <span className="text-[11px] text-orange-300 block">Projected Gain</span>
+                    <span className="text-xl font-black text-orange-400 mt-1 block">
                       +{studentPrediction.predicted_gain_pct}%
                     </span>
                   </div>
                 </div>
 
                 {/* AI Next-Best Pedagogical Recommendation */}
-                <div className="mt-4 p-4 rounded-xl bg-indigo-500/15 border border-indigo-400/30">
-                  <span className="text-xs uppercase tracking-wider font-bold text-indigo-300 block mb-1">
+                <div className="mt-4 p-4 rounded-xl bg-orange-500/15 border border-orange-400/30">
+                  <span className="text-xs uppercase tracking-wider font-bold text-orange-300 block mb-1">
                     AI Recommended Next-Best Action:
                   </span>
-                  <p className="text-xs text-indigo-100 leading-relaxed font-medium">
+                  <p className="text-xs text-stone-100 leading-relaxed font-medium">
                     {currentLang === 'mr' ? studentPrediction.recommended_action_mr : studentPrediction.recommended_action_en}
                   </p>
                 </div>
@@ -1159,7 +1121,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 <div className="pt-2 flex justify-end">
                   <button
                     onClick={onNavigateToPlanner}
-                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-semibold text-xs shadow-xs transition"
+                    className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-orange-600 hover:bg-orange-700 text-white font-bold text-xs shadow-xs transition"
                   >
                     <span>Create Custom Remedial Plan for this Student</span>
                     <ChevronRight className="w-3.5 h-3.5" />
@@ -1171,8 +1133,8 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
           </div>
 
           {/* Student Subject-Wise Circular Breakdown */}
-          <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm space-y-4">
-            <h4 className="font-bold text-slate-900 text-base">
+          <div className="bg-white p-6 rounded-2xl border border-stone-200 shadow-xs space-y-4">
+            <h4 className="font-bold text-stone-900 text-base">
               Individual Subject Circular Progress Rings (7 Core Academic Subjects)
             </h4>
             
@@ -1182,7 +1144,7 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                 return (
                   <div
                     key={sp.subject}
-                    className="flex flex-col items-center bg-slate-50 p-3 rounded-xl border border-slate-200 hover:border-brand-400 transition"
+                    className="flex flex-col items-center bg-stone-50 p-3 rounded-xl border border-stone-200 hover:border-green-400 transition"
                   >
                     <CircularGauge
                       percentage={sp.current_pct}
@@ -1191,10 +1153,10 @@ export const ProgressDashboard: React.FC<ProgressDashboardProps> = ({
                       sublabel={isPassing ? 'Pass' : 'Aid'}
                       colorScheme={isPassing ? 'emerald' : sp.current_pct >= 45 ? 'amber' : 'rose'}
                     />
-                    <span className="text-xs font-bold text-slate-800 mt-2 text-center truncate max-w-full">
+                    <span className="text-xs font-bold text-stone-800 mt-2 text-center truncate max-w-full">
                       {sp.subject}
                     </span>
-                    <span className="text-[10px] text-indigo-600 font-semibold mt-0.5">
+                    <span className="text-[10px] text-emerald-800 font-bold mt-0.5">
                       Pred: {sp.predicted_pct}%
                     </span>
                   </div>

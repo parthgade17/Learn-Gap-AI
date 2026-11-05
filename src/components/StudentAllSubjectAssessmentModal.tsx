@@ -3,9 +3,7 @@ import { useTranslation } from 'react-i18next';
 import {
   X,
   CheckCircle2,
-  Save,
-  Zap,
-  ShieldCheck
+  Save
 } from 'lucide-react';
 import { Student, Competency, AssessmentRecord, SubjectType } from '../types';
 import { getSubjectName, formatClassDisplay, getCompetencyTitle, getCompetencyDescription, formatStudentDisplay, ALL_SUBJECTS } from '../data/curriculumData';
@@ -142,35 +140,34 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
         </button>
 
         {/* Header: Student Profile Banner */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-stone-100 pb-4">
           <div className="flex items-center gap-3.5">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-brand-600 to-indigo-700 text-white flex items-center justify-center font-black text-lg shadow-md shadow-brand-500/20">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-green-700 to-emerald-800 text-white flex items-center justify-center font-black text-lg shadow-xs">
               #{student.roll_number}
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-indigo-50 text-indigo-700 border border-indigo-200">
+                <span className="px-2 py-0.5 rounded-md text-[11px] font-bold bg-green-50 text-green-950 border border-green-200">
                   {formatClassDisplay(student.grade, currentLang)}
                 </span>
-                <span className="text-xs text-slate-500 font-medium">
+                <span className="text-xs text-stone-500 font-medium">
                   Roll #{student.roll_number}
                 </span>
                 {student.parental_consent_verified && (
-                  <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                    <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                  <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold bg-emerald-50 text-emerald-900 border border-emerald-200">
                     DPDP Verified
                   </span>
                 )}
               </div>
-              <h2 className="text-lg sm:text-xl font-black text-slate-900 mt-0.5">
+              <h2 className="text-lg sm:text-xl font-black text-stone-900 mt-0.5">
                 {formatStudentDisplay(student, currentLang)}
               </h2>
             </div>
           </div>
 
           <div className="text-left sm:text-right text-xs">
-            <span className="text-slate-500 block text-[11px]">Assessment Portfolio</span>
-            <span className="font-black text-brand-700 text-sm">
+            <span className="text-stone-500 block text-[11px]">Assessment Portfolio</span>
+            <span className="font-black text-green-950 text-sm">
               {studentAssessments.length} Marks Recorded Across 7 Subjects
             </span>
           </div>
@@ -184,15 +181,15 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
               <span>{saveSuccessNotice}</span>
             </div>
             {redisNotice && (
-              <span className="text-[11px] font-mono text-emerald-700 bg-emerald-100/70 px-2 py-0.5 rounded">
-                ⚡ {redisNotice}
+              <span className="text-[11px] font-mono text-emerald-800 bg-emerald-100/70 px-2 py-0.5 rounded">
+                {redisNotice}
               </span>
             )}
           </div>
         )}
 
         {/* 7 Core Subjects Tab Bar */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-100 text-xs scrollbar-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-stone-100 text-xs scrollbar-none">
           {ALL_SUBJECTS.map((sub) => {
             const isSelected = activeSubject === sub;
             const subCompCount = competencies.filter(c => c.subject === sub).length;
@@ -207,13 +204,13 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
                 onClick={() => setActiveSubject(sub)}
                 className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl font-bold transition whitespace-nowrap ${
                   isSelected
-                    ? 'bg-brand-600 text-white shadow-sm'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-green-700 text-white shadow-xs'
+                    : 'bg-stone-100 text-stone-700 hover:bg-stone-200'
                 }`}
               >
                 <span>{getSubjectName(sub, currentLang)}</span>
                 <span className={`text-[10px] px-1.5 py-0.2 rounded-full ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'
+                  isSelected ? 'bg-white/20 text-white' : 'bg-stone-200 text-stone-700'
                 }`}>
                   {subAsmtCount}/{subCompCount * 2}
                 </span>
@@ -239,19 +236,19 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
             return (
               <div
                 key={comp.id}
-                className="p-4 rounded-2xl border border-slate-200 bg-slate-50/60 hover:bg-white hover:border-brand-300 transition space-y-3"
+                className="p-4 rounded-2xl border border-stone-200 bg-stone-50/60 hover:bg-white hover:border-green-300 transition space-y-3"
               >
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                   <div>
                     <div className="flex items-center gap-2">
-                      <span className="font-bold text-xs bg-slate-200 text-slate-800 px-2 py-0.5 rounded">
+                      <span className="font-bold text-xs bg-green-100 text-green-950 px-2 py-0.5 rounded border border-green-200">
                         {comp.code}
                       </span>
-                      <h4 className="font-bold text-sm text-slate-900">
+                      <h4 className="font-bold text-sm text-stone-900">
                         {getCompetencyTitle(comp, currentLang)}
                       </h4>
                     </div>
-                    <p className="text-xs text-slate-500 mt-1">
+                    <p className="text-xs text-stone-500 mt-1">
                       {getCompetencyDescription(comp, currentLang)}
                     </p>
                   </div>
@@ -260,10 +257,10 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
                   {(basePct !== null || folPct !== null) && (
                     <span className={`px-2.5 py-1 rounded-lg text-xs font-bold self-start sm:self-auto shrink-0 ${
                       isMastered
-                        ? 'bg-emerald-100 text-emerald-800 border border-emerald-200'
+                        ? 'bg-emerald-100 text-emerald-900 border border-emerald-300'
                         : isUrgent
-                        ? 'bg-rose-100 text-rose-800 border border-rose-200'
-                        : 'bg-amber-100 text-amber-800 border border-amber-200'
+                        ? 'bg-orange-100 text-orange-950 border border-orange-300'
+                        : 'bg-amber-100 text-amber-950 border border-amber-300'
                     }`}>
                       {isMastered ? 'Mastered (60%+)' : isUrgent ? 'Urgent (<40%)' : 'Moderate (40-59%)'}
                     </span>
@@ -271,11 +268,11 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
                 </div>
 
                 {/* Score Input Controls */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-slate-200/60 text-xs items-center">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-stone-200/60 text-xs items-center">
                   
                   {/* Baseline Input */}
-                  <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200">
-                    <label className="text-[11px] font-bold text-slate-600 whitespace-nowrap">
+                  <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-stone-200">
+                    <label className="text-[11px] font-bold text-stone-700 whitespace-nowrap">
                       Baseline Marks (/10):
                     </label>
                     <input
@@ -286,16 +283,16 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
                       value={baseScore}
                       onChange={(e) => handleScoreChange(comp.id, 'baseline', e.target.value)}
                       placeholder="e.g. 5.5"
-                      className="w-16 text-center font-bold text-slate-900 border border-slate-300 rounded-lg p-1 text-xs focus:ring-1 focus:ring-brand-500 focus:outline-none"
+                      className="w-16 text-center font-bold text-stone-900 border border-stone-300 rounded-lg p-1 text-xs focus:ring-1 focus:ring-green-500 focus:outline-none"
                     />
                     {basePct !== null && (
-                      <span className="text-[10px] text-slate-500 font-bold">({basePct}%)</span>
+                      <span className="text-[10px] text-stone-500 font-bold">({basePct}%)</span>
                     )}
                   </div>
 
                   {/* Follow-up Input */}
-                  <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-slate-200">
-                    <label className="text-[11px] font-bold text-indigo-700 whitespace-nowrap">
+                  <div className="flex items-center gap-2 bg-white p-2 rounded-xl border border-orange-200">
+                    <label className="text-[11px] font-bold text-orange-950 whitespace-nowrap">
                       Follow-up Marks (/10):
                     </label>
                     <input
@@ -306,10 +303,10 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
                       value={folScore}
                       onChange={(e) => handleScoreChange(comp.id, 'followup', e.target.value)}
                       placeholder="e.g. 8.0"
-                      className="w-16 text-center font-bold text-indigo-900 border border-indigo-200 rounded-lg p-1 text-xs focus:ring-1 focus:ring-indigo-500 focus:outline-none"
+                      className="w-16 text-center font-bold text-orange-950 border border-orange-300 rounded-lg p-1 text-xs focus:ring-1 focus:ring-orange-500 focus:outline-none"
                     />
                     {folPct !== null && (
-                      <span className="text-[10px] text-indigo-600 font-bold">({folPct}%)</span>
+                      <span className="text-[10px] text-orange-700 font-bold">({folPct}%)</span>
                     )}
                   </div>
 
@@ -317,7 +314,7 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
                   <button
                     onClick={() => handleSaveCompetency(comp)}
                     disabled={savingKey === comp.id}
-                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition shadow-xs disabled:opacity-50"
+                    className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl bg-green-700 hover:bg-green-800 text-white font-bold text-xs transition shadow-xs disabled:opacity-50"
                   >
                     <Save className="w-3.5 h-3.5" />
                     <span>{savingKey === comp.id ? 'Buffering...' : 'Save Marks'}</span>
@@ -331,14 +328,13 @@ export const StudentAllSubjectAssessmentModal: React.FC<StudentAllSubjectAssessm
         </div>
 
         {/* Modal Footer */}
-        <div className="pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-          <span className="flex items-center gap-1.5">
-            <Zap className="w-3.5 h-3.5 text-amber-500" />
+        <div className="pt-3 border-t border-stone-100 flex items-center justify-between text-xs text-stone-500">
+          <div>
             <span>Marks are buffered to Redis with automatic rate-limited Supabase sync every 10-15s</span>
-          </span>
+          </div>
           <button
             onClick={onClose}
-            className="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 font-bold text-slate-700 transition"
+            className="px-5 py-2 rounded-xl bg-orange-500 hover:bg-orange-600 font-bold text-white transition shadow-xs"
           >
             Done
           </button>
